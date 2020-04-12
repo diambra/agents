@@ -13,4 +13,7 @@ Python Notebooks:
 - PPO2CartPoleCustomPolicy:
     - Custom policy and value network builted similarly to FeedForward Net
 - PPO2Atari:
+    - Atari environments training
+    - Familiarization with DeepMind env wrapper
+    - Vectorization
 - PPO2ContinualLearning:
