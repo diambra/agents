@@ -17,3 +17,4 @@ Python Notebooks:
     - Familiarization with DeepMind env wrapper
     - Vectorization
 - PPO2ContinualLearning:
+    - Continoual learning between two Atari Envs
