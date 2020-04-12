@@ -11,6 +11,6 @@ Python Notebooks:
     - Multiproc training
     - Using bench.Monitor to print reward for monitoring during training
 - PPO2CartPoleCustomPolicy:
-    - Custom policy and value network
+    - Custom policy and value network builted similarly to FeedForward Net
 - PPO2Atari:
 - PPO2ContinualLearning:
