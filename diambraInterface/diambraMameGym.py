@@ -8,18 +8,13 @@ class diambraMame(gym.Env):
     """DiambraMame Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, roms_path, binary_path, frame_ratio = 1, player_id = "P1", character = "Random"):
+    def __init__(self, diambra_kwargs):
         super(diambraMame, self).__init__()
 
-        self.roms_path = roms_path
-        self.binary_path = binary_path
-        self.frame_ratio = frame_ratio
-        self.player_id = player_id
-        self.character = character
+        self.player_id = diambra_kwargs["player"]
         self.first = True
 
-        self.env = Environment("env1", self.roms_path, frame_ratio=self.frame_ratio, player=self.player_id,
-                               character=self.character, throttle=False, binary_path=self.binary_path)
+        self.env = Environment("env1", **diambra_kwargs)
 
         self.n_actions = self.env.n_actions
         self.hwc_dim = self.env.hwc_dim
