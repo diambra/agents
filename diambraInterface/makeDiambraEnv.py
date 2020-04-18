@@ -219,7 +219,7 @@ def make_diambra(diambraGame, diambra_kwargs):
     :param env_id: (str) the environment ID
     :return: (Gym Environment) the wrapped atari environment
     """
-    env = diambraGame(**diambra_kwargs)
+    env = diambraGame(diambra_kwargs)
     env = NoopResetEnv(env, noop_max=6)
     #env = MaxAndSkipEnv(env, skip=4)
     return env
