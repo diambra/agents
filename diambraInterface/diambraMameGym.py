@@ -23,6 +23,7 @@ class diambraMame(gym.Env):
 
         self.n_actions = self.env.n_actions
         self.hwc_dim = self.env.hwc_dim
+        self.max_health = self.env.max_health
 
         # Define action and observation space
         # They must be gym.spaces objects

@@ -84,7 +84,6 @@ class MaxAndSkipEnv(gym.Wrapper):
     def reset(self, **kwargs):
         return self.env.reset(**kwargs)
 
-
 class ClipRewardEnv(gym.RewardWrapper):
     def __init__(self, env):
         """
@@ -99,6 +98,21 @@ class ClipRewardEnv(gym.RewardWrapper):
         :param reward: (float)
         """
         return np.sign(reward)
+
+class NormalizeRewardEnv(gym.RewardWrapper):
+    def __init__(self, env):
+        """
+        Normalize the reward dividing by the 50% of the maximum character health.
+        :param env: (Gym Environment) the environment
+        """
+        gym.RewardWrapper.__init__(self, env)
+
+    def reward(self, reward):
+        """
+        Nomralize reward dividing by 0.5*max_health.
+        :param reward: (float)
+        """
+        return float(reward)/float(0.5*self.max_health)
 
 
 class WarpFrame(gym.ObservationWrapper):
@@ -211,7 +225,7 @@ def make_diambra(diambraGame, diambra_kwargs):
     return env
 
 
-def wrap_deepmind(env, clip_rewards=True, frame_stack=1, scale=False):
+def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1, scale=False):
     """
     Configure environment for DeepMind-style Atari.
     :param env: (Gym Environment) the atari environment
@@ -227,6 +241,10 @@ def wrap_deepmind(env, clip_rewards=True, frame_stack=1, scale=False):
     # Scales observations normalizing them between 0.0 and 1.0
     if scale:
         env = ScaledFloatFrame(env)
+
+    # Normalize rewards
+    if normalize_rewards:
+       env = NormalizeRewardEnv(env)
 
     # Clip rewards using sign function
     if clip_rewards:
