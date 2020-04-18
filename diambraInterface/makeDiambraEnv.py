@@ -282,9 +282,10 @@ def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs, wra
             env_id = env_prefix + str(rank)
             env = make_diambra(diambraMame, env_id, diambra_kwargs = diambra_kwargs)
             env.seed(seed + rank)
+            env = wrap_deepmind(env, **wrapper_kwargs)
             env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                           allow_early_resets=allow_early_resets)
-            return wrap_deepmind(env, **wrapper_kwargs)
+            return env
         return _thunk
     set_global_seeds(seed)
 
@@ -293,9 +294,9 @@ def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs, wra
         env_id = env_prefix + str(0)
         env = make_diambra(diambraMame, env_id, diambra_kwargs = diambra_kwargs)
         env.seed(seed)
+        env = wrap_deepmind(env, **wrapper_kwargs)
         env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                       allow_early_resets=allow_early_resets)
-        env = wrap_deepmind(env, **wrapper_kwargs)
         return env
 
     # When using one environment, no need to start subprocesses

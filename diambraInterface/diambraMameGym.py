@@ -14,7 +14,7 @@ class diambraMame(gym.Env):
         self.player_id = diambra_kwargs["player"]
         self.first = True
 
-        print("Envid = ", env_id)
+        print("Env_id = ", env_id)
         self.env = Environment(env_id, **diambra_kwargs)
 
         self.n_actions = self.env.n_actions
