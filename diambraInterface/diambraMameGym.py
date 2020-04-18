@@ -8,13 +8,14 @@ class diambraMame(gym.Env):
     """DiambraMame Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, diambra_kwargs):
+    def __init__(self, env_id, diambra_kwargs):
         super(diambraMame, self).__init__()
 
         self.player_id = diambra_kwargs["player"]
         self.first = True
 
-        self.env = Environment("env1", **diambra_kwargs)
+        print("Envid = ", env_id)
+        self.env = Environment(env_id, **diambra_kwargs)
 
         self.n_actions = self.env.n_actions
         self.hwc_dim = self.env.hwc_dim
@@ -22,9 +23,9 @@ class diambraMame(gym.Env):
 
         # Define action and observation space
         # They must be gym.spaces objects
-        # Example when using discrete actions:
+        # Discrete actions:
         self.action_space = spaces.Discrete(self.n_actions[0] * self.n_actions[1])
-        # Example for using image as input:
+        # Image as input:
         self.observation_space = spaces.Box(low=0, high=255,
                                         shape=(self.hwc_dim[0], self.hwc_dim[1], self.hwc_dim[2]), dtype=np.uint8)
 

@@ -213,19 +213,20 @@ class LazyFrames(object):
         return self._force()[i]
 
 
-def make_diambra(diambraGame, diambra_kwargs):
+def make_diambra(diambraGame, env_id, diambra_kwargs):
     """
     Create a wrapped atari Environment
     :param env_id: (str) the environment ID
     :return: (Gym Environment) the wrapped atari environment
     """
-    env = diambraGame(diambra_kwargs)
+
+    env = diambraGame(env_id, diambra_kwargs)
     env = NoopResetEnv(env, noop_max=6)
     #env = MaxAndSkipEnv(env, skip=4)
     return env
 
 
-def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1, scale=False):
+def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1, scale=False, hw_obs_resize = [84, 84]):
     """
     Configure environment for DeepMind-style Atari.
     :param env: (Gym Environment) the atari environment
@@ -236,7 +237,7 @@ def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1
     """
 
     # Resizing observation from H x W x 3 to hw_obs_resize[0] x hw_obs_resize[1] x 1
-    env = WarpFrame(env, hw_obs_resize = [84, 84])
+    env = WarpFrame(env, hw_obs_resize)
 
     # Scales observations normalizing them between 0.0 and 1.0
     if scale:
@@ -256,9 +257,9 @@ def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1
 
     return env
 
-def make_diambra_env(diambraMame, num_env, seed, diambra_kwargs, wrapper_kwargs=None,
-                   start_index=0, allow_early_resets=True,
-                   start_method=None, use_subprocess=False):
+def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs, wrapper_kwargs=None,
+                   start_index=0, allow_early_resets=True, start_method=None,
+                   no_vec=False, use_subprocess=False):
     """
     Create a wrapped, monitored VecEnv for Atari.
     :param diambraMame: (class) DIAMBRAGym interface class
@@ -270,7 +271,7 @@ def make_diambra_env(diambraMame, num_env, seed, diambra_kwargs, wrapper_kwargs=
     :param start_method: (str) method used to start the subprocesses.
         See SubprocVecEnv doc for more information
     :param use_subprocess: (bool) Whether to use `SubprocVecEnv` or `DummyVecEnv` when
-        `num_env` > 1, `DummyVecEnv` is usually faster. Default: False
+    :param no_vec: (bool) Whether to avoid usage of Vectorized Env or not. Default: False
     :return: (VecEnv) The atari environment
     """
     if wrapper_kwargs is None:
@@ -278,13 +279,24 @@ def make_diambra_env(diambraMame, num_env, seed, diambra_kwargs, wrapper_kwargs=
 
     def make_env(rank):
         def _thunk():
-            env = make_diambra(diambraMame, diambra_kwargs = diambra_kwargs)
+            env_id = env_prefix + str(rank)
+            env = make_diambra(diambraMame, env_id, diambra_kwargs = diambra_kwargs)
             env.seed(seed + rank)
             env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                           allow_early_resets=allow_early_resets)
             return wrap_deepmind(env, **wrapper_kwargs)
         return _thunk
     set_global_seeds(seed)
+
+    # If not wanting vectorized envs
+    if no_vec and num_env == 1:
+        env_id = env_prefix + str(0)
+        env = make_diambra(diambraMame, env_id, diambra_kwargs = diambra_kwargs)
+        env.seed(seed)
+        env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
+                      allow_early_resets=allow_early_resets)
+        env = wrap_deepmind(env, **wrapper_kwargs)
+        return env
 
     # When using one environment, no need to start subprocesses
     if num_env == 1 or not use_subprocess:
