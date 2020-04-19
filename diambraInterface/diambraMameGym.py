@@ -52,6 +52,9 @@ class diambraMame(gym.Env):
 
         observation, reward, round_done, stage_done, done, info = self.env.step(move_action, attack_action)
 
+        # Add the action to the step info
+        info["action"] = action
+
         if done:
             return observation, reward[self.player_id], done, info
         elif stage_done:
