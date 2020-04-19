@@ -215,9 +215,9 @@ class LazyFrames(object):
 
 def make_diambra(diambraGame, env_id, diambra_kwargs):
     """
-    Create a wrapped atari Environment
+    Create a wrapped diambra Environment
     :param env_id: (str) the environment ID
-    :return: (Gym Environment) the wrapped atari environment
+    :return: (Gym Environment) the wrapped diambra environment
     """
 
     env = diambraGame(env_id, diambra_kwargs)
@@ -229,11 +229,12 @@ def make_diambra(diambraGame, env_id, diambra_kwargs):
 def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1, scale=False, hw_obs_resize = [84, 84]):
     """
     Configure environment for DeepMind-style Atari.
-    :param env: (Gym Environment) the atari environment
+    :param env: (Gym Environment) the diambra environment
     :param clip_rewards: (bool) wrap the reward clipping wrapper
-    :param frame_stack: (bool) wrap the frame stacking wrapper
+    :param normalize_rewards: (bool) wrap the reward normalizing wrapper
+    :param frame_stack: (int) wrap the frame stacking wrapper using #frame_stack frames
     :param scale: (bool) wrap the scaling observation wrapper
-    :return: (Gym Environment) the wrapped atari environment
+    :return: (Gym Environment) the wrapped diambra environment
     """
 
     # Resizing observation from H x W x 3 to hw_obs_resize[0] x hw_obs_resize[1] x 1
@@ -257,8 +258,92 @@ def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1
 
     return env
 
+class AddObs(gym.Wrapper):
+    def __init__(self, env, key_to_add):
+        """
+        Add to observations additional info requested via `key_to_add` str list
+        :param env: (Gym Environment) the environment to wrap
+        :param key_to_add: (list of str) list of info to add to the observation
+        """
+        gym.Wrapper.__init__(self, env)
+        self.key_to_add = key_to_add
+
+        self.playerIdDict = {}
+        self.playerIdDict["P1"] = 0
+        self.playerIdDict["P2"] = 1
+
+        self.resetInfo = {}
+        self.resetInfo["action"] = np.zeros(self.env.action_space.n)
+        self.resetInfo["action"][self.env.action_space.n - 1] = 1
+        self.resetInfo["player"] = self.playerIdDict[self.env.player_id]
+        self.resetInfo["healthP1"] = 1
+        self.resetInfo["healthP2"] = 1
+        self.resetInfo["positionP1"] = 0
+        self.resetInfo["positionP2"] = 1
+        self.resetInfo["winsP1"] = 0
+        self.resetInfo["winsP2"] = 0
+
+
+    def reset(self, **kwargs):
+        """
+        Reset the environment and add requested info to the observation
+        :param action: ([int] or [float]) the action
+        :return: new observation
+        """
+
+        obs = self.env.reset(**kwargs)
+
+        obsNew = [obs]
+
+        for key in self.key_to_add:
+           obsNew.append(self.resetInfo[key])
+
+        return obsNew
+
+    def step(self, action):
+        """
+        Step the environment with the given action
+        and add requested info to the observation
+        :param action: ([int] or [float]) the action
+        :return: new observation, reward, done, information
+        """
+        obs, reward, done, info = self.env.step(action)
+
+        obsNew = [obs]
+
+        for key in self.key_to_add:
+
+           if key == "action":
+              actionVector = np.zeros(self.env.action_space.n)
+              actionVector[action] = 1
+              obsNew.append(actionVector)
+
+           elif key == "player":
+              obsNew.append(self.resetInfo["player"])
+
+           elif key == "healthP1" or key == "healthP2":
+              obsNew.append( float(info[key]) / float(self.env.max_health) )
+
+           else:
+              obsNew.append(info[key])
+
+        return obsNew, reward, done, info
+
+def additional_obs(env, key_to_add):
+    """
+    Add additional observations to the environment output.
+    :param env: (Gym Environment) the diambra environment
+    :param ket_to_add: (list of str) additional info to add to the obs
+    :return: (Gym Environment) the wrapped diambra environment
+    """
+
+    if key_to_add != None:
+       env = AddObs(env, key_to_add)
+
+    return env
+
 def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs, wrapper_kwargs=None,
-                   start_index=0, allow_early_resets=True, start_method=None,
+                   start_index=0, allow_early_resets=True, start_method=None, key_to_add=None,
                    no_vec=False, use_subprocess=False):
     """
     Create a wrapped, monitored VecEnv for Atari.
@@ -272,7 +357,7 @@ def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs, wra
         See SubprocVecEnv doc for more information
     :param use_subprocess: (bool) Whether to use `SubprocVecEnv` or `DummyVecEnv` when
     :param no_vec: (bool) Whether to avoid usage of Vectorized Env or not. Default: False
-    :return: (VecEnv) The atari environment
+    :return: (VecEnv) The diambra environment
     """
     if wrapper_kwargs is None:
         wrapper_kwargs = {}
@@ -283,6 +368,7 @@ def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs, wra
             env = make_diambra(diambraMame, env_id, diambra_kwargs = diambra_kwargs)
             env.seed(seed + rank)
             env = wrap_deepmind(env, **wrapper_kwargs)
+            env = additional_obs(env, key_to_add)
             env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                           allow_early_resets=allow_early_resets)
             return env
@@ -295,6 +381,7 @@ def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs, wra
         env = make_diambra(diambraMame, env_id, diambra_kwargs = diambra_kwargs)
         env.seed(seed)
         env = wrap_deepmind(env, **wrapper_kwargs)
+        env = additional_obs(env, key_to_add)
         env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                       allow_early_resets=allow_early_resets)
         return env
