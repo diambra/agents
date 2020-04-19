@@ -24,15 +24,32 @@ class diambraMame(gym.Env):
         # Define action and observation space
         # They must be gym.spaces objects
         # Discrete actions:
-        self.action_space = spaces.Discrete(self.n_actions[0] * self.n_actions[1])
+        # For assumption action space = self.n_actions[0] * self.n_actions[1]
+        #self.action_space = spaces.Discrete(self.n_actions[0] * self.n_actions[1])
+        # For assumption action space = self.n_actions[0] + self.n_actions[1] - 1
+        self.action_space = spaces.Discrete(self.n_actions[0] + self.n_actions[1] - 1)
+
+
         # Image as input:
         self.observation_space = spaces.Box(low=0, high=255,
                                         shape=(self.hwc_dim[0], self.hwc_dim[1], self.hwc_dim[2]), dtype=np.uint8)
 
     def step(self, action):
 
-        move_action = action % self.n_actions[0]
-        attack_action = int(action / self.n_actions[0])
+        # For assumption action space = self.n_actions[0] * self.n_actions[1]
+        #move_action = action % self.n_actions[0]
+        #attack_action = int(action / self.n_actions[0])
+
+        # For assumption action space = self.n_actions[0] + self.n_actions[1] - 1
+        if action < self.n_actions[0] - 1:
+           # Move action commanded
+           move_action = action # For example, for DOA++ this can be 0 - 7
+           attack_action = self.n_actions[1] - 1
+        else:
+           # Attack action or no action commanded
+           move_action = self.n_actions[0] - 1
+           attack_action = action - self.n_actions[0] + 1 # For example, for DOA++ this can be 0 - 3
+
         observation, reward, round_done, stage_done, done, info = self.env.step(move_action, attack_action)
 
         if done:
