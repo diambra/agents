@@ -18,14 +18,14 @@ class NoopResetEnv(gym.Wrapper):
     def __init__(self, env, noop_max=6):
         """
         Sample initial states by taking random number of no-ops on reset.
-        No-op is assumed to be last action (env.n_actions[0]*env.n_actions[1] -1).
+        No-op is assumed to be last action (env.action_space.n - 1).
         :param env: (Gym Environment) the environment to wrap
         :param noop_max: (int) the maximum value of no-ops to run
         """
         gym.Wrapper.__init__(self, env)
         self.noop_max = noop_max
         self.override_num_noops = None
-        self.noop_action = env.n_actions[0]*env.n_actions[1] -1
+        self.noop_action = env.action_space.n - 1
         print("Noop action N = ", self.noop_action)
 
     def reset(self, **kwargs):
