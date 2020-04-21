@@ -56,10 +56,13 @@ class diambraMame(gym.Env):
         info["action"] = action
 
         if done:
+            print("Env done")
             return observation, reward[self.player_id], done, info
         elif stage_done:
+            print("Stage done")
             self.env.next_stage()
         elif round_done:
+            print("Round done")
             self.env.next_round()
 
         return observation, reward[self.player_id], done, info
