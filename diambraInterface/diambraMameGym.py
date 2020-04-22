@@ -23,6 +23,7 @@ class diambraMame(gym.Env):
         self.n_actions = self.env.n_actions
         self.hwc_dim = self.env.hwc_dim
         self.max_health = self.env.max_health
+        self.attackPenalty = 0.0
 
         # Define action and observation space
         # They must be gym.spaces objects
@@ -64,15 +65,16 @@ class diambraMame(gym.Env):
 
         self.gameCompleted = info["gameCompleted"]
 
-        if attackFlag and reward[self.player_id] <= 0.0:
-           reward[self.player_id] = reward[self.player_id] - 0.05
+        if attackFlag and reward <= 0.0:
+           print("Attack flag = ", attackFlag)
+           reward = reward - self.attackPenalty*self.max_health
 
         # Add the action to the step info
         info["action"] = action
 
         if done:
             print("Env done")
-            return observation, reward[self.player_id], done, info
+            return observation, reward, done, info
         elif stage_done:
             print("Stage done")
             self.env.next_stage()
@@ -80,7 +82,7 @@ class diambraMame(gym.Env):
             print("Round done")
             self.env.next_round()
 
-        return observation, reward[self.player_id], done, info
+        return observation, reward, done, info
 
 
     def reset(self):
