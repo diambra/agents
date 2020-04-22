@@ -13,7 +13,6 @@ class diambraMame(gym.Env):
 
         self.player_id = diambra_kwargs["player"]
         self.first = True
-        self.gameCompleted = False
         self.continueGame = continue_game
 
         print("Env_id = ", env_id)
@@ -61,20 +60,25 @@ class diambraMame(gym.Env):
            move_action = self.n_actions[0] - 1
            attack_action = self.n_actions[1] - 1
 
-        observation, reward, round_done, stage_done, done, info = self.env.step(move_action, attack_action)
-
-        self.gameCompleted = info["gameCompleted"]
+        observation, reward, round_done, stage_done, game_done, done, info = self.env.step(move_action, attack_action)
 
         if attackFlag and reward <= 0.0:
-           print("Attack flag = ", attackFlag)
            reward = reward - self.attackPenalty*self.max_health
 
         # Add the action to the step info
         info["action"] = action
 
         if done:
-            print("Env done")
+            print("Episode done")
             return observation, reward, done, info
+        elif game_done:
+            if self.continueGame:
+               print("Game done")
+               self.env.continue_game()
+            else:
+               print("Episode done")
+               done = True
+               return observation, reward, done, info
         elif stage_done:
             print("Stage done")
             self.env.next_stage()
@@ -91,10 +95,7 @@ class diambraMame(gym.Env):
             self.first = False
             observation = self.env.start()
         else:
-            if self.gameCompleted or not self.continueGame:
-               observation = self.env.new_game()
-            else:
-               observation = self.env.continue_game()
+            observation = self.env.new_game()
 
         return observation
 
