@@ -8,13 +8,16 @@ class diambraMame(gym.Env):
     """DiambraMame Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, env_id, diambra_kwargs):
+    def __init__(self, env_id, diambra_kwargs, continue_game=True):
         super(diambraMame, self).__init__()
 
         self.player_id = diambra_kwargs["player"]
         self.first = True
+        self.gameCompleted = False
+        self.continueGame = continue_game
 
         print("Env_id = ", env_id)
+        print("Continue rule = ", self.continueGame)
         self.env = Environment(env_id, **diambra_kwargs)
 
         self.n_actions = self.env.n_actions
@@ -36,6 +39,8 @@ class diambraMame(gym.Env):
 
     def step(self, action):
 
+        attackFlag = False
+
         # For assumption action space = self.n_actions[0] * self.n_actions[1]
         #move_action = action % self.n_actions[0]
         #attack_action = int(action / self.n_actions[0])
@@ -45,12 +50,22 @@ class diambraMame(gym.Env):
            # Move action commanded
            move_action = action # For example, for DOA++ this can be 0 - 7
            attack_action = self.n_actions[1] - 1
-        else:
-           # Attack action or no action commanded
+        elif action < self.n_actions[0] + self.n_actions[1] - 2:
+           attackFlag = True
+           # Attack action
            move_action = self.n_actions[0] - 1
-           attack_action = action - self.n_actions[0] + 1 # For example, for DOA++ this can be 0 - 3
+           attack_action = action - self.n_actions[0] + 1 # For example, for DOA++ this can be 0 - 2
+        else:
+           # No action commanded
+           move_action = self.n_actions[0] - 1
+           attack_action = self.n_actions[1] - 1
 
         observation, reward, round_done, stage_done, done, info = self.env.step(move_action, attack_action)
+
+        self.gameCompleted = info["gameCompleted"]
+
+        if attackFlag and reward[self.player_id] <= 0.0:
+           reward[self.player_id] = reward[self.player_id] - 0.05
 
         # Add the action to the step info
         info["action"] = action
@@ -74,7 +89,10 @@ class diambraMame(gym.Env):
             self.first = False
             observation = self.env.start()
         else:
-            observation = self.env.new_game()
+            if self.gameCompleted or not self.continueGame:
+               observation = self.env.new_game()
+            else:
+               observation = self.env.continue_game()
 
         return observation
 
