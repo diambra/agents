@@ -240,10 +240,6 @@ def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1
     # Resizing observation from H x W x 3 to hw_obs_resize[0] x hw_obs_resize[1] x 1
     env = WarpFrame(env, hw_obs_resize)
 
-    # Scales observations normalizing them between 0.0 and 1.0
-    if scale:
-        env = ScaledFloatFrame(env)
-
     # Normalize rewards
     if normalize_rewards:
        env = NormalizeRewardEnv(env)
@@ -256,6 +252,10 @@ def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1
     if frame_stack > 1:
         env = FrameStack(env, frame_stack)
 
+    # Scales observations normalizing them between 0.0 and 1.0
+    if scale:
+        env = ScaledFloatFrame(env)
+
     return env
 
 class AddObs(gym.Wrapper):
@@ -267,22 +267,83 @@ class AddObs(gym.Wrapper):
         """
         gym.Wrapper.__init__(self, env)
         self.key_to_add = key_to_add
+        shp = self.env.observation_space.shape
+
+        assert self.env.observation_space.high.max() == 1.0, "Observation space must be normalized [max, min] = [0.0, 1.0] to use Additional Obs"
+        assert self.env.observation_space.low.min() == 0.0,  "Observation space must be normalized [max, min] = [0.0, 1.0] to use Additional Obs"
+        assert self.env.observation_space.dtype == "float32", "Observation space must have float 32 numbers"
+
+        self.observation_space = spaces.Box(low=0, high=1.0, shape=(shp[0], shp[1], shp[2] + 1),
+                                            dtype=env.observation_space.dtype)
 
         self.playerIdDict = {}
         self.playerIdDict["P1"] = 0
         self.playerIdDict["P2"] = 1
 
         self.resetInfo = {}
-        self.resetInfo["action"] = np.zeros(self.env.action_space.n)
-        self.resetInfo["action"][self.env.action_space.n - 1] = 1
-        self.resetInfo["player"] = self.playerIdDict[self.env.player_id]
-        self.resetInfo["healthP1"] = 1
-        self.resetInfo["healthP2"] = 1
-        self.resetInfo["positionP1"] = 0
-        self.resetInfo["positionP2"] = 1
-        self.resetInfo["winsP1"] = 0
-        self.resetInfo["winsP2"] = 0
+        self.resetInfo["actionsBuf"] = self.actionsVector([self.env.no_op_action for i in range(self.env.actions_buf_len)])
+        self.resetInfo["player"] = [self.playerIdDict[self.env.player_id]]
+        self.resetInfo["healthP1"] = [1]
+        self.resetInfo["healthP2"] = [1]
+        self.resetInfo["positionP1"] = [0]
+        self.resetInfo["positionP2"] = [1]
+        self.resetInfo["winsP1"] = [0]
+        self.resetInfo["winsP2"] = [0]
 
+    def actionsVector(self, actionsBuf):
+
+        actionsVector = np.zeros( (len(actionsBuf), self.env.action_space.n ), dtype=int)
+
+        for iAction in range(len(actionsBuf)):
+           actionsVector[iAction][actionsBuf[iAction]] = 1
+
+        actionsVector = np.reshape(actionsVector, [-1])
+
+        return actionsVector
+
+    def observation_mod(self, obs, additionalInfo):
+
+        shp = self.observation_space.shape
+
+        # Adding a channel to the standard image, it will be in last position and it will store additional obs
+        obsNew = np.zeros((shp[0], shp[1], shp[2]), dtype=self.env.observation_space.dtype)
+
+        # Storing standard image in the first channel leaving the last one for additional obs
+        obsNew[:,:,0:shp[2]-1] = obs
+
+        # Creating the additional channel where to store new info
+        obsNewAdd = np.zeros((shp[0], shp[1], 1), dtype=self.env.observation_space.dtype)
+
+        # Adding new info to the additional channel, on a very long line and then reshaping into the obs dim
+        newData = np.zeros((shp[0] * shp[1]))
+        counter = 0
+        for key in self.key_to_add:
+
+           for idx in range(len(additionalInfo[key])):
+
+              counter = counter + 1
+              newData[counter] = additionalInfo[key][idx]
+
+        newData[0] = counter
+        newData = np.reshape(newData, (shp[0], -1))
+
+        obsNew[:,:,shp[2]-1] = newData
+
+        return obsNew
+
+    def to_step_info(self, info):
+
+        step_info = {}
+        step_info["actionsBuf"] = self.actionsVector( info["actionsBuf"] )
+        step_info["player"] = self.resetInfo["player"]
+        step_info["healthP1"] = [info["healthP1"] / float(self.env.max_health)]
+        step_info["healthP2"] = [info["healthP2"] / float(self.env.max_health)]
+        step_info["positionP1"] = [info["positionP1"]]
+        step_info["positionP2"] = [info["positionP2"]]
+        step_info["winsP1"] = [info["winsP1"]]
+        step_info["winsP2"] = [info["winsP2"]]
+
+        return step_info
 
     def reset(self, **kwargs):
         """
@@ -292,11 +353,9 @@ class AddObs(gym.Wrapper):
         """
 
         obs = self.env.reset(**kwargs)
+        obs = np.array(obs).astype(np.float32)
 
-        obsNew = [obs]
-
-        for key in self.key_to_add:
-           obsNew.append(self.resetInfo[key])
+        obsNew = self.observation_mod(obs, self.resetInfo)
 
         return obsNew
 
@@ -309,23 +368,9 @@ class AddObs(gym.Wrapper):
         """
         obs, reward, done, info = self.env.step(action)
 
-        obsNew = [obs]
+        stepInfo = self.to_step_info(info)
 
-        for key in self.key_to_add:
-
-           if key == "action":
-              actionVector = np.zeros(self.env.action_space.n)
-              actionVector[action] = 1
-              obsNew.append(actionVector)
-
-           elif key == "player":
-              obsNew.append(self.resetInfo["player"])
-
-           elif key == "healthP1" or key == "healthP2":
-              obsNew.append( float(info[key]) / float(self.env.max_health) )
-
-           else:
-              obsNew.append(info[key])
+        obsNew = self.observation_mod(obs, stepInfo)
 
         return obsNew, reward, done, info
 

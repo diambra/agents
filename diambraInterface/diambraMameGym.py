@@ -3,6 +3,7 @@ import numpy as np
 import gym
 from gym import spaces
 from Environment import Environment
+from collections import deque
 
 class diambraMame(gym.Env):
     """DiambraMame Environment that follows gym interface"""
@@ -37,6 +38,13 @@ class diambraMame(gym.Env):
         self.observation_space = spaces.Box(low=0, high=255,
                                         shape=(self.hwc_dim[0], self.hwc_dim[1], self.hwc_dim[2]), dtype=np.uint8)
 
+        self.no_op_action = self.action_space.n - 1
+        self.actions_buf_len = 12
+        self.clear_action_buf()
+
+    def clear_action_buf(self):
+        self.actions_buf = deque([self.no_op_action for i in range(self.actions_buf_len)], maxlen = self.actions_buf_len)
+
     def step(self, action):
 
         attackFlag = False
@@ -62,16 +70,25 @@ class diambraMame(gym.Env):
 
         observation, reward, round_done, stage_done, game_done, done, info = self.env.step(move_action, attack_action)
 
+        # Adding done to info
+        info["round_done"] = round_done
+        info["stage_done"] = stage_done
+        info["game_done"] = game_done
+        info["episode_done"] = done
+
         if attackFlag and reward <= 0.0:
            reward = reward - self.attackPenalty*self.max_health
 
-        # Add the action to the step info
-        info["action"] = action
+        # Add the action buffer to the step info
+        self.actions_buf.extend([action])
+        info["actionsBuf"] = self.actions_buf
 
         if done:
             print("Episode done")
+            self.clear_action_buf()
             return observation, reward, done, info
         elif game_done:
+            self.clear_action_buf()
             if self.continueGame:
                print("Game done")
                self.env.continue_game()
@@ -81,15 +98,19 @@ class diambraMame(gym.Env):
                return observation, reward, done, info
         elif stage_done:
             print("Stage done")
+            self.clear_action_buf()
             self.env.next_stage()
         elif round_done:
             print("Round done")
+            self.clear_action_buf()
             self.env.next_round()
 
         return observation, reward, done, info
 
 
     def reset(self):
+
+        self.clear_action_buf()
 
         if self.first:
             self.first = False
