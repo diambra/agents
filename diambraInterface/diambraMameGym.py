@@ -9,7 +9,7 @@ class diambraMame(gym.Env):
     """DiambraMame Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, env_id, diambra_kwargs, continue_game=True):
+    def __init__(self, env_id, diambra_kwargs, continue_game=1.0):
         super(diambraMame, self).__init__()
 
         self.player_id = diambra_kwargs["player"]
@@ -17,7 +17,8 @@ class diambraMame(gym.Env):
         self.continueGame = continue_game
 
         print("Env_id = ", env_id)
-        print("Continue rule = ", self.continueGame)
+        print("Continue value = ", self.continueGame)
+        self.ncontinue = 0
         self.env = Environment(env_id, **diambra_kwargs)
 
         self.n_actions = self.env.n_actions
@@ -89,8 +90,22 @@ class diambraMame(gym.Env):
             return observation, reward, done, info
         elif game_done:
             self.clear_action_buf()
-            if self.continueGame:
-               print("Game done")
+
+            # Continuing rule:
+            continueFlag = True
+            if self.continueGame < 0.0:
+               if self.ncontinue < int(abs(self.continueGame)):
+                  self.ncontinue += 1
+                  continueFlag = True
+               else:
+                  continueFlag = False
+            elif self.continueGame <= 1.0:
+               continueFlag = np.random.choice([True, False], p=[self.continueGame, 1.0 - self.continueGame])
+            else:
+               raise ValueError('continue_game must be <= 1.0')
+
+            if continueFlag:
+               print("Game done, continuing ...")
                self.env.continue_game()
             else:
                print("Episode done")
@@ -111,6 +126,7 @@ class diambraMame(gym.Env):
     def reset(self):
 
         self.clear_action_buf()
+        self.ncontinue = 0
 
         if self.first:
             self.first = False
