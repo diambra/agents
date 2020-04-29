@@ -387,7 +387,7 @@ def additional_obs(env, key_to_add):
 
     return env
 
-def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs, continue_game=True, wrapper_kwargs=None,
+def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs, continue_game=1.0, wrapper_kwargs=None,
                    start_index=0, allow_early_resets=True, start_method=None, key_to_add=None,
                    no_vec=False, use_subprocess=False):
     """
