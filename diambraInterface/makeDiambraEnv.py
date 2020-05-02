@@ -137,6 +137,27 @@ class WarpFrame(gym.ObservationWrapper):
         frame = cv2.resize(frame, (self.width, self.height), interpolation=cv2.INTER_AREA)
         return frame[:, :, None]
 
+class WarpFrame3C(gym.ObservationWrapper):
+    def __init__(self, env, hw_obs_resize = [224, 224]):
+        """
+        Warp frames to 84x84 as done in the Nature paper and later work.
+        :param env: (Gym Environment) the environment
+        """
+        gym.ObservationWrapper.__init__(self, env)
+        self.width = hw_obs_resize[1]
+        self.height = hw_obs_resize[0]
+        self.observation_space = spaces.Box(low=0, high=255, shape=(self.height, self.width, 3),
+                                            dtype=env.observation_space.dtype)
+
+    def observation(self, frame):
+        """
+        returns the current observation from a frame
+        :param frame: ([int] or [float]) environment frame
+        :return: ([int] or [float]) the observation
+        """
+        frame = cv2.resize(frame, (self.width, self.height), interpolation=cv2.INTER_AREA)
+        return frame
+
 
 class FrameStack(gym.Wrapper):
     def __init__(self, env, n_frames):
@@ -170,6 +191,15 @@ class FrameStack(gym.Wrapper):
         assert len(self.frames) == self.n_frames
         return LazyFrames(list(self.frames))
 
+class ScaledFloatFrameNeg(gym.ObservationWrapper):
+    def __init__(self, env):
+        gym.ObservationWrapper.__init__(self, env)
+        self.observation_space = spaces.Box(low=-1.0, high=1.0, shape=env.observation_space.shape, dtype=np.float32)
+
+    def observation(self, observation):
+        # careful! This undoes the memory optimization, use
+        # with smaller replay buffers only.
+        return (np.array(observation).astype(np.float32) / 127.5) - 1.0
 
 class ScaledFloatFrame(gym.ObservationWrapper):
     def __init__(self, env):
@@ -226,7 +256,8 @@ def make_diambra(diambraGame, env_id, diambra_kwargs, continue_game):
     return env
 
 
-def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1, scale=False, hw_obs_resize = [84, 84]):
+def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1,
+                  scale=False, scale_mod = 0, hwc_obs_resize = [84, 84, 1]):
     """
     Configure environment for DeepMind-style Atari.
     :param env: (Gym Environment) the diambra environment
@@ -237,8 +268,14 @@ def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1
     :return: (Gym Environment) the wrapped diambra environment
     """
 
-    # Resizing observation from H x W x 3 to hw_obs_resize[0] x hw_obs_resize[1] x 1
-    env = WarpFrame(env, hw_obs_resize)
+    if hwc_obs_resize[2] == 1:
+       # Resizing observation from H x W x 3 to hw_obs_resize[0] x hw_obs_resize[1] x 1
+       env = WarpFrame(env, hwc_obs_resize)
+    elif hwc_obs_resize[2] == 3:
+       # Resizing observation from H x W x 3 to hw_obs_resize[0] x hw_obs_resize[1] x hw_obs_resize[2]
+       env = WarpFrame3C(env, hwc_obs_resize)
+    else:
+       raise ValueError("Number of channel must be either 3 or 1")
 
     # Normalize rewards
     if normalize_rewards:
@@ -252,9 +289,16 @@ def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1
     if frame_stack > 1:
         env = FrameStack(env, frame_stack)
 
-    # Scales observations normalizing them between 0.0 and 1.0
+    # Scales observations normalizing them
     if scale:
-        env = ScaledFloatFrame(env)
+        if scale_mod == 0:
+           # Between 0.0 and 1.0
+           env = ScaledFloatFrame(env)
+        elif scale_mod == -1:
+           # Between -1.0 and 1.0
+           env = ScaledFloatFrameNeg(env)
+        else:
+           raise ValueError("Scale mod musto be either 0 or -1")
 
     return env
 
@@ -269,12 +313,14 @@ class AddObs(gym.Wrapper):
         self.key_to_add = key_to_add
         shp = self.env.observation_space.shape
 
-        assert self.env.observation_space.high.max() == 1.0, "Observation space must be normalized [max, min] = [0.0, 1.0] to use Additional Obs"
-        assert self.env.observation_space.low.min() == 0.0,  "Observation space must be normalized [max, min] = [0.0, 1.0] to use Additional Obs"
-        assert self.env.observation_space.dtype == "float32", "Observation space must have float 32 numbers"
+        self.boxHighBound = self.env.observation_space.high.max()
+        self.boxLowBound = self.env.observation_space.low.min()
+        assert (self.boxHighBound == 1.0 or self.boxHighBound == 255), "Observation space max bound must be either 1.0 or 255 to use Additional Obs"
+        assert (self.boxLowBound == 0.0 or self.boxLowBound == -1.0), "Observation space min bound must be either 0.0 or -1.0 to use Additional Obs"
 
-        self.observation_space = spaces.Box(low=0, high=1.0, shape=(shp[0], shp[1], shp[2] + 1),
-                                            dtype=env.observation_space.dtype)
+        self.observation_space = spaces.Box(low=self.boxLowBound, high=self.boxHighBound,
+                                            shape=(shp[0], shp[1], shp[2] + 1),
+                                            dtype=np.float32)
 
         self.playerIdDict = {}
         self.playerIdDict["P1"] = 0
@@ -326,6 +372,8 @@ class AddObs(gym.Wrapper):
 
         newData[0] = counter
         newData = np.reshape(newData, (shp[0], -1))
+
+        newData = newData * self.boxHighBound
 
         obsNew[:,:,shp[2]-1] = newData
 
