@@ -37,8 +37,8 @@ class CustomCnnLstmPolicy(RecurrentActorCriticPolicy):
 
         self._kwargs_check(feature_extraction, kwargs)
 
-        frames = self.processed_obs[:,:,:,0:4]
-        additional_input = self.processed_obs[:,:,:,4]
+        frames = self.processed_obs[:,:,:,0:self.processed_obs.shape[3]-1]
+        additional_input = self.processed_obs[:,:,:,self.processed_obs.shape[3]-1]
         additional_input = tf.layers.flatten(additional_input)
         additional_input = additional_input[:,1:n_add_info+1]
 
