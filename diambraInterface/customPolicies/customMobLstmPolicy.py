@@ -26,7 +26,7 @@ class CustomMobLstmPolicy(RecurrentActorCriticPolicy):
     recurrent = True
 
     def __init__(self, sess, ob_space, ac_space, n_env, n_steps, n_batch, n_lstm=256, reuse=False,
-                 layers=None, act_fun=tf.tanh, encoder_embeddings_n=512,
+                 layers=None, act_fun=tf.tanh, encoder_embeddings_n=512, n_add_info=148,
                  layer_norm=True, feature_extraction="mob", **kwargs):
 
         # state_shape = [n_lstm * 2] dim because of the cell and hidden states of the LSTM
@@ -51,7 +51,7 @@ class CustomMobLstmPolicy(RecurrentActorCriticPolicy):
         frames = self.processed_obs[:,:,:,0:3]
         additional_input = self.processed_obs[:,:,:,3]
         additional_input = tf.layers.flatten(additional_input)
-        additional_input = additional_input[:,1:149]
+        additional_input = additional_input[:,1:n_add_info+1]
 
         if layers is None:
             layers = [64, 64]
