@@ -1,7 +1,7 @@
 from stable_baselines.common.policies import *
 from stable_baselines.common.policies import RecurrentActorCriticPolicy
 
-class CustomCnnLstmPolicyNoShared(RecurrentActorCriticPolicy):
+class CustomXceptLstmPolicyNoShared(RecurrentActorCriticPolicy):
     """
     Policy object that implements actor critic, using LSTMs.
 
@@ -14,10 +14,7 @@ class CustomCnnLstmPolicyNoShared(RecurrentActorCriticPolicy):
     :param n_lstm: (int) The number of LSTM cells (for recurrent policies)
     :param reuse: (bool) If the policy is reusable or not
     :param layers: ([int]) The size of the Neural network before the LSTM layer  (if None, default to [64, 64])
-    :param net_arch: (list) Specification of the actor-critic policy network architecture. Notation similar to the
-        format described in mlp_extractor but with additional support for a 'lstm' entry in the shared network part.
     :param act_fun: (tf.func) the activation function to use in the neural network.
-    :param cnn_extractor: (function (TensorFlow Tensor, ``**kwargs``): (TensorFlow Tensor)) the CNN feature extraction
     :param layer_norm: (bool) Whether or not to use layer normalizing LSTMs
     :param feature_extraction: (str) The feature extraction type ("cnn" or "mlp")
     :param kwargs: (dict) Extra keyword arguments for the nature CNN feature extraction
@@ -26,32 +23,39 @@ class CustomCnnLstmPolicyNoShared(RecurrentActorCriticPolicy):
     recurrent = True
 
     def __init__(self, sess, ob_space, ac_space, n_env, n_steps, n_batch, n_lstm=256, reuse=False,
-                 layers=None, net_arch=None, act_fun=tf.tanh, cnn_extractor=nature_cnn, n_add_info=148,
+                 act_fun=tf.tanh,
+                 cnn_input=[256, 256, 1], cnn_embeddings=512,
+                 layers=[64, 64], n_add_info=148,
                  layers_policy=[64, 64], layers_value=[64,64],
                  layer_norm=True, scale_in=True, feature_extraction="cnn", **kwargs):
 
         # state_shape = [n_lstm * 2] dim because of the cell and hidden states of the LSTM
-        super(CustomCnnLstmPolicyNoShared, self).__init__(sess, ob_space, ac_space, n_env, n_steps, n_batch,
+        super(CustomXceptLstmPolicyNoShared, self).__init__(sess, ob_space, ac_space, n_env, n_steps, n_batch,
                                          state_shape=(2 * n_lstm, ), reuse=reuse,
                                          scale=scale_in)
 
-
-        self._kwargs_check(feature_extraction, kwargs)
 
         frames = self.processed_obs[:,:,:,0:self.processed_obs.shape[3]-1]
         additional_input = self.processed_obs[:,:,:,self.processed_obs.shape[3]-1]
         additional_input = tf.layers.flatten(additional_input)
         additional_input = additional_input[:,1:n_add_info+1]
 
-       # Features extraction (Shared)
+        self.encoderModel = tf.keras.applications.Xception(input_shape=cnn_input,
+                                                           include_top=False,
+                                                           pooling="max",
+                                                           weights=None)
 
-        if layers is None:
-            layers = [64, 64]
+        self.encoderModel = tf.keras.Sequential([
+           self.encoderModel,
+           tf.keras.layers.Dense(cnn_embeddings, activation='relu')
+        ], name="frame_encoder")
+
+       # Features extraction (Shared)
 
         with tf.variable_scope("model", reuse=reuse):
 
             # Frames (CNN)
-            extracted_features_frames = cnn_extractor(frames, **kwargs)
+            extracted_features_frames = self.encoderModel(frames)
 
             # Additional (Additional Info)
             for i, layer_size in enumerate(layers):
