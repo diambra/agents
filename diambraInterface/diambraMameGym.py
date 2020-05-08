@@ -59,15 +59,21 @@ class diambraMame(gym.Env):
            # Move action commanded
            move_action = action # For example, for DOA++ this can be 0 - 7
            attack_action = self.n_actions[1] - 1
-        elif action < self.n_actions[0] + self.n_actions[1] - 2:
-           attackFlag = True
-           # Attack action
-           move_action = self.n_actions[0] - 1
-           attack_action = action - self.n_actions[0] + 1 # For example, for DOA++ this can be 0 - 2
         else:
-           # No action commanded
+           # Attack action or no action
            move_action = self.n_actions[0] - 1
-           attack_action = self.n_actions[1] - 1
+           attack_action = action - self.n_actions[0] + 1 # For example, for DOA++ this can be 0 - 3
+
+        # Mod to evaluate attack action flag
+        #elif action < self.n_actions[0] + self.n_actions[1] - 2:
+        #   attackFlag = True
+        #   # Attack action
+        #   move_action = self.n_actions[0] - 1
+        #   attack_action = action - self.n_actions[0] + 1 # For example, for DOA++ this can be 0 - 2
+        #else:
+        #   # No action commanded
+        #   move_action = self.n_actions[0] - 1
+        #   attack_action = self.n_actions[1] - 1
 
         observation, reward, round_done, stage_done, game_done, done, info = self.env.step(move_action, attack_action)
 
@@ -77,8 +83,8 @@ class diambraMame(gym.Env):
         info["game_done"] = game_done
         info["episode_done"] = done
 
-        if attackFlag and reward <= 0.0:
-           reward = reward - self.attackPenalty*self.max_health
+        #if attackFlag and reward <= 0.0:
+        #   reward = reward - self.attackPenalty*self.max_health
 
         # Add the action buffer to the step info
         self.actions_buf.extend([action])
