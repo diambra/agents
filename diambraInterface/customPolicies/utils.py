@@ -1,4 +1,4 @@
-def linear_schedule(initial_value):
+def linear_schedule(initial_value, min_value = 0.0):
     """
     Linear learning rate schedule.
     :param initial_value: (float or str)
@@ -6,6 +6,8 @@ def linear_schedule(initial_value):
     """
     if isinstance(initial_value, str):
         initial_value = float(initial_value)
+        min_value = float(min_value)
+        assert (initial_value > 0.0 ), "linear_schedule work only with positive decreasing values"
 
     def func(progress):
         """
@@ -13,6 +15,6 @@ def linear_schedule(initial_value):
         :param progress: (float)
         :return: (float)
         """
-        return progress * initial_value
+        return max(progress * initial_value, min_value)
 
     return func
