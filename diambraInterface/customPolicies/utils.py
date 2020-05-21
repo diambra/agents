@@ -1,3 +1,5 @@
+from stable_baselines.common.callbacks import BaseCallback
+
 def linear_schedule(initial_value, min_value = 0.0):
     """
     Linear learning rate schedule.
@@ -18,3 +20,26 @@ def linear_schedule(initial_value, min_value = 0.0):
         return max(progress * initial_value, min_value)
 
     return func
+
+class AutoSave(BaseCallback):
+    """
+    Callback for saving a model (the check is done every ``check_freq`` steps)
+
+    :param check_freq: (int)
+    :param save_path: (str) Path to the folder where the model will be saved.
+    :param verbose: (int)
+    """
+    def __init__(self, check_freq: int, save_path: str, verbose=1):
+        super(AutoSave, self).__init__(verbose)
+        self.check_freq = check_freq
+        self.save_path_base = save_path + 'autoSave_'
+
+    def _on_step(self) -> bool:
+        if self.n_calls % self.check_freq == 0:
+            # Example for saving best model
+            if self.verbose > 0:
+                print("Saving new best model to {}".format(self.save_path_base))
+            # Save the agent
+            self.model.save(self.save_path_base+str(self.n_calls))
+
+        return True
