@@ -329,8 +329,14 @@ class AddObs(gym.Wrapper):
         self.resetInfo = {}
         self.resetInfo["actionsBuf"] = self.actionsVector([self.env.no_op_action for i in range(self.env.actions_buf_len)])
         self.resetInfo["player"] = [self.playerIdDict[self.env.player_id]]
-        self.resetInfo["healthP1"] = [1]
-        self.resetInfo["healthP2"] = [1]
+        if "healthP1" in self.key_to_add:
+            self.resetInfo["healthP1"] = [1]
+            self.resetInfo["healthP2"] = [1]
+        else:
+            self.resetInfo["healthP1_1"] = [1]
+            self.resetInfo["healthP1_2"] = [1]
+            self.resetInfo["healthP2_1"] = [1]
+            self.resetInfo["healthP2_2"] = [1]
         self.resetInfo["positionP1"] = [0]
         self.resetInfo["positionP2"] = [1]
         self.resetInfo["winsP1"] = [0]
@@ -384,8 +390,14 @@ class AddObs(gym.Wrapper):
         step_info = {}
         step_info["actionsBuf"] = self.actionsVector( info["actionsBuf"] )
         step_info["player"] = self.resetInfo["player"]
-        step_info["healthP1"] = [info["healthP1"] / float(self.env.max_health)]
-        step_info["healthP2"] = [info["healthP2"] / float(self.env.max_health)]
+        if "healthP1" in self.key_to_add:
+            step_info["healthP1"] = [info["healthP1"] / float(self.env.max_health)]
+            step_info["healthP2"] = [info["healthP2"] / float(self.env.max_health)]
+        else:
+            step_info["healthP1_1"] = [info["healthP1_1"] / float(self.env.max_health)]
+            step_info["healthP1_2"] = [info["healthP1_2"] / float(self.env.max_health)]
+            step_info["healthP2_1"] = [info["healthP2_1"] / float(self.env.max_health)]
+            step_info["healthP2_2"] = [info["healthP2_2"] / float(self.env.max_health)]
         step_info["positionP1"] = [info["positionP1"]]
         step_info["positionP2"] = [info["positionP2"]]
         step_info["winsP1"] = [info["winsP1"]]
