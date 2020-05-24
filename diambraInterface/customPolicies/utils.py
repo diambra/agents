@@ -1,6 +1,6 @@
 from stable_baselines.common.callbacks import BaseCallback
 
-def linear_schedule(initial_value, min_value = 0.0):
+def linear_schedule(initial_value, final_value = 0.0):
     """
     Linear learning rate schedule.
     :param initial_value: (float or str)
@@ -8,7 +8,7 @@ def linear_schedule(initial_value, min_value = 0.0):
     """
     if isinstance(initial_value, str):
         initial_value = float(initial_value)
-        min_value = float(min_value)
+        final_value = float(final_value)
         assert (initial_value > 0.0 ), "linear_schedule work only with positive decreasing values"
 
     def func(progress):
@@ -17,7 +17,7 @@ def linear_schedule(initial_value, min_value = 0.0):
         :param progress: (float)
         :return: (float)
         """
-        return max(progress * initial_value, min_value)
+        return final_value + progress * (initial_value - final_value)
 
     return func
 
