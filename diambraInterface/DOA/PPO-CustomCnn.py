@@ -58,7 +58,7 @@ keyToAdd.append("positionP2")
 numEnv=1
 
 env = make_diambra_env(diambraMame, env_prefix="Eval", num_env=numEnv, seed=timeDepSeed,
-                       continue_game=0, diambra_kwargs=diambraKwargs,
+                       continue_game=0, showFinal=True, diambra_kwargs=diambraKwargs,
                        wrapper_kwargs=wrapperKwargs, key_to_add=keyToAdd)
 
 # Load the trained agent
