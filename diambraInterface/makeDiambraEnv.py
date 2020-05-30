@@ -243,14 +243,14 @@ class LazyFrames(object):
         return self._force()[i]
 
 
-def make_diambra(diambraGame, env_id, diambra_kwargs, continue_game):
+def make_diambra(diambraGame, env_id, diambra_kwargs, continue_game, showFinal):
     """
     Create a wrapped diambra Environment
     :param env_id: (str) the environment ID
     :return: (Gym Environment) the wrapped diambra environment
     """
 
-    env = diambraGame(env_id, diambra_kwargs, continue_game)
+    env = diambraGame(env_id, diambra_kwargs, continue_game, showFinal)
     env = NoopResetEnv(env, noop_max=6)
     #env = MaxAndSkipEnv(env, skip=4)
     return env
@@ -447,9 +447,10 @@ def additional_obs(env, key_to_add):
 
     return env
 
-def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs, continue_game=1.0, wrapper_kwargs=None,
-                   start_index=0, allow_early_resets=True, start_method=None, key_to_add=None,
-                   no_vec=False, use_subprocess=False):
+def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs,
+                     continue_game=1.0, showFinal=False, wrapper_kwargs=None,
+                     start_index=0, allow_early_resets=True, start_method=None,
+                     key_to_add=None, no_vec=False, use_subprocess=False):
     """
     Create a wrapped, monitored VecEnv for Atari.
     :param diambraMame: (class) DIAMBRAGym interface class
@@ -471,7 +472,7 @@ def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs, con
     def make_env(rank):
         def _thunk():
             env_id = env_prefix + str(rank)
-            env = make_diambra(diambraMame, env_id, diambra_kwargs, continue_game)
+            env = make_diambra(diambraMame, env_id, diambra_kwargs, continue_game, showFinal)
             env.seed(seed + rank)
             env = wrap_deepmind(env, **wrapper_kwargs)
             env = additional_obs(env, key_to_add)
@@ -484,7 +485,7 @@ def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs, con
     # If not wanting vectorized envs
     if no_vec and num_env == 1:
         env_id = env_prefix + str(0)
-        env = make_diambra(diambraMame, env_id, diambra_kwargs, continue_game)
+        env = make_diambra(diambraMame, env_id, diambra_kwargs, continue_game, showFinal)
         env.seed(seed)
         env = wrap_deepmind(env, **wrapper_kwargs)
         env = additional_obs(env, key_to_add)

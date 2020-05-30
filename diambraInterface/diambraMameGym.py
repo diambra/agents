@@ -9,7 +9,7 @@ class diambraMame(gym.Env):
     """DiambraMame Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, env_id, diambra_kwargs, continue_game=1.0):
+    def __init__(self, env_id, diambra_kwargs, continue_game=1.0, showFinal = False):
         super(diambraMame, self).__init__()
 
         self.player_id = diambra_kwargs["player"]
@@ -91,6 +91,10 @@ class diambraMame(gym.Env):
         info["actionsBuf"] = self.actions_buf
 
         if done:
+            if showFinal:
+                for _ in range(2000):
+                    self.env.step([], [])
+
             print("Episode done")
             self.clear_action_buf()
             return observation, reward, done, info
