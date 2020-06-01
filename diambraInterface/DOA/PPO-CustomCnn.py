@@ -19,8 +19,6 @@ from makeDiambraEnv import *
 from Environment import setup_print_actions_dict
 actionsPrintDict = setup_print_actions_dict()
 
-import tensorflow as tf
-
 from customPolicies.utils import linear_schedule, AutoSave
 from customPolicies.customCnnPolicy import *
 
@@ -62,7 +60,7 @@ env = make_diambra_env(diambraMame, env_prefix="Eval", num_env=numEnv, seed=time
                        wrapper_kwargs=wrapperKwargs, key_to_add=keyToAdd)
 
 # Load the trained agent
-model = PPO2.load(modelFolder+"21_5M", env=env)
+model = PPO2.load(modelFolder+"24_5M", env=env)
 
 # Start
 os.system("clear")
@@ -88,7 +86,7 @@ while currNumEp < maxNumEp:
     else:
        raise "Not implemented"
 
-    print(actionsPrintDict[action[0][0]])
+    print("(AI)", actionsPrintDict[action[0][0]])
 
     observation, reward, done, info = env.step(action[0])
 
@@ -98,7 +96,6 @@ while currNumEp < maxNumEp:
         currNumEp += 1
         print("Ep. # = ", currNumEp)
         print("Ep. Cumulative Rew # = ", cumulativeEpRew)
-        sys.stdout.flush()
         cumulativeEpRewAll.append(cumulativeEpRew)
         cumulativeTotRew += cumulativeEpRew
         cumulativeEpRew = 0.0
