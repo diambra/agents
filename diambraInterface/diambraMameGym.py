@@ -15,6 +15,7 @@ class diambraMame(gym.Env):
         self.player_id = diambra_kwargs["player"]
         self.first = True
         self.continueGame = continue_game
+        self.showFinal = showFinal
 
         print("Env_id = ", env_id)
         print("Continue value = ", self.continueGame)
@@ -91,9 +92,8 @@ class diambraMame(gym.Env):
         info["actionsBuf"] = self.actions_buf
 
         if done:
-            if showFinal:
-                for _ in range(2000):
-                    self.env.step([], [])
+            if self.showFinal:
+                self.env.show_final()
 
             print("Episode done")
             self.clear_action_buf()
