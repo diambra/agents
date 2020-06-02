@@ -25,6 +25,7 @@ class diambraMame(gym.Env):
         self.n_actions = self.env.n_actions
         self.hwc_dim = self.env.hwc_dim
         self.max_health = self.env.max_health
+        self.max_stage = self.env.max_stage
         self.attackPenalty = 0.0
 
         # Define action and observation space
