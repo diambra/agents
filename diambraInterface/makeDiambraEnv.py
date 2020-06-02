@@ -341,6 +341,7 @@ class AddObs(gym.Wrapper):
         self.resetInfo["positionP2"] = [1]
         self.resetInfo["winsP1"] = [0]
         self.resetInfo["winsP2"] = [0]
+        self.resetInfo["stage"] = [0.0]
 
     def actionsVector(self, actionsBuf):
 
@@ -402,6 +403,7 @@ class AddObs(gym.Wrapper):
         step_info["positionP2"] = [info["positionP2"]]
         step_info["winsP1"] = [info["winsP1"]]
         step_info["winsP2"] = [info["winsP2"]]
+        step_info["stage"] = [ float(info["stage"]-1) / float(self.env.max_stage - 1) ]
 
         return step_info
 
