@@ -70,7 +70,7 @@ cumulativeEpRew = 0.0
 cumulativeEpRewAll = []
 cumulativeTotRew = 0.0
 
-maxNumEp = 10
+maxNumEp = 100
 currNumEp = 0
 
 deterministicFlag = True
