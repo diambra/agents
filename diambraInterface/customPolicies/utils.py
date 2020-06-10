@@ -29,9 +29,10 @@ class AutoSave(BaseCallback):
     :param save_path: (str) Path to the folder where the model will be saved.
     :param verbose: (int)
     """
-    def __init__(self, check_freq: int, save_path: str, verbose=1):
+    def __init__(self, check_freq: int, numEnv: int, save_path: str, verbose=1):
         super(AutoSave, self).__init__(verbose)
-        self.check_freq = check_freq
+        self.check_freq = int(check_freq/numEnv)
+        self.numEnv = numEnv
         self.save_path_base = save_path + 'autoSave_'
 
     def _on_step(self) -> bool:
@@ -40,6 +41,6 @@ class AutoSave(BaseCallback):
             if self.verbose > 0:
                 print("Saving new best model to {}".format(self.save_path_base))
             # Save the agent
-            self.model.save(self.save_path_base+str(self.n_calls))
+            self.model.save(self.save_path_base+str(self.n_calls*self.numEnv))
 
         return True
