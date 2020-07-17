@@ -109,10 +109,10 @@ class NormalizeRewardEnv(gym.RewardWrapper):
 
     def reward(self, reward):
         """
-        Nomralize reward dividing by 0.5*max_health.
+        Nomralize reward dividing by reward normalization factor*max_health.
         :param reward: (float)
         """
-        return float(reward)/float(0.5*self.max_health)
+        return float(reward)/float(self.rewNormFac*self.max_health)
 
 
 class WarpFrame(gym.ObservationWrapper):

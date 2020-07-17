@@ -9,7 +9,7 @@ class diambraMame(gym.Env):
     """DiambraMame Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, env_id, diambra_kwargs, continue_game=1.0, showFinal = False):
+    def __init__(self, env_id, diambra_kwargs, continue_game=1.0, showFinal = False, rewNormFac = 0.5):
         super(diambraMame, self).__init__()
 
         self.player_id = diambra_kwargs["player"]
@@ -27,6 +27,7 @@ class diambraMame(gym.Env):
         self.max_health = self.env.max_health
         self.max_stage = self.env.max_stage
         self.attackPenalty = 0.0
+        self.rewNormFac = rewNormFac
 
         # Define action and observation space
         # They must be gym.spaces objects
@@ -47,7 +48,8 @@ class diambraMame(gym.Env):
 
     # Return min max rewards for the environment
     def minMaxRew(self):
-        return (-2*(self.max_stage-1)-4, self.max_stage*4)
+        coeff = 1/self.rewNormFac
+        return (-coeff*(self.max_stage-1)-2*coff, self.max_stage*2*coeff)
 
     # Return actions dict
     def print_actions_dict(self):
