@@ -45,6 +45,18 @@ class diambraMame(gym.Env):
         self.actions_buf_len = 12
         self.clear_action_buf()
 
+    # Return min max rewards for the environment
+    def minMaxRew(self):
+        return (-2*(self.max_stage-1)-4, self.max_stage*4)
+
+    # Return actions dict
+    def print_actions_dict(self):
+        return self.env.print_actions_dict()
+
+    # Return env action list
+    def actionList(self):
+        return self.env.actionList()
+
     def clear_action_buf(self):
         self.actions_buf = deque([self.no_op_action for i in range(self.actions_buf_len)], maxlen = self.actions_buf_len)
 
