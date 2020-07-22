@@ -49,7 +49,7 @@ class diambraMame(gym.Env):
     # Return min max rewards for the environment
     def minMaxRew(self):
         coeff = 1/self.rewNormFac
-        return (-coeff*(self.max_stage-1)-2*coff, self.max_stage*2*coeff)
+        return (-coeff*(self.max_stage-1)-2*coeff, self.max_stage*2*coeff)
 
     # Return actions dict
     def print_actions_dict(self):
