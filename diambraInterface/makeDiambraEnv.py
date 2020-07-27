@@ -191,6 +191,44 @@ class FrameStack(gym.Wrapper):
         assert len(self.frames) == self.n_frames
         return LazyFrames(list(self.frames))
 
+
+class FrameStackDilated(gym.Wrapper):
+    def __init__(self, env, n_frames, dilation):
+        """Stack n_frames last frames with dilation factor.
+        Returns lazy array, which is much more memory efficient.
+        See Also
+        --------
+        stable_baselines.common.atari_wrappers.LazyFrames
+        :param env: (Gym Environment) the environment
+        :param n_frames: (int) the number of frames to stack
+        :param dilation: (int) the dilation factor
+        """
+        gym.Wrapper.__init__(self, env)
+        self.n_frames = n_frames
+        self.dilation = dilation
+        self.frames = deque([], maxlen=n_frames*dilation) # Keeping all n_frames*dilation in memory,
+                                                          # then extract the subset given by the dilation factor
+        shp = env.observation_space.shape
+        self.observation_space = spaces.Box(low=0, high=255, shape=(shp[0], shp[1], shp[2] * n_frames),
+                                            dtype=env.observation_space.dtype)
+
+    def reset(self, **kwargs):
+        obs = self.env.reset(**kwargs)
+        for _ in range(self.n_frames*self.dilation):
+            self.frames.append(obs)
+        return self._get_ob()
+
+    def step(self, action):
+        obs, reward, done, info = self.env.step(action)
+        self.frames.append(obs)
+        return self._get_ob(), reward, done, info
+
+    def _get_ob(self):
+        frames_subset = list(self.frames)[self.dilation-1::self.dilation]
+        assert len(frames_subset) == self.n_frames
+        return LazyFrames(list(frames_subset))
+
+
 class ScaledFloatFrameNeg(gym.ObservationWrapper):
     def __init__(self, env):
         gym.ObservationWrapper.__init__(self, env)
@@ -257,13 +295,16 @@ def make_diambra(diambraGame, env_id, diambra_kwargs, continue_game, showFinal):
 
 
 def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1,
-                  scale=False, scale_mod = 0, hwc_obs_resize = [84, 84, 1]):
+                  scale=False, scale_mod = 0, hwc_obs_resize = [84, 84, 1], dilation=1):
     """
     Configure environment for DeepMind-style Atari.
     :param env: (Gym Environment) the diambra environment
     :param clip_rewards: (bool) wrap the reward clipping wrapper
     :param normalize_rewards: (bool) wrap the reward normalizing wrapper
     :param frame_stack: (int) wrap the frame stacking wrapper using #frame_stack frames
+    :param dilation (frame stacking): (int) stack one frame every #dilation frames, useful
+                                            to assure action every step considering a dilated
+                                            subset of previous frames
     :param scale: (bool) wrap the scaling observation wrapper
     :return: (Gym Environment) the wrapped diambra environment
     """
@@ -287,7 +328,11 @@ def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1
 
     # Stack #frame_stack frames together
     if frame_stack > 1:
-        env = FrameStack(env, frame_stack)
+        if dilation == 1:
+            env = FrameStack(env, frame_stack)
+        else:
+            print("Using frame stacking with dilation = ", dilation)
+            env = FrameStackDilated(env, frame_stack, dilation)
 
     # Scales observations normalizing them
     if scale:
