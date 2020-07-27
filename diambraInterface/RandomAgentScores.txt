@@ -1,0 +1,16 @@
+DOA++ -------------------------------------------------
+
+Agent with move x attack actions
+Mean cumulative reward =  2.1228846153846153
+Mean cumulative reward =  1.5220192307692315
+Mean cumulative reward =  1.9298076923076934
+
+Agent with move + attack actions
+Mean cumulative reward =  1.3210576923076927
+Mean cumulative reward =  1.1678846153846152
+Mean cumulative reward =  1.0280769230769229
+Mean cumulative reward =  0.8877884615384616
+Mean cumulative reward =  1.0359615384615382
+Mean cumulative reward =  1.3556730769230771
+Mean cumulative reward =  0.7817307692307693
+
