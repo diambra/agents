@@ -388,6 +388,7 @@ class AddObs(gym.Wrapper):
         self.resetInfo["winsP2"] = [0]
         self.resetInfo["stage"] = [0.0]
 
+    # Building the one hot encoding actions vector
     def actionsVector(self, actionsBuf):
 
         actionsVector = np.zeros( (len(actionsBuf), self.env.action_space.n ), dtype=int)
@@ -399,6 +400,7 @@ class AddObs(gym.Wrapper):
 
         return actionsVector
 
+    # Observation modification (adding one channel to store additional info)
     def observation_mod(self, obs, additionalInfo):
 
         shp = self.observation_space.shape
@@ -431,6 +433,7 @@ class AddObs(gym.Wrapper):
 
         return obsNew
 
+    # Creating dictionary for additional info of the step
     def to_step_info(self, info):
 
         step_info = {}
