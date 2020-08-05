@@ -59,9 +59,11 @@ class diambraMame(gym.Env):
     def actionList(self):
         return self.env.actionList()
 
+    # Clear actions buffers
     def clear_action_buf(self):
         self.actions_buf = deque([self.no_op_action for i in range(self.actions_buf_len)], maxlen = self.actions_buf_len)
 
+    # Step the environment
     def step(self, action):
 
         attackFlag = False
@@ -147,7 +149,7 @@ class diambraMame(gym.Env):
 
         return observation, reward, done, info
 
-
+    # Resetting the environment
     def reset(self):
 
         self.clear_action_buf()
@@ -161,9 +163,11 @@ class diambraMame(gym.Env):
 
         return observation
 
+    # Rendering the environment
     def render(self, mode='human'):
         pass
 
+    # Closing the environment
     def close (self):
         self.first = True
         self.env.close()
