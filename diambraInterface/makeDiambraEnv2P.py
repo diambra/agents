@@ -7,7 +7,7 @@ cv2.ocl.setUseOpenCL(False)
 import gym
 from gym import spaces
 
-from diambraMameGym import *
+from diambraMameGym2P import *
 
 from stable_baselines import logger
 from stable_baselines.bench import Monitor
@@ -37,7 +37,7 @@ class NoopResetEnv(gym.Wrapper):
         assert noops > 0
         obs = None
         for _ in range(noops):
-            obs, _, done, _ = self.env.step(self.noop_action)
+            obs, _, done, _ = self.env.step([self.noop_action, self.noop_action])
             if done:
                 obs = self.env.reset(**kwargs)
         return obs
@@ -281,14 +281,14 @@ class LazyFrames(object):
         return self._force()[i]
 
 
-def make_diambra(diambraGame, env_id, diambra_kwargs, continue_game, showFinal):
+def make_diambra(diambraGame, env_id, diambra_kwargs):
     """
     Create a wrapped diambra Environment
     :param env_id: (str) the environment ID
     :return: (Gym Environment) the wrapped diambra environment
     """
 
-    env = diambraGame(env_id, diambra_kwargs, continue_game, showFinal)
+    env = diambraGame(env_id, diambra_kwargs)
     env = NoopResetEnv(env, noop_max=6)
     #env = MaxAndSkipEnv(env, skip=4)
     return env
@@ -369,13 +369,12 @@ class AddObs(gym.Wrapper):
                                             shape=(shp[0], shp[1], shp[2] + 1),
                                             dtype=np.float32)
 
-        self.playerIdDict = {}
-        self.playerIdDict["P1"] = 0
-        self.playerIdDict["P2"] = 1
-
+        # Resetting the additional info dict
         self.resetInfo = {}
-        self.resetInfo["actionsBuf"] = self.actionsVector([self.env.no_op_action for i in range(self.env.actions_buf_len)])
-        self.resetInfo["player"] = [self.playerIdDict[self.env.player_id]]
+        self.resetInfo["actionsBufP1"] = self.actionsVector([self.env.no_op_action
+                                                           for i in range(self.env.actions_buf_len)])
+        self.resetInfo["actionsBufP2"] = self.actionsVector([self.env.no_op_action
+                                                           for i in range(self.env.actions_buf_len)])
         if "healthP1" in self.key_to_add:
             self.resetInfo["healthP1"] = [1]
             self.resetInfo["healthP2"] = [1]
@@ -386,9 +385,6 @@ class AddObs(gym.Wrapper):
             self.resetInfo["healthP2_2"] = [1]
         self.resetInfo["positionP1"] = [0]
         self.resetInfo["positionP2"] = [1]
-        self.resetInfo["winsP1"] = [0]
-        self.resetInfo["winsP2"] = [0]
-        self.resetInfo["stage"] = [0.0]
 
     # Building the one hot encoding actions vector
     def actionsVector(self, actionsBuf):
@@ -439,8 +435,8 @@ class AddObs(gym.Wrapper):
     def to_step_info(self, info):
 
         step_info = {}
-        step_info["actionsBuf"] = self.actionsVector( info["actionsBuf"] )
-        step_info["player"] = self.resetInfo["player"]
+        step_info["actionsBufP1"] = self.actionsVector( info["actionsBuf"][0] )
+        step_info["actionsBufP2"] = self.actionsVector( info["actionsBuf"][1] )
         if "healthP1" in self.key_to_add:
             step_info["healthP1"] = [info["healthP1"] / float(self.env.max_health)]
             step_info["healthP2"] = [info["healthP2"] / float(self.env.max_health)]
@@ -451,9 +447,6 @@ class AddObs(gym.Wrapper):
             step_info["healthP2_2"] = [info["healthP2_2"] / float(self.env.max_health)]
         step_info["positionP1"] = [info["positionP1"]]
         step_info["positionP2"] = [info["positionP2"]]
-        step_info["winsP1"] = [info["winsP1"]]
-        step_info["winsP2"] = [info["winsP2"]]
-        step_info["stage"] = [ float(info["stage"]-1) / float(self.env.max_stage - 1) ]
 
         return step_info
 
@@ -471,14 +464,14 @@ class AddObs(gym.Wrapper):
 
         return obsNew
 
-    def step(self, action):
+    def step(self, actions):
         """
         Step the environment with the given action
         and add requested info to the observation
         :param action: ([int] or [float]) the action
         :return: new observation, reward, done, information
         """
-        obs, reward, done, info = self.env.step(action)
+        obs, reward, done, info = self.env.step(actions)
 
         stepInfo = self.to_step_info(info)
 
@@ -499,16 +492,14 @@ def additional_obs(env, key_to_add):
 
     return env
 
-def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs,
-                     continue_game=1.0, showFinal=False, wrapper_kwargs=None,
-                     start_index=0, allow_early_resets=True, start_method=None,
-                     key_to_add=None, no_vec=False, use_subprocess=False):
+def make_diambra_env2P(diambraMame2P, env_prefix, num_env, seed, diambra_kwargs,
+                       wrapper_kwargs=None, start_index=0, allow_early_resets=True,
+                       start_method=None, key_to_add=None, no_vec=False, use_subprocess=False):
     """
     Create a wrapped, monitored VecEnv for Atari.
-    :param diambraMame: (class) DIAMBRAGym interface class
+    :param diambraMame2P: (class) DIAMBRAGym interface class
     :param num_env: (int) the number of environment you wish to have in subprocesses
     :param seed: (int) the initial seed for RNG
-    :param continue_game: (bool) whether to continue the game after losing
     :param wrapper_kwargs: (dict) the parameters for wrap_deepmind function
     :param start_index: (int) start rank index
     :param allow_early_resets: (bool) allows early reset of the environment
@@ -524,7 +515,7 @@ def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs,
     def make_env(rank):
         def _thunk():
             env_id = env_prefix + str(rank)
-            env = make_diambra(diambraMame, env_id, diambra_kwargs, continue_game, showFinal)
+            env = make_diambra(diambraMame2P, env_id, diambra_kwargs)
             env.seed(seed + rank)
             env = wrap_deepmind(env, **wrapper_kwargs)
             env = additional_obs(env, key_to_add)
@@ -537,7 +528,7 @@ def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs,
     # If not wanting vectorized envs
     if no_vec and num_env == 1:
         env_id = env_prefix + str(0)
-        env = make_diambra(diambraMame, env_id, diambra_kwargs, continue_game, showFinal)
+        env = make_diambra(diambraMame2P, env_id, diambra_kwargs)
         env.seed(seed)
         env = wrap_deepmind(env, **wrapper_kwargs)
         env = additional_obs(env, key_to_add)
