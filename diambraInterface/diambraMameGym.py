@@ -26,6 +26,8 @@ class diambraMame(gym.Env):
         self.hwc_dim = self.env.hwc_dim
         self.max_health = self.env.max_health
         self.max_stage = self.env.max_stage
+        self.numberOfCharacters = self.env.numberOfCharacters
+        self.playingCharacter = self.env.playingCharacter
         self.rewNormFac = rewNormFac
 
         # Define action and observation space
@@ -88,8 +90,6 @@ class diambraMame(gym.Env):
                 self.env.show_final()
 
             print("Episode done")
-            self.clear_action_buf()
-            return observation, reward, done, info
         elif game_done:
             self.clear_action_buf()
 
@@ -109,10 +109,10 @@ class diambraMame(gym.Env):
             if continueFlag:
                print("Game done, continuing ...")
                self.env.continue_game()
+               self.playingCharacter = self.env.playingCharacter
             else:
                print("Episode done")
                done = True
-               return observation, reward, done, info
         elif stage_done:
             print("Stage done")
             self.clear_action_buf()
@@ -135,6 +135,8 @@ class diambraMame(gym.Env):
             observation = self.env.start()
         else:
             observation = self.env.new_game()
+
+        self.playingCharacter = self.env.playingCharacter
 
         return observation
 
