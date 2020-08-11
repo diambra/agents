@@ -18,15 +18,13 @@ class NoopResetEnv(gym.Wrapper):
     def __init__(self, env, noop_max=6):
         """
         Sample initial states by taking random number of no-ops on reset.
-        No-op is assumed to be last action (env.action_space.n - 1).
+        No-op is assumed to be first action (0).
         :param env: (Gym Environment) the environment to wrap
         :param noop_max: (int) the maximum value of no-ops to run
         """
         gym.Wrapper.__init__(self, env)
         self.noop_max = noop_max
         self.override_num_noops = None
-        self.noop_action = env.action_space.n - 1
-        print("Noop action N = ", self.noop_action)
 
     def reset(self, **kwargs):
         self.env.reset(**kwargs)
@@ -37,7 +35,7 @@ class NoopResetEnv(gym.Wrapper):
         assert noops > 0
         obs = None
         for _ in range(noops):
-            obs, _, done, _ = self.env.step(self.noop_action)
+            obs, _, done, _ = self.env.step([0, 0])
             if done:
                 obs = self.env.reset(**kwargs)
         return obs
@@ -369,33 +367,38 @@ class AddObs(gym.Wrapper):
                                             shape=(shp[0], shp[1], shp[2] + 1),
                                             dtype=np.float32)
 
-        self.playerIdDict = {}
-        self.playerIdDict["P1"] = 0
-        self.playerIdDict["P2"] = 1
-
         self.resetInfo = {}
-        self.resetInfo["actionsBuf"] = self.actionsVector([self.env.no_op_action for i in range(self.env.actions_buf_len)])
-        self.resetInfo["player"] = [self.playerIdDict[self.env.player_id]]
-        if "healthP1" in self.key_to_add:
-            self.resetInfo["healthP1"] = [1]
-            self.resetInfo["healthP2"] = [1]
+        self.resetInfo["actionsBuf"] = np.concatenate(
+                                           (self.actionsVector([0 for i in range(self.env.actions_buf_len)],
+                                                               self.n_actions[0]),
+                                            self.actionsVector([0 for i in range(self.env.actions_buf_len)],
+                                                               self.n_actions[1]))
+                                                      )
+
+        if "ownHealth" in self.key_to_add:
+            self.resetInfo["ownHealth"] = [1]
+            self.resetInfo["oppHealth"] = [1]
         else:
-            self.resetInfo["healthP1_1"] = [1]
-            self.resetInfo["healthP1_2"] = [1]
-            self.resetInfo["healthP2_1"] = [1]
-            self.resetInfo["healthP2_2"] = [1]
-        self.resetInfo["positionP1"] = [0]
-        self.resetInfo["positionP2"] = [1]
-        self.resetInfo["winsP1"] = [0]
-        self.resetInfo["winsP2"] = [0]
+            self.resetInfo["ownHealth_1"] = [1]
+            self.resetInfo["ownHealth_2"] = [1]
+            self.resetInfo["oppHealth_1"] = [1]
+            self.resetInfo["oppHealth_2"] = [1]
+        if self.player_id == "P1":
+            self.resetInfo["ownPosition"] = [0]
+            self.resetInfo["oppPosition"] = [1]
+        else:
+            self.resetInfo["ownPosition"] = [1]
+            self.resetInfo["oppPosition"] = [0]
+        self.resetInfo["ownWins"] = [0]
+        self.resetInfo["oppWins"] = [0]
         self.resetInfo["stage"] = [0.0]
 
     # Building the one hot encoding actions vector
-    def actionsVector(self, actionsBuf):
+    def actionsVector(self, actionsBuf, nAct):
 
-        actionsVector = np.zeros( (len(actionsBuf), self.env.action_space.n ), dtype=int)
+        actionsVector = np.zeros( (len(actionsBuf), nAct), dtype=int)
 
-        for iAction in range(len(actionsBuf)):
+        for iAction, _ in enumerate(actionsBuf):
            actionsVector[iAction][actionsBuf[iAction]] = 1
 
         actionsVector = np.reshape(actionsVector, [-1])
@@ -421,10 +424,10 @@ class AddObs(gym.Wrapper):
         counter = 0
         for key in self.key_to_add:
 
-           for idx in range(len(additionalInfo[key])):
+           for addInfo in additionalInfo[key]:
 
               counter = counter + 1
-              newData[counter] = additionalInfo[key][idx]
+              newData[counter] = addInfo
 
         newData[0] = counter
         newData = np.reshape(newData, (shp[0], -1))
@@ -439,20 +442,43 @@ class AddObs(gym.Wrapper):
     def to_step_info(self, info):
 
         step_info = {}
-        step_info["actionsBuf"] = self.actionsVector( info["actionsBuf"] )
-        step_info["player"] = self.resetInfo["player"]
-        if "healthP1" in self.key_to_add:
-            step_info["healthP1"] = [info["healthP1"] / float(self.env.max_health)]
-            step_info["healthP2"] = [info["healthP2"] / float(self.env.max_health)]
+        step_info["actionsBuf"] = np.concatenate(
+                                      (self.actionsVector( info["actionsBuf"][0], self.n_actions[0] ),
+                                       self.actionsVector( info["actionsBuf"][1], self.n_actions[1] ))
+                                                 )
+
+        if self.player_id == "P1":
+
+            if "ownHealth" in self.key_to_add:
+                step_info["ownHealth"] = [info["healthP1"] / float(self.env.max_health)]
+                step_info["oppHealth"] = [info["healthP2"] / float(self.env.max_health)]
+            else:
+                step_info["ownHealth_1"] = [info["healthP1_1"] / float(self.env.max_health)]
+                step_info["ownHealth_2"] = [info["healthP1_2"] / float(self.env.max_health)]
+                step_info["oppHealth_1"] = [info["healthP2_1"] / float(self.env.max_health)]
+                step_info["oppHealth_2"] = [info["healthP2_2"] / float(self.env.max_health)]
+
+            step_info["ownPosition"] = [info["positionP1"]]
+            step_info["oppPosition"] = [info["positionP2"]]
+
+            step_info["ownWins"] = [info["winsP1"]]
+            step_info["oppWins"] = [info["winsP2"]]
         else:
-            step_info["healthP1_1"] = [info["healthP1_1"] / float(self.env.max_health)]
-            step_info["healthP1_2"] = [info["healthP1_2"] / float(self.env.max_health)]
-            step_info["healthP2_1"] = [info["healthP2_1"] / float(self.env.max_health)]
-            step_info["healthP2_2"] = [info["healthP2_2"] / float(self.env.max_health)]
-        step_info["positionP1"] = [info["positionP1"]]
-        step_info["positionP2"] = [info["positionP2"]]
-        step_info["winsP1"] = [info["winsP1"]]
-        step_info["winsP2"] = [info["winsP2"]]
+            if "ownHealth" in self.key_to_add:
+                step_info["ownHealth"] = [info["healthP2"] / float(self.env.max_health)]
+                step_info["oppHealth"] = [info["healthP1"] / float(self.env.max_health)]
+            else:
+                step_info["ownHealth_1"] = [info["healthP2_1"] / float(self.env.max_health)]
+                step_info["ownHealth_2"] = [info["healthP2_2"] / float(self.env.max_health)]
+                step_info["oppHealth_1"] = [info["healthP1_1"] / float(self.env.max_health)]
+                step_info["oppHealth_2"] = [info["healthP1_2"] / float(self.env.max_health)]
+
+            step_info["ownPosition"] = [info["positionP2"]]
+            step_info["oppPosition"] = [info["positionP1"]]
+
+            step_info["ownWins"] = [info["winsP2"]]
+            step_info["oppWins"] = [info["winsP1"]]
+
         step_info["stage"] = [ float(info["stage"]-1) / float(self.env.max_stage - 1) ]
 
         return step_info
