@@ -393,6 +393,22 @@ class AddObs(gym.Wrapper):
         self.resetInfo["oppWins"] = [0]
         self.resetInfo["stage"] = [0.0]
 
+        self.updatePlayingChar(self.resetInfo)
+
+    # Update playing char
+    def updatePlayingChar(self, dictToUpdate):
+
+        tmpChar = np.zeros(self.numberOfCharacters)
+        if "character" in self.key_to_add:
+            tmpChar[self.env.playingCharacter] = 1
+            dictToUpdate["character"] = tmpChar
+        else:
+            raise "Playing char to be completed for TEKTAG"
+            tmpChar[self.env.playingCharacter[0]] = 1
+            dictToUpdate["characters"] = tmpChar
+
+        return
+
     # Building the one hot encoding actions vector
     def actionsVector(self, actionsBuf, nAct):
 
@@ -439,7 +455,7 @@ class AddObs(gym.Wrapper):
         return obsNew
 
     # Creating dictionary for additional info of the step
-    def to_step_info(self, info):
+    def to_step_info(self, info, action):
 
         step_info = {}
         step_info["actionsBuf"] = np.concatenate(
@@ -481,6 +497,8 @@ class AddObs(gym.Wrapper):
 
         step_info["stage"] = [ float(info["stage"]-1) / float(self.env.max_stage - 1) ]
 
+        self.updatePlayingChar(step_info)
+
         return step_info
 
     def reset(self, **kwargs):
@@ -493,6 +511,7 @@ class AddObs(gym.Wrapper):
         obs = self.env.reset(**kwargs)
         obs = np.array(obs).astype(np.float32)
 
+        self.updatePlayingChar(self.resetInfo)
         obsNew = self.observation_mod(obs, self.resetInfo)
 
         return obsNew
@@ -506,7 +525,7 @@ class AddObs(gym.Wrapper):
         """
         obs, reward, done, info = self.env.step(action)
 
-        stepInfo = self.to_step_info(info)
+        stepInfo = self.to_step_info(info, action)
 
         obsNew = self.observation_mod(obs, stepInfo)
 
