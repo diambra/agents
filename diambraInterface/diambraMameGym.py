@@ -26,23 +26,22 @@ class diambraMame(gym.Env):
         self.hwc_dim = self.env.hwc_dim
         self.max_health = self.env.max_health
         self.max_stage = self.env.max_stage
-        self.attackPenalty = 0.0
         self.rewNormFac = rewNormFac
 
         # Define action and observation space
         # They must be gym.spaces objects
-        # Discrete actions:
-        # For assumption action space = self.n_actions[0] * self.n_actions[1]
-        #self.action_space = spaces.Discrete(self.n_actions[0] * self.n_actions[1])
-        # For assumption action space = self.n_actions[0] + self.n_actions[1] - 1
-        self.action_space = spaces.Discrete(self.n_actions[0] + self.n_actions[1] - 1)
+        # MultiDiscrete actions:
+        # - Arrows -> One discrete set
+        # - Buttons -> One discrete set
+        # NB: use the convention NOOP = 0, and buttons combinations are prescripted,
+        #     e.g. NOOP = [0], ButA = [1], ButB = [2], ButA+ButB = [3]
+        self.action_space = spaces.MultiDiscrete(self.n_actions)
 
 
         # Image as input:
         self.observation_space = spaces.Box(low=0, high=255,
                                         shape=(self.hwc_dim[0], self.hwc_dim[1], self.hwc_dim[2]), dtype=np.uint8)
 
-        self.no_op_action = self.action_space.n - 1
         self.actions_buf_len = 12
         self.clear_action_buf()
 
@@ -61,37 +60,15 @@ class diambraMame(gym.Env):
 
     # Clear actions buffers
     def clear_action_buf(self):
-        self.actions_buf = deque([self.no_op_action for i in range(self.actions_buf_len)], maxlen = self.actions_buf_len)
+        self.move_actions_buf = deque([0 for i in range(self.actions_buf_len)], maxlen = self.actions_buf_len)
+        self.attack_actions_buf = deque([0 for i in range(self.actions_buf_len)], maxlen = self.actions_buf_len)
 
     # Step the environment
     def step(self, action):
 
-        attackFlag = False
-
-        # For assumption action space = self.n_actions[0] * self.n_actions[1]
-        #move_action = action % self.n_actions[0]
-        #attack_action = int(action / self.n_actions[0])
-
-        # For assumption action space = self.n_actions[0] + self.n_actions[1] - 1
-        if action < self.n_actions[0] - 1:
-           # Move action commanded
-           move_action = action # For example, for DOA++ this can be 0 - 7
-           attack_action = self.n_actions[1] - 1
-        else:
-           # Attack action or no action
-           move_action = self.n_actions[0] - 1
-           attack_action = action - self.n_actions[0] + 1 # For example, for DOA++ this can be 0 - 3
-
-        # Mod to evaluate attack action flag
-        #elif action < self.n_actions[0] + self.n_actions[1] - 2:
-        #   attackFlag = True
-        #   # Attack action
-        #   move_action = self.n_actions[0] - 1
-        #   attack_action = action - self.n_actions[0] + 1 # For example, for DOA++ this can be 0 - 2
-        #else:
-        #   # No action commanded
-        #   move_action = self.n_actions[0] - 1
-        #   attack_action = self.n_actions[1] - 1
+        # MultiDiscrete Action Space
+        move_action = action[0]
+        attack_action = action[1]
 
         observation, reward, round_done, stage_done, game_done, done, info = self.env.step(move_action, attack_action)
 
@@ -101,12 +78,10 @@ class diambraMame(gym.Env):
         info["game_done"] = game_done
         info["episode_done"] = done
 
-        #if attackFlag and reward <= 0.0:
-        #   reward = reward - self.attackPenalty*self.max_health
-
         # Add the action buffer to the step info
-        self.actions_buf.extend([action])
-        info["actionsBuf"] = self.actions_buf
+        self.move_actions_buf.extend([action[0]])
+        self.attack_actions_buf.extend([action[1]])
+        info["actionsBuf"] = [self.move_actions_buf, self.attack_actions_buf]
 
         if done:
             if self.showFinal:
