@@ -28,6 +28,7 @@ class diambraMame(gym.Env):
         self.numberOfCharacters = self.env.numberOfCharacters
         self.playingCharacter = self.env.playingCharacter
         self.player_id = self.env.player
+        self.charNames = self.env.charNames()
         self.rewNormFac = rewNormFac
 
         # Define action and observation space
