@@ -9,7 +9,7 @@ class diambraMame(gym.Env):
     """DiambraMame Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, env_id, diambra_kwargs, continue_game=1.0, showFinal = False, rewNormFac = 0.5):
+    def __init__(self, env_id, diambra_kwargs, rewNormFac = 0.5, continue_game=0.0, showFinal = False):
         super(diambraMame, self).__init__()
 
         self.first = True
@@ -25,11 +25,15 @@ class diambraMame(gym.Env):
         self.hwc_dim = self.env.hwc_dim
         self.max_health = self.env.max_health
         self.max_stage = self.env.max_stage
-        self.numberOfCharacters = self.env.numberOfCharacters
-        self.playingCharacter = self.env.playingCharacter
         self.player_id = self.env.player
         self.charNames = self.env.charNames()
+        self.numberOfCharacters = len(self.charNames)
+        self.playingCharacters = self.env.playingCharacters
         self.rewNormFac = rewNormFac
+
+        # Deactivating showFinal for 2P Env
+        if self.player_id == "P1P2":
+            self.showFinal = False
 
         # Define action and observation space
         # They must be gym.spaces objects
@@ -45,13 +49,16 @@ class diambraMame(gym.Env):
         self.observation_space = spaces.Box(low=0, high=255,
                                         shape=(self.hwc_dim[0], self.hwc_dim[1], self.hwc_dim[2]), dtype=np.uint8)
 
-        self.actions_buf_len = 12
-        self.clear_action_buf()
+        self.actBufLen = 12
+        self.clearActBuf()
 
     # Return min max rewards for the environment
     def minMaxRew(self):
-        coeff = 1/self.rewNormFac
-        return (-coeff*(self.max_stage-1)-2*coeff, self.max_stage*2*coeff)
+        coeff = 1.0/self.rewNormFac
+        if self.player_id == "P1P2":
+            return (-2*coeff, 2*coeff)
+        else:
+            return (-coeff*(self.max_stage-1)-2*coeff, self.max_stage*2*coeff)
 
     # Return actions dict
     def print_actions_dict(self):
@@ -62,18 +69,27 @@ class diambraMame(gym.Env):
         return self.env.actionList()
 
     # Clear actions buffers
-    def clear_action_buf(self):
-        self.move_actions_buf = deque([0 for i in range(self.actions_buf_len)], maxlen = self.actions_buf_len)
-        self.attack_actions_buf = deque([0 for i in range(self.actions_buf_len)], maxlen = self.actions_buf_len)
+    def clearActBuf(self):
+        self.movActBufP1 = deque([0 for i in range(self.actBufLen)], maxlen = self.actBufLen)
+        self.attActBufP1 = deque([0 for i in range(self.actBufLen)], maxlen = self.actBufLen)
+        self.movActBufP2 = deque([0 for i in range(self.actBufLen)], maxlen = self.actBufLen)
+        self.attActBufP2 = deque([0 for i in range(self.actBufLen)], maxlen = self.actBufLen)
 
     # Step the environment
     def step(self, action):
 
         # MultiDiscrete Action Space
-        move_action = action[0]
-        attack_action = action[1]
-
-        observation, reward, round_done, stage_done, game_done, done, info = self.env.step(move_action, attack_action)
+        movActP1 = action[0]
+        attActP1 = action[1]
+        if self.player_id == "P1P2":
+            movActP2 = action[2]
+            attActP2 = action[3]
+            observation, reward, round_done, done, info = self.env.step2P(movActP1, attActP1, movActP2, attActP2)
+            stage_done = False
+            game_done = done
+            episode_done = done
+        else:
+            observation, reward, round_done, stage_done, game_done, done, info = self.env.step(movActP1, attActP1)
 
         # Adding done to info
         info["round_done"] = round_done
@@ -82,9 +98,14 @@ class diambraMame(gym.Env):
         info["episode_done"] = done
 
         # Add the action buffer to the step info
-        self.move_actions_buf.extend([action[0]])
-        self.attack_actions_buf.extend([action[1]])
-        info["actionsBuf"] = [self.move_actions_buf, self.attack_actions_buf]
+        self.movActBufP1.extend([action[0]])
+        self.attActBufP1.extend([action[1]])
+        info["actionsBufP1"] = [self.movActBufP1, self.attActBufP1]
+        if self.player_id == "P1P2":
+            self.movActBufP2.extend([action[2]])
+            self.attActBufP2.extend([action[3]])
+            info["actionsBufP2"] = [self.movActBufP2, self.attActBufP2]
+
 
         if done:
             if self.showFinal:
@@ -92,7 +113,7 @@ class diambraMame(gym.Env):
 
             print("Episode done")
         elif game_done:
-            self.clear_action_buf()
+            self.clearActBuf()
 
             # Continuing rule:
             continueFlag = True
@@ -110,18 +131,18 @@ class diambraMame(gym.Env):
             if continueFlag:
                print("Game done, continuing ...")
                self.env.continue_game()
-               self.playingCharacter = self.env.playingCharacter
+               self.playingCharacters = self.env.playingCharacters
                self.player_id = self.env.player
             else:
                print("Episode done")
                done = True
         elif stage_done:
             print("Stage done")
-            self.clear_action_buf()
+            self.clearActBuf()
             self.env.next_stage()
         elif round_done:
             print("Round done")
-            self.clear_action_buf()
+            self.clearActBuf()
             self.env.next_round()
 
         return observation, reward, done, info
@@ -129,7 +150,7 @@ class diambraMame(gym.Env):
     # Resetting the environment
     def reset(self):
 
-        self.clear_action_buf()
+        self.clearActBuf()
         self.ncontinue = 0
 
         if self.first:
@@ -138,7 +159,7 @@ class diambraMame(gym.Env):
         else:
             observation = self.env.new_game()
 
-        self.playingCharacter = self.env.playingCharacter
+        self.playingCharacters = self.env.playingCharacters
         self.player_id = self.env.player
 
         return observation
