@@ -9,12 +9,12 @@ class diambraMame(gym.Env):
     """DiambraMame Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, env_id, diambra_kwargs, rewNormFac = 0.5, continue_game=0.0, showFinal = False):
+    def __init__(self, env_id, diambra_kwargs, rewNormFac = 0.5, continue_game=0.0, show_final = False):
         super(diambraMame, self).__init__()
 
         self.first = True
         self.continueGame = continue_game
-        self.showFinal = showFinal
+        self.showFinal = show_final
 
         print("Env_id = ", env_id)
         print("Continue value = ", self.continueGame)
