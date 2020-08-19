@@ -35,7 +35,7 @@ class NoopResetEnv(gym.Wrapper):
         assert noops > 0
         obs = None
         for _ in range(noops):
-            obs, _, done, _ = self.env.step([0, 0])
+            obs, _, done, _ = self.env.step([0, 0, 0, 0])
             if done:
                 obs = self.env.reset(**kwargs)
         return obs
@@ -279,14 +279,14 @@ class LazyFrames(object):
         return self._force()[i]
 
 
-def make_diambra(diambraGame, env_id, diambra_kwargs, continue_game, showFinal):
+def make_diambra(diambraGame, env_id, diambra_kwargs, continueGame, showFinal):
     """
     Create a wrapped diambra Environment
     :param env_id: (str) the environment ID
     :return: (Gym Environment) the wrapped diambra environment
     """
 
-    env = diambraGame(env_id, diambra_kwargs, continue_game, showFinal)
+    env = diambraGame(env_id, diambra_kwargs, continue_game=continueGame, show_final=showFinal)
     env = NoopResetEnv(env, noop_max=6)
     #env = MaxAndSkipEnv(env, skip=4)
     return env
@@ -368,10 +368,16 @@ class AddObs(gym.Wrapper):
                                             dtype=np.float32)
 
         self.resetInfo = {}
-        self.resetInfo["actionsBuf"] = np.concatenate(
-                                           (self.actionsVector([0 for i in range(self.env.actions_buf_len)],
+        self.resetInfo["actionsBufP1"] = np.concatenate(
+                                           (self.actionsVector([0 for i in range(self.env.actBufLen)],
                                                                self.n_actions[0]),
-                                            self.actionsVector([0 for i in range(self.env.actions_buf_len)],
+                                            self.actionsVector([0 for i in range(self.env.actBufLen)],
+                                                               self.n_actions[1]))
+                                                      )
+        self.resetInfo["actionsBufP2"] = np.concatenate(
+                                           (self.actionsVector([0 for i in range(self.env.actBufLen)],
+                                                               self.n_actions[0]),
+                                            self.actionsVector([0 for i in range(self.env.actBufLen)],
                                                                self.n_actions[1]))
                                                       )
 
@@ -398,13 +404,16 @@ class AddObs(gym.Wrapper):
     # Update playing char
     def updatePlayingChar(self, dictToUpdate):
 
-        tmpChar = np.zeros(self.numberOfCharacters)
-        if "character" in self.key_to_add:
-            tmpChar[self.env.playingCharacter] = 1
-            dictToUpdate["character"] = tmpChar
+        tmpChar1 = np.zeros(self.numberOfCharacters)
+        tmpChar2 = np.zeros(self.numberOfCharacters)
+        if "ownHealth" in self.key_to_add:
+            tmpChar1[self.env.playingCharacters[0]] = 1
+            if self.player_id == "P1P2":
+                tmpChar2[self.env.playingCharacters[1]] = 1
+            dictToUpdate["characters"] = np.concatenate( (tmpChar1, tmpChar2) )
         else:
             raise "Playing char to be completed for TEKTAG"
-            tmpChar[self.env.playingCharacter[0]] = 1
+            tmpChar[self.env.playingCharacters[0]] = 1
             dictToUpdate["characters"] = tmpChar
 
         return
@@ -458,12 +467,17 @@ class AddObs(gym.Wrapper):
     def to_step_info(self, info, action):
 
         step_info = {}
-        step_info["actionsBuf"] = np.concatenate(
-                                      (self.actionsVector( info["actionsBuf"][0], self.n_actions[0] ),
-                                       self.actionsVector( info["actionsBuf"][1], self.n_actions[1] ))
-                                                 )
+        step_info["actionsBufP1"] = np.concatenate(
+                                      (self.actionsVector( info["actionsBufP1"][0], self.n_actions[0] ),
+                                       self.actionsVector( info["actionsBufP1"][1], self.n_actions[1] ))
+                                                  )
+        if self.player_id == "P1P2":
+            step_info["actionsBufP2"] = np.concatenate(
+                                          (self.actionsVector( info["actionsBufP2"][0], self.n_actions[0] ),
+                                           self.actionsVector( info["actionsBufP2"][1], self.n_actions[1] ))
+                                                      )
 
-        if self.player_id == "P1":
+        if self.player_id == "P1" or self.player_id == "P1P2":
 
             if "ownHealth" in self.key_to_add:
                 step_info["ownHealth"] = [info["healthP1"] / float(self.env.max_health)]
@@ -545,7 +559,7 @@ def additional_obs(env, key_to_add):
     return env
 
 def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs,
-                     continue_game=1.0, showFinal=False, wrapper_kwargs=None,
+                     continue_game=0.0, showFinal=False, wrapper_kwargs=None,
                      start_index=0, allow_early_resets=True, start_method=None,
                      key_to_add=None, no_vec=False, use_subprocess=False):
     """
