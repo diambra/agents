@@ -20,7 +20,7 @@ class CustCnnPolicy(ActorCriticPolicy):
     """
 
     def __init__(self, sess, ob_space, ac_space, n_env, n_steps, n_batch, reuse=False, layers=[64, 64],
-                 act_fun=tf.tanh, cnn_extractor=nature_cnn, feature_extraction="cnn", n_add_info=148, **kwargs):
+                 act_fun=tf.tanh, cnn_extractor=nature_cnn, feature_extraction="cnn", **kwargs):
         super(CustCnnPolicy, self).__init__(sess, ob_space, ac_space, n_env, n_steps, n_batch, reuse=reuse,
                                             scale=False)
 
@@ -29,6 +29,8 @@ class CustCnnPolicy(ActorCriticPolicy):
         frames = self.processed_obs[:,:,:,0:self.processed_obs.shape[3]-1]
         additional_input = self.processed_obs[:,:,:,self.processed_obs.shape[3]-1]
         additional_input = tf.layers.flatten(additional_input)
+        n_add_info = additional_input[0]
+        print("N add info = ", n_add_info)
         additional_input = additional_input[:,1:n_add_info+1]
 
         with tf.variable_scope("model", reuse=reuse):
