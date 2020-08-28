@@ -528,6 +528,9 @@ class AddObs(gym.Wrapper):
         self.updatePlayingChar(self.resetInfo)
         obsNew = self.observation_mod(obs, self.resetInfo)
 
+        # Store last observation
+        self.env.lastObs = obsNew
+
         return obsNew
 
     def step(self, action):
@@ -542,6 +545,9 @@ class AddObs(gym.Wrapper):
         stepInfo = self.to_step_info(info, action)
 
         obsNew = self.observation_mod(obs, stepInfo)
+
+        # Store last observation
+        self.env.lastObs = obsNew
 
         return obsNew, reward, done, info
 
