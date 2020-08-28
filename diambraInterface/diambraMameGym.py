@@ -9,7 +9,7 @@ class diambraMame(gym.Env):
     """DiambraMame Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, env_id, diambra_kwargs, rewNormFac = 0.5, continue_game=0.0, show_final = False):
+    def __init__(self, env_id, diambra_kwargs, rewNormFac = 0.5, P2brain=None, continue_game=0.0, show_final = False):
         super(diambraMame, self).__init__()
 
         self.first = True
@@ -21,15 +21,28 @@ class diambraMame(gym.Env):
         self.ncontinue = 0
         self.env = Environment(env_id, **diambra_kwargs)
 
+        # N actions
         self.n_actions = self.env.n_actions
+        # Frame height, width and channel dimensions
         self.hwc_dim = self.env.hwc_dim
+        # Maximum players health
         self.max_health = self.env.max_health
+        # Maximum number of stages (1P game vs COM)
         self.max_stage = self.env.max_stage
+        # Player id (P1, P2, P1P2)
         self.player_id = self.env.player
+        # Characters names list
         self.charNames = self.env.charNames()
+        # Number of characters of the game
         self.numberOfCharacters = len(self.charNames)
+        # Character(s) in use
         self.playingCharacters = self.env.playingCharacters
+        # Reward normalization factor with respect to max health
         self.rewNormFac = rewNormFac
+        # P2 action logic
+        self.p2Brain = P2brain
+        # Last obs stored
+        self.lastObs = None
 
         # Deactivating showFinal for 2P Env
         if self.player_id == "P1P2":
@@ -81,9 +94,16 @@ class diambraMame(gym.Env):
         # MultiDiscrete Action Space
         movActP1 = action[0]
         attActP1 = action[1]
+        movActP2 = 0
+        attActP2 = 0
         if self.player_id == "P1P2":
-            movActP2 = action[2]
-            attActP2 = action[3]
+
+            if self.p2Brain == None:
+                movActP2 = action[2]
+                attActP2 = action[3]
+            else:
+                [movActP2, attActP2], _ = self.p2Brain.act(self.lastObs)
+
             observation, reward, round_done, done, info = self.env.step2P(movActP1, attActP1, movActP2, attActP2)
             stage_done = False
             game_done = done
@@ -98,12 +118,12 @@ class diambraMame(gym.Env):
         info["episode_done"] = done
 
         # Add the action buffer to the step info
-        self.movActBufP1.extend([action[0]])
-        self.attActBufP1.extend([action[1]])
+        self.movActBufP1.extend([movActP1])
+        self.attActBufP1.extend([attActP1])
         info["actionsBufP1"] = [self.movActBufP1, self.attActBufP1]
         if self.player_id == "P1P2":
-            self.movActBufP2.extend([action[2]])
-            self.attActBufP2.extend([action[3]])
+            self.movActBufP2.extend([movActP2])
+            self.attActBufP2.extend([attActP2])
             info["actionsBufP2"] = [self.movActBufP2, self.attActBufP2]
 
 
