@@ -14,6 +14,9 @@ from stable_baselines.bench import Monitor
 from stable_baselines.common.misc_util import set_global_seeds
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecFrameStack
 
+import datetime
+import pickle, bz2
+
 class NoopResetEnv(gym.Wrapper):
     def __init__(self, env, noop_max=6):
         """
@@ -291,7 +294,7 @@ def make_diambra(diambraGame, env_id, diambra_kwargs, diambra_gym_kwargs):
     #env = MaxAndSkipEnv(env, skip=4)
     return env
 
-
+# Deepmind env processing (rewards normalization, resizing, grayscaling, etc)
 def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1,
                   scale=False, scale_mod = 0, hwc_obs_resize = [84, 84, 1], dilation=1):
     """
@@ -345,6 +348,7 @@ def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1
 
     return env
 
+# Diambra additional observations (previous moves, character side, ecc)
 class AddObs(gym.Wrapper):
     def __init__(self, env, key_to_add):
         """
@@ -518,7 +522,6 @@ class AddObs(gym.Wrapper):
     def reset(self, **kwargs):
         """
         Reset the environment and add requested info to the observation
-        :param action: ([int] or [float]) the action
         :return: new observation
         """
 
@@ -564,8 +567,78 @@ def additional_obs(env, key_to_add):
 
     return env
 
+# Trajectory recorder wrapper
+class TrajectoryRecorder(gym.Wrapper):
+    def __init__(self, env, filePath, key_to_add):
+        """
+        Record trajectories to use them for imitation learning
+        :param env: (Gym Environment) the environment to wrap
+        :param filePath: (str) file path specifying where to store the trajectory file
+        """
+        gym.Wrapper.__init__(self, env)
+        self.filePath = filePath
+        self.key_to_add = key_to_add
+        self.shp = self.env.observation_space.shape
+
+        print("Recording trajectories in \"", self.filePath, "\"")
+
+    def reset(self, **kwargs):
+        """
+        Reset the environment and add requested info to the observation
+        :return: observation
+        """
+
+        # Items to store
+        self.lastFrameHist = []
+        self.addObsHist = []
+        self.rewardsHist = []
+        self.actionsHist = []
+
+        obs = self.env.reset(**kwargs)
+
+        for idx in range(self.shp[2]-1):
+            self.lastFrameHist.append(obs[:,:,idx])
+
+        return obs
+
+    def step(self, action):
+        """
+        Step the environment with the given action
+        and add requested info to the observation
+        :param action: ([int] or [float]) the action
+        :return: new observation, reward, done, information
+        """
+
+        obs, reward, done, info = self.env.step(action)
+
+        self.lastFrameHist.append(obs[:,:,self.shp[2]-2])
+        self.addObsHist.append(obs[:,:,self.shp[2]-1])
+        self.rewardsHist.append(reward)
+        self.actionsHist.append(action)
+
+        if done:
+            to_save = {}
+            to_save["nChars"] = len(self.env.charNames)
+            to_save["actBufLen"] = self.env.actBufLen
+            to_save["nActions"] = self.env.n_actions
+            to_save["epLen"] = len(self.addObsHist)
+            to_save["keyToAdd"] = self.key_to_add
+            to_save["frames"] = self.lastFrameHist
+            to_save["addObs"] = self.addObsHist
+            to_save["rewards"] = self.rewardsHist
+            to_save["actions"] = self.actionsHist
+
+            savePath = self.filePath + "_" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+            outfile = bz2.BZ2File(savePath, 'w')
+            print("Writing RL Trajectory to ", savePath, "...")
+            pickle.dump(to_save, outfile)
+            print("... done.")
+            outfile.close()
+
+        return obs, reward, done, info
+
 def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs,
-                     diambra_gym_kwargs, wrapper_kwargs=None,
+                     diambra_gym_kwargs, wrapper_kwargs=None, rec_file_path=None,
                      start_index=0, allow_early_resets=True, start_method=None,
                      key_to_add=None, no_vec=False, use_subprocess=False):
     """
@@ -592,6 +665,8 @@ def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs,
             env.seed(seed + rank)
             env = wrap_deepmind(env, **wrapper_kwargs)
             env = additional_obs(env, key_to_add)
+            if rec_file_path != None:
+                env = TrajectoryRecorder(env, rec_file_path, key_to_add)
             env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                           allow_early_resets=allow_early_resets)
             return env
@@ -605,6 +680,8 @@ def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs,
         env.seed(seed)
         env = wrap_deepmind(env, **wrapper_kwargs)
         env = additional_obs(env, key_to_add)
+        if rec_file_path != None:
+            env = TrajectoryRecorder(env, rec_file_path, key_to_add)
         env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                       allow_early_resets=allow_early_resets)
         return env
