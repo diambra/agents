@@ -42,6 +42,8 @@ class diambraMame(gym.Env):
         self.rewNormFac = rewNormFac
         # P2 action logic
         self.p2Brain = P2brain
+        if self.p2Brain != None:
+            self.p2Brain.initialize(self.env.actionList())
         # Last obs stored
         self.lastObs = None
 
