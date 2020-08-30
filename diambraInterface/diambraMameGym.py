@@ -9,7 +9,8 @@ class diambraMame(gym.Env):
     """DiambraMame Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, env_id, diambra_kwargs, rewNormFac = 0.5, P2brain=None, continue_game=0.0, show_final = False):
+    def __init__(self, env_id, diambra_kwargs, P2brain=None, rewNormFac=0.5,
+                 continue_game=0.0, show_final=False):
         super(diambraMame, self).__init__()
 
         self.first = True
