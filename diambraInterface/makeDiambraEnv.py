@@ -599,6 +599,8 @@ class TrajectoryRecorder(gym.Wrapper):
         for idx in range(self.shp[2]-1):
             self.lastFrameHist.append(obs[:,:,idx])
 
+        self.addObsHist.append(obs[:,:,self.shp[2]-1])
+
         return obs
 
     def step(self, action):
@@ -621,7 +623,7 @@ class TrajectoryRecorder(gym.Wrapper):
             to_save["nChars"] = len(self.env.charNames)
             to_save["actBufLen"] = self.env.actBufLen
             to_save["nActions"] = self.env.n_actions
-            to_save["epLen"] = len(self.addObsHist)
+            to_save["epLen"] = len(self.rewardsHist)
             to_save["keyToAdd"] = self.key_to_add
             to_save["frames"] = self.lastFrameHist
             to_save["addObs"] = self.addObsHist
