@@ -4,6 +4,10 @@ import gym
 from gym import spaces
 import pickle, bz2
 
+from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv
+from stable_baselines.common import set_global_seeds
+from stable_baselines.bench import Monitor
+
 class diambraImitationLearning(gym.Env):
     """DiambraMame Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
@@ -116,3 +120,27 @@ class diambraImitationLearning(gym.Env):
     # Rendering the environment
     def render(self, mode='human'):
         pass
+
+# Function to vectorialize envs
+def make_diambra_imitationLearning_env(diambraIL, diambraIL_kwargs, seed=0):
+    """
+    Utility function for multiprocessed env.
+
+    :param diambraIL_kwargs: (dict) kwargs for Diambra IL env
+    """
+
+    num_env = diambraIL_kwargs["totalCpus"]
+
+    def make_env(rank):
+        def _thunk():
+
+            # Create log dir
+            log_dir = "tmp"+str(rank)+"/"
+            os.makedirs(log_dir, exist_ok=True)
+            env = diambraIL(**diambraIL_kwargs, rank=rank)
+            env = Monitor(env, log_dir)
+            return env
+        set_global_seeds(seed)
+        return _thunk
+
+    return SubprocVecEnv([make_env(i) for i in range(num_env)])
