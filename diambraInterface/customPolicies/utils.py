@@ -1,5 +1,7 @@
 from stable_baselines.common.callbacks import BaseCallback
+import numpy as np
 
+# Linear scheduler for RL agent parameters
 def linear_schedule(initial_value, final_value = 0.0):
     """
     Linear learning rate schedule.
@@ -21,9 +23,10 @@ def linear_schedule(initial_value, final_value = 0.0):
 
     return func
 
+# AutoSave Callback
 class AutoSave(BaseCallback):
     """
-    Callback for saving a model (the check is done every ``check_freq`` steps)
+    Callback for saving a model, it is saved every ``check_freq`` steps
 
     :param check_freq: (int)
     :param save_path: (str) Path to the folder where the model will be saved.
@@ -37,10 +40,21 @@ class AutoSave(BaseCallback):
 
     def _on_step(self) -> bool:
         if self.n_calls % self.check_freq == 0:
-            # Example for saving best model
             if self.verbose > 0:
-                print("Saving new best model to {}".format(self.save_path_base))
+                print("Saving latest model to {}".format(self.save_path_base))
             # Save the agent
             self.model.save(self.save_path_base+str(self.n_calls*self.numEnv))
 
         return True
+
+# Abort training when run out of recorded trajectories for imitation learning
+class ImitationLearningExhaustedExamples(BaseCallback):
+    """
+    Callback for aborting training when run out of Imitation Learning examples
+    """
+    def __init__(self):
+        super(ImitationLearningExhaustedExamples, self).__init__()
+
+    def _on_step(self) -> bool:
+
+        return np.any(self.env.get_attr("exhausted"))

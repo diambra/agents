@@ -45,6 +45,9 @@ class diambraImitationLearning(gym.Env):
         self.trajIdx = self.rank
         self.RLTrajDict = None
 
+        # If run out of examples
+        self.exhausted = False
+
     # Print Episode summary
     def trajSummary(self):
 
@@ -77,14 +80,16 @@ class diambraImitationLearning(gym.Env):
 
         # Action retrieval
         action = self.RLTrajDict["actions"][self.stepIdx]
+        info = {}
+        info["action"] = action
 
         if np.any(done):
-            print("Episode done")
+            print("(Rank", self.rank, ") Episode done")
 
         # Update step idx
         self.stepIdx += 1
 
-        return observation, reward, done, action
+        return observation, reward, done, info
 
     # Resetting the environment
     def reset(self):
@@ -94,7 +99,9 @@ class diambraImitationLearning(gym.Env):
 
         # Check if run out of traj files
         if self.trajIdx >= len(self.trajFilesList):
-            raise "Exceeded number of RL Traj files"
+            print("(Rank", self.rank, ") Resetting env")
+            self.exhausted = True
+            return [None]
 
         RLTrajFile = self.trajFilesList[self.trajIdx]
         # Move traj idx to the next to be read
@@ -122,7 +129,8 @@ class diambraImitationLearning(gym.Env):
         pass
 
 # Function to vectorialize envs
-def make_diambra_imitationLearning_env(diambraIL, diambraIL_kwargs, seed=0):
+def make_diambra_imitationLearning_env(diambraIL, diambraIL_kwargs, seed=0,
+                                       allow_early_resets=True):
     """
     Utility function for multiprocessed env.
 
@@ -138,7 +146,7 @@ def make_diambra_imitationLearning_env(diambraIL, diambraIL_kwargs, seed=0):
             log_dir = "tmp"+str(rank)+"/"
             os.makedirs(log_dir, exist_ok=True)
             env = diambraIL(**diambraIL_kwargs, rank=rank)
-            env = Monitor(env, log_dir)
+            env = Monitor(env, log_dir, allow_early_resets=allow_early_resets)
             return env
         set_global_seeds(seed)
         return _thunk
