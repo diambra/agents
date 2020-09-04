@@ -53,7 +53,7 @@ class PPO2_ImitationLearning(ActorCriticRLModel):
     def __init__(self, policy, env, gamma=0.99, n_steps=128, ent_coef=0.01, learning_rate=2.5e-4, vf_coef=0.5,
                  max_grad_norm=0.5, lam=0.95, nminibatches=4, noptepochs=4, cliprange=0.2, cliprange_vf=None,
                  verbose=0, tensorboard_log=None, _init_setup_model=True, policy_kwargs=None,
-                 full_tensorboard_log=False, seed=None, n_cpu_tf_sess=None):
+                 full_tensorboard_log=False, seed=None, n_cpu_tf_sess=None, rendering=False):
 
         self.learning_rate = learning_rate
         self.cliprange = cliprange
@@ -88,6 +88,7 @@ class PPO2_ImitationLearning(ActorCriticRLModel):
         self.value = None
         self.n_batch = None
         self.summary = None
+        self.rendering = rendering
 
         super().__init__(policy=policy, env=env, verbose=verbose, requires_vec_env=True,
                          _init_setup_model=_init_setup_model, policy_kwargs=policy_kwargs,
@@ -98,7 +99,7 @@ class PPO2_ImitationLearning(ActorCriticRLModel):
 
     def _make_runner(self):
         return Runner(env=self.env, model=self, n_steps=self.n_steps,
-                      gamma=self.gamma, lam=self.lam)
+                      gamma=self.gamma, lam=self.lam, rendering=self.rendering)
 
     def _get_pretrain_placeholders(self):
         policy = self.act_model
@@ -436,7 +437,7 @@ class PPO2_ImitationLearning(ActorCriticRLModel):
 
 
 class Runner(AbstractEnvRunner):
-    def __init__(self, *, env, model, n_steps, gamma, lam):
+    def __init__(self, *, env, model, n_steps, gamma, lam, rendering=False):
         """
         A runner to learn the policy of an environment for a model
 
@@ -449,6 +450,7 @@ class Runner(AbstractEnvRunner):
         super().__init__(env=env, model=model, n_steps=n_steps)
         self.lam = lam
         self.gamma = gamma
+        self.rendering = rendering
 
     def _run(self):
         """
@@ -479,6 +481,8 @@ class Runner(AbstractEnvRunner):
             mb_dones.append(self.dones)
 
             self.obs[:], rewards, self.dones, infos = self.env.step(dummy_actions)
+            if self.rendering:
+                self.env.render("human")
 
             self.model.num_timesteps += self.n_envs
 
