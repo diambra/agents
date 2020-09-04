@@ -110,7 +110,7 @@ class diambraImitationLearning(gym.Env):
         if self.trajIdx >= len(self.trajFilesList):
             print("(Rank", self.rank, ") Resetting env")
             self.exhausted = True
-            return [None]
+            return np.zeros((self.obsH, self.obsW, self.obsNChannels))
 
         if self.nReset == 0:
             RLTrajFile = self.trajFilesList[self.trajIdx]
