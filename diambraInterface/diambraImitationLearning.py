@@ -4,6 +4,7 @@ import gym
 from gym import spaces
 import pickle, bz2
 import copy
+import cv2
 
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv
 from stable_baselines.common import set_global_seeds
@@ -73,6 +74,9 @@ class diambraImitationLearning(gym.Env):
         for iFrame in range(self.obsNChannels-1):
             observation[:,:,iFrame] = self.RLTrajDict["frames"][self.stepIdx + 1 + iFrame]
         observation[:,:,self.obsNChannels-1] = self.RLTrajDict["addObs"][self.stepIdx + 1]
+
+        # Storing last observation for rendering
+        self.lastObs = observation[:,:,self.obsNChannels-2]
 
         # Reward retrieval
         reward = self.RLTrajDict["rewards"][self.stepIdx]
@@ -166,6 +170,9 @@ class diambraImitationLearning(gym.Env):
             observation[:,:,iFrame] = self.RLTrajDict["frames"][iFrame]
         observation[:,:,self.obsNChannels-1] = self.RLTrajDict["addObs"][0]
 
+        # Storing last observation for rendering
+        self.lastObs = observation[:,:,self.obsNChannels-2]
+
         return observation
 
     # Correct additional info from P1P2 mode to 1P (for both P1 and P2)
@@ -242,7 +249,15 @@ class diambraImitationLearning(gym.Env):
 
     # Rendering the environment
     def render(self, mode='human'):
-        pass
+
+        if mode == "human":
+            windowName = "Diambra Imitation Learning Environment"
+            cv2.namedWindow(windowName,cv2.WINDOW_GUI_NORMAL)
+            cv2.imshow(windowName, self.lastObs)
+            cv2.waitKey(1)
+        elif mode == "rgb_array":
+            output = np.expand_dims(self.lastObs, axis=2)
+            return output
 
 # Function to vectorialize envs
 def make_diambra_imitationLearning_env(diambraIL, diambraIL_kwargs, seed=0,
