@@ -620,6 +620,7 @@ class TrajectoryRecorder(gym.Wrapper):
 
         if done:
             to_save = {}
+            to_save["playerId"] = self.player_id
             to_save["nChars"] = len(self.env.charNames)
             to_save["actBufLen"] = self.env.actBufLen
             to_save["nActions"] = self.env.n_actions
