@@ -569,14 +569,16 @@ def additional_obs(env, key_to_add):
 
 # Trajectory recorder wrapper
 class TrajectoryRecorder(gym.Wrapper):
-    def __init__(self, env, filePath, key_to_add):
+    def __init__(self, env, file_path, user_name, ignore_p2, key_to_add):
         """
         Record trajectories to use them for imitation learning
         :param env: (Gym Environment) the environment to wrap
         :param filePath: (str) file path specifying where to store the trajectory file
         """
         gym.Wrapper.__init__(self, env)
-        self.filePath = filePath
+        self.filePath = file_path
+        self.userName = user_name
+        self.ignoreP2 = ignore_p2
         self.key_to_add = key_to_add
         self.shp = self.env.observation_space.shape
 
@@ -620,7 +622,9 @@ class TrajectoryRecorder(gym.Wrapper):
 
         if done:
             to_save = {}
+            to_save["userName"] = self.userName
             to_save["playerId"] = self.player_id
+            to_save["ignoreP2"] = self.ignoreP2
             to_save["nChars"] = len(self.env.charNames)
             to_save["actBufLen"] = self.env.actBufLen
             to_save["nActions"] = self.env.n_actions
@@ -641,7 +645,7 @@ class TrajectoryRecorder(gym.Wrapper):
         return obs, reward, done, info
 
 def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs,
-                     diambra_gym_kwargs, wrapper_kwargs=None, rec_file_path=None,
+                     diambra_gym_kwargs, wrapper_kwargs=None, traj_rec_kwargs=None,
                      start_index=0, allow_early_resets=True, start_method=None,
                      key_to_add=None, no_vec=False, use_subprocess=False):
     """
@@ -668,8 +672,8 @@ def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs,
             env.seed(seed + rank)
             env = wrap_deepmind(env, **wrapper_kwargs)
             env = additional_obs(env, key_to_add)
-            if rec_file_path != None:
-                env = TrajectoryRecorder(env, rec_file_path, key_to_add)
+            if type(traj_rec_kwargs) != type(None):
+                env = TrajectoryRecorder(env, **traj_rec_kwargs, key_to_add=key_to_add)
             env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                           allow_early_resets=allow_early_resets)
             return env
@@ -683,8 +687,8 @@ def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs,
         env.seed(seed)
         env = wrap_deepmind(env, **wrapper_kwargs)
         env = additional_obs(env, key_to_add)
-        if rec_file_path != None:
-            env = TrajectoryRecorder(env, rec_file_path, key_to_add)
+        if type(traj_rec_kwargs) != None:
+            env = TrajectoryRecorder(env, **traj_rec_kwargs, key_to_add=key_to_add)
         env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                       allow_early_resets=allow_early_resets)
         return env
