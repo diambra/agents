@@ -10,7 +10,7 @@ class diambraMame(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self, env_id, diambra_kwargs, P2brain=None, rewNormFac=0.5,
-                 continue_game=0.0, show_final=False):
+                 continue_game=0.0, show_final=False, gamePads=[None, None]):
         super(diambraMame, self).__init__()
 
         self.first = True
@@ -44,6 +44,13 @@ class diambraMame(gym.Env):
         self.p2Brain = P2brain
         if self.p2Brain != None:
             self.p2Brain.initialize(self.env.actionList())
+
+        # Gamepads
+        self.gamePads = gamePads
+        for idx in range(2):
+            if self.gamePads[idx] != None:
+                self.gamePads[idx].initialize(self.env.actionList())
+
         # Last obs stored
         self.lastObs = None
 
@@ -178,7 +185,7 @@ class diambraMame(gym.Env):
 
         if self.first:
             self.first = False
-            observation = self.env.start()
+            observation = self.env.start(gamePads=self.gamePads)
         else:
             observation = self.env.new_game()
 

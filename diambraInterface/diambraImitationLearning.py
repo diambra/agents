@@ -106,6 +106,15 @@ class diambraImitationLearning(gym.Env):
         # Reset run step
         self.stepIdx = 0
 
+        # Manage ignoreP2 flag for recorded P1P2 trajectory (e.g. when HUM vs AI)
+        if self.nReset != 0 and self.RLTrajDict["ignoreP2"] == 1:
+
+            print("Skipping P2 trajectory for 2P games (e.g. HUM vs IA)")
+            # Resetting nReset
+            self.nReset = 0
+            # Move traj idx to the next to be read
+            self.trajIdx += self.totalCpus
+
         # Check if run out of traj files
         if self.trajIdx >= len(self.trajFilesList):
             print("(Rank", self.rank, ") Resetting env")
