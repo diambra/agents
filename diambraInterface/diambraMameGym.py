@@ -20,7 +20,7 @@ class diambraMame(gym.Env):
         print("Env_id = ", env_id)
         print("Continue value = ", self.continueGame)
         self.ncontinue = 0
-        self.env = Environment(env_id, **diambra_kwargs)
+        self.env = Environment(env_id, diambra_kwargs).getEnv()
 
         # N actions
         self.n_actions = self.env.n_actions
