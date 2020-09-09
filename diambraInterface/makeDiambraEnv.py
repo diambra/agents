@@ -15,7 +15,7 @@ from stable_baselines.common.misc_util import set_global_seeds
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecFrameStack
 
 import datetime
-import pickle, bz2
+from parallelPickle import parallelPickleWriter
 
 class NoopResetEnv(gym.Wrapper):
     def __init__(self, env, noop_max=6):
@@ -636,11 +636,9 @@ class TrajectoryRecorder(gym.Wrapper):
             to_save["actions"] = self.actionsHist
 
             savePath = self.filePath + "_" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-            outfile = bz2.BZ2File(savePath, 'w')
-            print("Writing RL Trajectory to ", savePath, "...")
-            pickle.dump(to_save, outfile)
-            print("... done.")
-            outfile.close()
+
+            pickleWriter = parallelPickleWriter(savePath, to_save)
+            pickleWriter.start()
 
         return obs, reward, done, info
 
