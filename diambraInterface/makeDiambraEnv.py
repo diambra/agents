@@ -595,6 +595,7 @@ class TrajectoryRecorder(gym.Wrapper):
         self.addObsHist = []
         self.rewardsHist = []
         self.actionsHist = []
+        self.cumulativeRew = 0
 
         obs = self.env.reset(**kwargs)
 
@@ -619,6 +620,7 @@ class TrajectoryRecorder(gym.Wrapper):
         self.addObsHist.append(obs[:,:,self.shp[2]-1])
         self.rewardsHist.append(reward)
         self.actionsHist.append(action)
+        self.cumulativeRew += reward
 
         if done:
             to_save = {}
@@ -629,6 +631,7 @@ class TrajectoryRecorder(gym.Wrapper):
             to_save["actBufLen"] = self.env.actBufLen
             to_save["nActions"] = self.env.n_actions
             to_save["epLen"] = len(self.rewardsHist)
+            to_save["cumRew"] = self.cumulativeRew
             to_save["keyToAdd"] = self.key_to_add
             to_save["frames"] = self.lastFrameHist
             to_save["addObs"] = self.addObsHist
