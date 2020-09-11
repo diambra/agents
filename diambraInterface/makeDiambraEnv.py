@@ -569,7 +569,7 @@ def additional_obs(env, key_to_add):
 
 # Trajectory recorder wrapper
 class TrajectoryRecorder(gym.Wrapper):
-    def __init__(self, env, file_path, user_name, ignore_p2, key_to_add):
+    def __init__(self, env, file_path, user_name, ignore_p2, commitHash, key_to_add):
         """
         Record trajectories to use them for imitation learning
         :param env: (Gym Environment) the environment to wrap
@@ -581,6 +581,7 @@ class TrajectoryRecorder(gym.Wrapper):
         self.ignoreP2 = ignore_p2
         self.key_to_add = key_to_add
         self.shp = self.env.observation_space.shape
+        self.commitHash = commitHash
 
         print("Recording trajectories in \"", self.filePath, "\"")
 
@@ -624,6 +625,7 @@ class TrajectoryRecorder(gym.Wrapper):
 
         if done:
             to_save = {}
+            to_save["commitHash"] = self.commitHash
             to_save["userName"] = self.userName
             to_save["playerId"] = self.player_id
             to_save["ignoreP2"] = self.ignoreP2
