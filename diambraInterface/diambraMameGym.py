@@ -38,6 +38,8 @@ class diambraMame(gym.Env):
         self.numberOfCharacters = len(self.charNames)
         # Character(s) in use
         self.playingCharacters = self.env.playingCharacters
+        # Difficulty
+        self.difficulty = self.env.difficulty
         # Reward normalization factor with respect to max health
         self.rewNormFac = rewNormFac
         # P2 action logic
