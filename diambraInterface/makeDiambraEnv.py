@@ -640,7 +640,7 @@ class TrajectoryRecorder(gym.Wrapper):
             to_save["rewards"] = self.rewardsHist
             to_save["actions"] = self.actionsHist
 
-            savePath = self.filePath + "_" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+            savePath = self.filePath + "_rew" + str(self.cumulativeRew) + "_" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
             pickleWriter = parallelPickleWriter(savePath, to_save)
             pickleWriter.start()
