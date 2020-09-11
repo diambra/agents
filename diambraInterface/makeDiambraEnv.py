@@ -628,6 +628,7 @@ class TrajectoryRecorder(gym.Wrapper):
             to_save["commitHash"] = self.commitHash
             to_save["userName"] = self.userName
             to_save["playerId"] = self.player_id
+            to_save["difficulty"] = self.env.difficulty
             to_save["ignoreP2"] = self.ignoreP2
             to_save["nChars"] = len(self.env.charNames)
             to_save["actBufLen"] = self.env.actBufLen
@@ -640,7 +641,7 @@ class TrajectoryRecorder(gym.Wrapper):
             to_save["rewards"] = self.rewardsHist
             to_save["actions"] = self.actionsHist
 
-            savePath = self.filePath + "_rew" + str(self.cumulativeRew) + "_" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+            savePath = self.filePath + "_diff" + str(self.env.difficulty)  + "_rew" + str(self.cumulativeRew) + "_" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
             pickleWriter = parallelPickleWriter(savePath, to_save)
             pickleWriter.start()
