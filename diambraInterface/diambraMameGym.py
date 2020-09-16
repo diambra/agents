@@ -51,7 +51,7 @@ class diambraMame(gym.Env):
         self.gamePads = gamePads
         for idx in range(2):
             if self.gamePads[idx] != None:
-                self.gamePads[idx].initialize(self.env.actionList())
+                self.gamePads[idx].initialize(self.env.actionList(), gamepadNum=idx)
 
         # Last obs stored
         self.lastObs = None
