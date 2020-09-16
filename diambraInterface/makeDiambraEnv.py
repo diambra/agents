@@ -641,7 +641,19 @@ class TrajectoryRecorder(gym.Wrapper):
             to_save["rewards"] = self.rewardsHist
             to_save["actions"] = self.actionsHist
 
-            savePath = self.filePath + "_mod" + str(self.ignoreP2)  + self.player_id + "_diff" + str(self.env.difficulty)  + "_rew" + str(np.round(self.cumulativeRew, 3)) + "_" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+            # Characters name
+            chars = ""
+            # If 2P mode
+            if self.player_id == "P1P2" and self.ignoreP2 == 0:
+                chars += self.env.charNames[self.env.playingCharacters[0]]
+                chars += self.env.charNames[self.env.playingCharacters[1]]
+            # If 1P mode
+            else:
+                chars += self.env.charNames[self.env.playingCharacters[0]]
+
+            savePath = self.filePath + "_mod" + str(self.ignoreP2)  + self.player_id + "_" + chars
+                       "_diff" + str(self.env.difficulty)  + "_rew" + str(np.round(self.cumulativeRew, 3)) +
+                       "_" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
             pickleWriter = parallelPickleWriter(savePath, to_save)
             pickleWriter.start()
