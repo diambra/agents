@@ -651,8 +651,8 @@ class TrajectoryRecorder(gym.Wrapper):
             else:
                 chars += self.env.charNames[self.env.playingCharacters[0]]
 
-            savePath = self.filePath + "_mod" + str(self.ignoreP2)  + self.player_id + "_" + chars
-                       "_diff" + str(self.env.difficulty)  + "_rew" + str(np.round(self.cumulativeRew, 3)) +
+            savePath = self.filePath + "_mod" + str(self.ignoreP2)  + self.player_id + "_" + chars +\
+                       "_diff" + str(self.env.difficulty)  + "_rew" + str(np.round(self.cumulativeRew, 3)) +\
                        "_" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
             pickleWriter = parallelPickleWriter(savePath, to_save)
