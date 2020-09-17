@@ -332,7 +332,7 @@ def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1
         if dilation == 1:
             env = FrameStack(env, frame_stack)
         else:
-            print("Using frame stacking with dilation = ", dilation)
+            print("Using frame stacking with dilation = {}".format(dilation))
             env = FrameStackDilated(env, frame_stack, dilation)
 
     # Scales observations normalizing them
@@ -583,7 +583,7 @@ class TrajectoryRecorder(gym.Wrapper):
         self.shp = self.env.observation_space.shape
         self.commitHash = commitHash
 
-        print("Recording trajectories in \"", self.filePath, "\"")
+        print("Recording trajectories in \"{}\"".format(self.filePath))
 
     def reset(self, **kwargs):
         """
