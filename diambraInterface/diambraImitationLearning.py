@@ -58,13 +58,13 @@ class diambraImitationLearning(gym.Env):
 
         print(self.RLTrajDict.keys())
 
-        print("Ep. length =", self.RLTrajDict["epLen"] )
+        print("Ep. length = {}".format(self.RLTrajDict["epLen"] ))
 
         for key, value in self.RLTrajDict.items():
             if type(value) == list:
-                print("len(",key,") :", len(value))
+                print("len({}): {}".format(key, len(value)))
             else:
-                print(key,":", value)
+                print("{} : {}".format(key, value))
 
     # Step the environment
     def step(self, dummyAction):
@@ -93,7 +93,7 @@ class diambraImitationLearning(gym.Env):
         info["action"] = action
 
         if np.any(done):
-            print("(Rank", self.rank, ") Episode done")
+            print("(Rank {}) Episode done".format(self.rank))
 
         # Update step idx
         self.stepIdx += 1
@@ -117,7 +117,7 @@ class diambraImitationLearning(gym.Env):
 
         # Check if run out of traj files
         if self.trajIdx >= len(self.trajFilesList):
-            print("(Rank", self.rank, ") Resetting env")
+            print("(Rank {}) Resetting env".format(self.rank))
             self.exhausted = True
             return np.zeros((self.obsH, self.obsW, self.obsNChannels))
 
