@@ -113,7 +113,7 @@ class NormalizeRewardEnv(gym.RewardWrapper):
         Nomralize reward dividing by reward normalization factor*max_health.
         :param reward: (float)
         """
-        return float(reward)/float(self.rewNormFac*self.max_health)
+        return float(reward)/float(self.env.rewNormFac*self.env.max_health)
 
 
 class WarpFrame(gym.ObservationWrapper):
@@ -374,15 +374,15 @@ class AddObs(gym.Wrapper):
         self.resetInfo = {}
         self.resetInfo["actionsBufP1"] = np.concatenate(
                                            (self.actionsVector([0 for i in range(self.env.actBufLen)],
-                                                               self.n_actions[0]),
+                                                               self.env.n_actions[0]),
                                             self.actionsVector([0 for i in range(self.env.actBufLen)],
-                                                               self.n_actions[1]))
+                                                               self.env.n_actions[1]))
                                                       )
         self.resetInfo["actionsBufP2"] = np.concatenate(
                                            (self.actionsVector([0 for i in range(self.env.actBufLen)],
-                                                               self.n_actions[0]),
+                                                               self.env.n_actions[0]),
                                             self.actionsVector([0 for i in range(self.env.actBufLen)],
-                                                               self.n_actions[1]))
+                                                               self.env.n_actions[1]))
                                                       )
 
         if "ownHealth" in self.key_to_add:
@@ -393,7 +393,7 @@ class AddObs(gym.Wrapper):
             self.resetInfo["ownHealth_2"] = [1]
             self.resetInfo["oppHealth_1"] = [1]
             self.resetInfo["oppHealth_2"] = [1]
-        if self.player_id == "P1":
+        if self.env.player_id == "P1":
             self.resetInfo["ownPosition"] = [0]
             self.resetInfo["oppPosition"] = [1]
         else:
@@ -408,11 +408,11 @@ class AddObs(gym.Wrapper):
     # Update playing char
     def updatePlayingChar(self, dictToUpdate):
 
-        tmpChar1 = np.zeros(self.numberOfCharacters)
-        tmpChar2 = np.zeros(self.numberOfCharacters)
+        tmpChar1 = np.zeros(self.env.numberOfCharacters)
+        tmpChar2 = np.zeros(self.env.numberOfCharacters)
         if "ownHealth" in self.key_to_add:
             tmpChar1[self.env.playingCharacters[0]] = 1
-            if self.player_id == "P1P2":
+            if self.env.player_id == "P1P2":
                 tmpChar2[self.env.playingCharacters[1]] = 1
             dictToUpdate["characters"] = np.concatenate( (tmpChar1, tmpChar2) )
         else:
@@ -472,16 +472,16 @@ class AddObs(gym.Wrapper):
 
         step_info = {}
         step_info["actionsBufP1"] = np.concatenate(
-                                      (self.actionsVector( info["actionsBufP1"][0], self.n_actions[0] ),
-                                       self.actionsVector( info["actionsBufP1"][1], self.n_actions[1] ))
+                                      (self.actionsVector( info["actionsBufP1"][0], self.env.n_actions[0] ),
+                                       self.actionsVector( info["actionsBufP1"][1], self.env.n_actions[1] ))
                                                   )
-        if self.player_id == "P1P2":
+        if self.env.player_id == "P1P2":
             step_info["actionsBufP2"] = np.concatenate(
-                                          (self.actionsVector( info["actionsBufP2"][0], self.n_actions[0] ),
-                                           self.actionsVector( info["actionsBufP2"][1], self.n_actions[1] ))
+                                          (self.actionsVector( info["actionsBufP2"][0], self.env.n_actions[0] ),
+                                           self.actionsVector( info["actionsBufP2"][1], self.env.n_actions[1] ))
                                                       )
 
-        if self.player_id == "P1" or self.player_id == "P1P2":
+        if self.env.player_id == "P1" or self.env.player_id == "P1P2":
 
             if "ownHealth" in self.key_to_add:
                 step_info["ownHealth"] = [info["healthP1"] / float(self.env.max_health)]
@@ -626,32 +626,32 @@ class TrajectoryRecorder(gym.Wrapper):
         if done:
             to_save = {}
             to_save["commitHash"] = self.commitHash
-            to_save["userName"] = self.userName
-            to_save["playerId"] = self.player_id
+            to_save["userName"]   = self.userName
+            to_save["playerId"]   = self.env.player_id
             to_save["difficulty"] = self.env.difficulty
-            to_save["ignoreP2"] = self.ignoreP2
-            to_save["nChars"] = len(self.env.charNames)
-            to_save["actBufLen"] = self.env.actBufLen
-            to_save["nActions"] = self.env.n_actions
-            to_save["epLen"] = len(self.rewardsHist)
-            to_save["cumRew"] = self.cumulativeRew
-            to_save["keyToAdd"] = self.key_to_add
-            to_save["frames"] = self.lastFrameHist
-            to_save["addObs"] = self.addObsHist
-            to_save["rewards"] = self.rewardsHist
-            to_save["actions"] = self.actionsHist
+            to_save["ignoreP2"]   = self.ignoreP2
+            to_save["nChars"]     = len(self.env.charNames)
+            to_save["actBufLen"]  = self.env.actBufLen
+            to_save["nActions"]   = self.env.n_actions
+            to_save["epLen"]      = len(self.rewardsHist)
+            to_save["cumRew"]     = self.cumulativeRew
+            to_save["keyToAdd"]   = self.key_to_add
+            to_save["frames"]     = self.lastFrameHist
+            to_save["addObs"]     = self.addObsHist
+            to_save["rewards"]    = self.rewardsHist
+            to_save["actions"]    = self.actionsHist
 
             # Characters name
             chars = ""
             # If 2P mode
-            if self.player_id == "P1P2" and self.ignoreP2 == 0:
+            if self.env.player_id == "P1P2" and self.ignoreP2 == 0:
                 chars += self.env.charNames[self.env.playingCharacters[0]]
                 chars += self.env.charNames[self.env.playingCharacters[1]]
             # If 1P mode
             else:
                 chars += self.env.charNames[self.env.playingCharacters[0]]
 
-            savePath = self.filePath + "_mod" + str(self.ignoreP2)  + self.player_id + "_" + chars +\
+            savePath = self.filePath + "_mod" + str(self.ignoreP2)  + self.env.player_id + "_" + chars +\
                        "_diff" + str(self.env.difficulty)  + "_rew" + str(np.round(self.cumulativeRew, 3)) +\
                        "_" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
