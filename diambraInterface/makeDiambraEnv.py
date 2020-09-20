@@ -703,7 +703,7 @@ def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs,
         env.seed(seed)
         env = wrap_deepmind(env, **wrapper_kwargs)
         env = additional_obs(env, key_to_add)
-        if type(traj_rec_kwargs) != None:
+        if type(traj_rec_kwargs) != type(None):
             env = TrajectoryRecorder(env, **traj_rec_kwargs, key_to_add=key_to_add)
         env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                       allow_early_resets=allow_early_resets)

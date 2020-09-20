@@ -43,16 +43,23 @@ class diambraMame(gym.Env):
         self.difficulty = self.env.difficulty
         # Reward normalization factor with respect to max health
         self.rewNormFac = rewNormFac
+
         # P2 action logic
         self.p2Brain = P2brain
         if self.p2Brain != None:
             self.p2Brain.initialize(self.env.actionList())
 
+            # If p2 action logic is gamepad, add it to self.gamepads
+            if self.p2Brain == "gamepad":
+                gamePads[1] = self.p2Brain
+
         # Gamepads
         self.gamePads = gamePads
+        gamepadNum = 0
         for idx in range(2):
             if self.gamePads[idx] != None:
-                self.gamePads[idx].initialize(self.env.actionList(), gamepadNum=idx)
+                self.gamePads[idx].initialize(self.env.actionList(), gamepadNum=gamepadNum)
+                gamepadNum += 1
 
         # Last obs stored
         self.lastObs = None
@@ -153,19 +160,17 @@ class diambraMame(gym.Env):
             if self.player_id == "P1P2":
 
                 if self.p2Brain == None:
-
                     # Discrete to multidiscrete conversion
                     movActP2, attActP2 = discreteToMultiDiscreteAction(action[1])
 
                 else:
-
                     brainActions, _ = self.p2Brain.act(self.lastObs)
 
                     if len(brainActions) == 1:
                         # Discrete to multidiscrete conversion
                         movActP2, attActP2 = discreteToMultiDiscreteAction(brainActions)
 
-                    else
+                    else:
                         # Multidiscrete actions (GamePad)
                         movActP2, attActP2 = brainActions[0], brainActions[1]
 
