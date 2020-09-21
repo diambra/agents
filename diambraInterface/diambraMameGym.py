@@ -64,10 +64,6 @@ class diambraMame(gym.Env):
         # Last obs stored
         self.lastObs = None
 
-        # Deactivating showFinal for 2P Env
-        if self.player_id == "P1P2":
-            self.showFinal = False
-
         # Define action and observation space
         # They must be gym.spaces objects
 
@@ -252,6 +248,10 @@ class diambraMame(gym.Env):
 
         self.playingCharacters = self.env.playingCharacters
         self.player_id = self.env.player
+
+        # Deactivating showFinal for 2P Env (Needed to do it here after Env start)
+        if self.player_id == "P1P2":
+            self.showFinal = False
 
         return observation
 
