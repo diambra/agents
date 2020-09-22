@@ -10,13 +10,13 @@ class diambraMame(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self, env_id, diambra_kwargs, P2brain=None, rewNormFac=0.5,
-                 continue_game=0.0, show_final=False, gamePads=[None, None], multiDiscrete=True):
+                 continue_game=0.0, show_final=False, gamePads=[None, None], actionSpace="multiDiscrete"):
         super(diambraMame, self).__init__()
 
         self.first = True
         self.continueGame = continue_game
         self.showFinal = show_final
-        self.multiDiscrete = multiDiscrete
+        self.actionSpace = actionSpace
 
         print("Env_id = {}".format(env_id))
         print("Continue value = {}".format(self.continueGame))
@@ -67,7 +67,7 @@ class diambraMame(gym.Env):
         # Define action and observation space
         # They must be gym.spaces objects
 
-        if self.multiDiscrete:
+        if self.actionSpace == "multiDiscrete":
             # MultiDiscrete actions:
             # - Arrows -> One discrete set
             # - Buttons -> One discrete set
@@ -75,13 +75,15 @@ class diambraMame(gym.Env):
             #     e.g. NOOP = [0], ButA = [1], ButB = [2], ButA+ButB = [3]
             self.action_space = spaces.MultiDiscrete(self.n_actions)
             print("Using MultiDiscrete action space")
-        else:
+        elif self.actionSpace == "discrete":
             # Discrete actions:
             # - Arrows U Buttons -> One discrete set
             # NB: use the convention NOOP = 0, and buttons combinations are prescripted,
             #     e.g. NOOP = [0], ButA = [1], ButB = [2], ButA+ButB = [3]
             self.action_space = spaces.Discrete(self.n_actions[0] + self.n_actions[1] - 1)
             print("Using Discrete action space")
+        else:
+            raise Exception("Not recognized action space: {}".format(self.actionSpace))
 
         # Image as input:
         self.observation_space = spaces.Box(low=0, high=255,
@@ -137,7 +139,7 @@ class diambraMame(gym.Env):
         movActP2 = 0
         attActP2 = 0
 
-        if self.multiDiscrete: # MultiDiscrete Action Space
+        if self.actionSpace == "multiDiscrete": # MultiDiscrete Action Space
             movActP1 = action[0]
             attActP1 = action[1]
             if self.player_id == "P1P2":
@@ -148,7 +150,7 @@ class diambraMame(gym.Env):
                 else:
                     [movActP2, attActP2], _ = self.p2Brain.act(self.lastObs)
 
-        else: # Discrete Action Space
+        elif self.actionSpace == "discrete": # Discrete Action Space
 
             # Discrete to multidiscrete conversion
             movActP1, attActP1 = discreteToMultiDiscreteAction(action[0])
