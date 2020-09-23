@@ -1,8 +1,9 @@
-import random
+import sys, os, time, random
 import numpy as np
 from collections import deque
 import cv2  # pytype:disable=import-error
 cv2.ocl.setUseOpenCL(False)
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../utils'))
 
 import gym
 from gym import spaces
