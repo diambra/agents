@@ -116,7 +116,7 @@ class diambraMame(gym.Env):
         self.attActBufP2 = deque([0 for i in range(self.actBufLen)], maxlen = self.actBufLen)
 
     # Discrete to multidiscrete action conversion
-    def discreteToMultiDiscreteAction(action):
+    def discreteToMultiDiscreteAction(self, action):
 
         movAct = 0
         attAct = 0
@@ -152,21 +152,26 @@ class diambraMame(gym.Env):
 
         elif self.actionSpace == "discrete": # Discrete Action Space
 
-            # Discrete to multidiscrete conversion
-            movActP1, attActP1 = discreteToMultiDiscreteAction(action[0])
+            if self.player_id != "P1P2":
 
-            if self.player_id == "P1P2":
+                # Discrete to multidiscrete conversion
+                movActP1, attActP1 = self.discreteToMultiDiscreteAction(action)
+
+            else:
+
+                # Discrete to multidiscrete conversion
+                movActP1, attActP1 = self.discreteToMultiDiscreteAction(action[0])
 
                 if self.p2Brain == None:
                     # Discrete to multidiscrete conversion
-                    movActP2, attActP2 = discreteToMultiDiscreteAction(action[1])
+                    movActP2, attActP2 = self.discreteToMultiDiscreteAction(action[1])
 
                 else:
                     brainActions, _ = self.p2Brain.act(self.lastObs)
 
                     if len(brainActions) == 1:
                         # Discrete to multidiscrete conversion
-                        movActP2, attActP2 = discreteToMultiDiscreteAction(brainActions)
+                        movActP2, attActP2 = self.discreteToMultiDiscreteAction(brainActions)
 
                     else:
                         # Multidiscrete actions (GamePad)
