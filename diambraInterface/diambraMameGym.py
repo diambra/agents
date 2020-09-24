@@ -10,7 +10,8 @@ class diambraMame(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self, env_id, diambra_kwargs, P2brain=None, rewNormFac=0.5,
-                 continue_game=0.0, show_final=False, gamePads=[None, None], actionSpace="multiDiscrete"):
+                 continue_game=0.0, show_final=False, gamePads=[None, None],
+                 actionSpace=["multiDiscrete", "multiDiscrete"]):
         super(diambraMame, self).__init__()
 
         self.first = True
@@ -20,6 +21,8 @@ class diambraMame(gym.Env):
 
         print("Env_id = {}".format(env_id))
         print("Continue value = {}".format(self.continueGame))
+        print("Action Spaces = ", self.actionSpace)
+
         self.ncontinue = 0
         self.env = Environment(env_id, diambra_kwargs).getEnv()
 
@@ -44,16 +47,22 @@ class diambraMame(gym.Env):
         # Reward normalization factor with respect to max health
         self.rewNormFac = rewNormFac
 
-        # P2 action logic
+        # P2 action logic (for AIvsHUM and AIvsAI training)
         self.p2Brain = P2brain
         if self.p2Brain != None:
             self.p2Brain.initialize(self.env.actionList())
 
-            # If p2 action logic is gamepad, add it to self.gamepads
+            # If p2 action logic is gamepad, add it to self.gamepads (for char selection)
+            # Check action space is prescribed as "multiDiscrete"
             if self.p2Brain == "gamepad":
                 gamePads[1] = self.p2Brain
+                if self.actionsSpace[1] != "multiDiscrete":
+                    raise Exception("Action Space for P2 must be \"multiDiscrete\" when using gamePad")
 
-        # Gamepads
+        # Last obs stored (for AIvsAI training)
+        self.lastObs = None
+
+        # Gamepads (for char selection)
         self.gamePads = gamePads
         gamepadNum = 0
         for idx in range(2):
@@ -61,13 +70,12 @@ class diambraMame(gym.Env):
                 self.gamePads[idx].initialize(self.env.actionList(), gamepadNum=gamepadNum)
                 gamepadNum += 1
 
-        # Last obs stored
-        self.lastObs = None
-
         # Define action and observation space
         # They must be gym.spaces objects
+        # We check only first element of self.actionSpace since for now only 1P
+        # training is supported and here defining the action space is for training
 
-        if self.actionSpace == "multiDiscrete":
+        if self.actionSpace[0] == "multiDiscrete":
             # MultiDiscrete actions:
             # - Arrows -> One discrete set
             # - Buttons -> One discrete set
@@ -75,7 +83,7 @@ class diambraMame(gym.Env):
             #     e.g. NOOP = [0], ButA = [1], ButB = [2], ButA+ButB = [3]
             self.action_space = spaces.MultiDiscrete(self.n_actions)
             print("Using MultiDiscrete action space")
-        elif self.actionSpace == "discrete":
+        elif self.actionSpace[0] == "discrete":
             # Discrete actions:
             # - Arrows U Buttons -> One discrete set
             # NB: use the convention NOOP = 0, and buttons combinations are prescripted,
@@ -83,7 +91,7 @@ class diambraMame(gym.Env):
             self.action_space = spaces.Discrete(self.n_actions[0] + self.n_actions[1] - 1)
             print("Using Discrete action space")
         else:
-            raise Exception("Not recognized action space: {}".format(self.actionSpace))
+            raise Exception("Not recognized action space: {}".format(self.actionSpace[0]))
 
         # Image as input:
         self.observation_space = spaces.Box(low=0, high=255,
@@ -139,43 +147,62 @@ class diambraMame(gym.Env):
         movActP2 = 0
         attActP2 = 0
 
-        if self.actionSpace == "multiDiscrete": # MultiDiscrete Action Space
+        # Defining move and attack actions P1/P2 as a function of actionSpace
+        if self.actionSpace[0] == "multiDiscrete": # P1 MultiDiscrete Action Space
+
+            # P1
             movActP1 = action[0]
             attActP1 = action[1]
+
+            # P2
             if self.player_id == "P1P2":
 
-                if self.p2Brain == None:
-                    movActP2 = action[2]
-                    attActP2 = action[3]
-                else:
-                    [movActP2, attActP2], _ = self.p2Brain.act(self.lastObs)
+                if self.actionSpace[1] == "multiDiscrete": # P2 MultiDiscrete Action Space
 
-        elif self.actionSpace == "discrete": # Discrete Action Space
+                    if self.p2Brain == None:
+                        movActP2 = action[2]
+                        attActP2 = action[3]
+                    else:
+                        [movActP2, attActP2], _ = self.p2Brain.act(self.lastObs)
+
+                else: # P2 Discrete Action Space
+
+                    if self.p2Brain == None:
+                        movActP2, attActP2 = self.discreteToMultiDiscreteAction(action[2])
+                    else:
+                        brainActions, _ = self.p2Brain.act(self.lastObs)
+                        movActP2, attActP2 = self.discreteToMultiDiscreteAction(brainActions)
+
+        else: # P1 Discrete Action Space
 
             if self.player_id != "P1P2":
 
+                # P1
                 # Discrete to multidiscrete conversion
                 movActP1, attActP1 = self.discreteToMultiDiscreteAction(action)
 
             else:
 
+                # P1
                 # Discrete to multidiscrete conversion
                 movActP1, attActP1 = self.discreteToMultiDiscreteAction(action[0])
 
-                if self.p2Brain == None:
-                    # Discrete to multidiscrete conversion
-                    movActP2, attActP2 = self.discreteToMultiDiscreteAction(action[1])
+                # P2
+                if self.actionSpace[1] == "multiDiscrete": # P2 MultiDiscrete Action Space
 
-                else:
-                    brainActions, _ = self.p2Brain.act(self.lastObs)
-
-                    if len(brainActions) == 1:
-                        # Discrete to multidiscrete conversion
-                        movActP2, attActP2 = self.discreteToMultiDiscreteAction(brainActions)
-
+                    if self.p2Brain == None:
+                        movActP2 = action[1]
+                        attActP2 = action[2]
                     else:
-                        # Multidiscrete actions (GamePad)
-                        movActP2, attActP2 = brainActions[0], brainActions[1]
+                        [movActP2, attActP2], _ = self.p2Brain.act(self.lastObs)
+
+                else: # P2 Discrete Action Space
+
+                    if self.p2Brain == None:
+                        movActP2, attActP2 = self.discreteToMultiDiscreteAction(action[1])
+                    else:
+                        brainActions, _ = self.p2Brain.act(self.lastObs)
+                        movActP2, attActP2 = self.discreteToMultiDiscreteAction(brainActions)
 
         if self.player_id == "P1P2":
             observation, reward, round_done, done, info = self.env.step2P(movActP1, attActP1, movActP2, attActP2)
