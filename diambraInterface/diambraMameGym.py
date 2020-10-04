@@ -34,8 +34,10 @@ class diambraMame(gym.Env):
         self.max_health = self.env.max_health
         # Maximum number of stages (1P game vs COM)
         self.max_stage = self.env.max_stage
-        # Player id (P1, P2, P1P2)
-        self.player_id = self.env.player
+        # Player Side (P1, P2, P1P2)
+        self.playerSide = self.env.player
+        # Player Id (P1->0, P2->1, P1P2->None)
+        self.playerId = self.env.playerId
         # Characters names list
         self.charNames = self.env.charNames()
         # Number of characters of the game
@@ -103,7 +105,7 @@ class diambraMame(gym.Env):
     # Return min max rewards for the environment
     def minMaxRew(self):
         coeff = 1.0/self.rewNormFac
-        if self.player_id == "P1P2":
+        if self.playerSide == "P1P2":
             return (-2*coeff, 2*coeff)
         else:
             return (-coeff*(self.max_stage-1)-2*coeff, self.max_stage*2*coeff)
@@ -155,7 +157,7 @@ class diambraMame(gym.Env):
             attActP1 = action[1]
 
             # P2
-            if self.player_id == "P1P2":
+            if self.playerSide == "P1P2":
 
                 if self.actionSpace[1] == "multiDiscrete": # P2 MultiDiscrete Action Space
 
@@ -175,7 +177,7 @@ class diambraMame(gym.Env):
 
         else: # P1 Discrete Action Space
 
-            if self.player_id != "P1P2":
+            if self.playerSide != "P1P2":
 
                 # P1
                 # Discrete to multidiscrete conversion
@@ -204,7 +206,7 @@ class diambraMame(gym.Env):
                         brainActions, _ = self.p2Brain.act(self.lastObs)
                         movActP2, attActP2 = self.discreteToMultiDiscreteAction(brainActions)
 
-        if self.player_id == "P1P2":
+        if self.playerSide == "P1P2":
             observation, reward, round_done, done, info = self.env.step2P(movActP1, attActP1, movActP2, attActP2)
             stage_done = False
             game_done = done
@@ -222,7 +224,7 @@ class diambraMame(gym.Env):
         self.movActBufP1.extend([movActP1])
         self.attActBufP1.extend([attActP1])
         info["actionsBufP1"] = [self.movActBufP1, self.attActBufP1]
-        if self.player_id == "P1P2":
+        if self.playerSide == "P1P2":
             self.movActBufP2.extend([movActP2])
             self.attActBufP2.extend([attActP2])
             info["actionsBufP2"] = [self.movActBufP2, self.attActBufP2]
@@ -253,7 +255,8 @@ class diambraMame(gym.Env):
                print("Game done, continuing ...")
                self.env.continue_game()
                self.playingCharacters = self.env.playingCharacters
-               self.player_id = self.env.player
+               self.playerSide = self.env.player
+               self.playerId = self.env.playerId
             else:
                print("Episode done")
                done = True
@@ -281,10 +284,11 @@ class diambraMame(gym.Env):
             observation = self.env.new_game()
 
         self.playingCharacters = self.env.playingCharacters
-        self.player_id = self.env.player
+        self.playerSide = self.env.player
+        self.playerId = self.env.playerId
 
         # Deactivating showFinal for 2P Env (Needed to do it here after Env start)
-        if self.player_id == "P1P2":
+        if self.playerSide == "P1P2":
             self.showFinal = False
 
         return observation

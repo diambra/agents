@@ -394,7 +394,7 @@ class AddObs(gym.Wrapper):
             self.resetInfo["ownHealth_2"] = [1]
             self.resetInfo["oppHealth_1"] = [1]
             self.resetInfo["oppHealth_2"] = [1]
-        if self.env.player_id == "P1":
+        if self.env.playerSide == "P1" or self.env.playerSide == "P1P2":
             self.resetInfo["ownPosition"] = [0]
             self.resetInfo["oppPosition"] = [1]
         else:
@@ -411,15 +411,12 @@ class AddObs(gym.Wrapper):
 
         tmpChar1 = np.zeros(self.env.numberOfCharacters)
         tmpChar2 = np.zeros(self.env.numberOfCharacters)
-        if "ownHealth" in self.key_to_add:
+        if self.env.playerSide != "P1P2":
+            tmpChar1[self.env.playingCharacters[self.env.playerId]] = 1
+        else :
             tmpChar1[self.env.playingCharacters[0]] = 1
-            if self.env.player_id == "P1P2":
-                tmpChar2[self.env.playingCharacters[1]] = 1
-            dictToUpdate["characters"] = np.concatenate( (tmpChar1, tmpChar2) )
-        else:
-            raise "Playing char to be completed for TEKTAG"
-            tmpChar[self.env.playingCharacters[0]] = 1
-            dictToUpdate["characters"] = tmpChar
+            tmpChar2[self.env.playingCharacters[1]] = 1
+        dictToUpdate["characters"] = np.concatenate( (tmpChar1, tmpChar2) )
 
         return
 
@@ -476,13 +473,13 @@ class AddObs(gym.Wrapper):
                                       (self.actionsVector( info["actionsBufP1"][0], self.env.n_actions[0] ),
                                        self.actionsVector( info["actionsBufP1"][1], self.env.n_actions[1] ))
                                                   )
-        if self.env.player_id == "P1P2":
+        if self.env.playerSide == "P1P2":
             step_info["actionsBufP2"] = np.concatenate(
                                           (self.actionsVector( info["actionsBufP2"][0], self.env.n_actions[0] ),
                                            self.actionsVector( info["actionsBufP2"][1], self.env.n_actions[1] ))
                                                       )
 
-        if self.env.player_id == "P1" or self.env.player_id == "P1P2":
+        if self.env.playerSide == "P1" or self.env.playerSide == "P1P2":
 
             if "ownHealth" in self.key_to_add:
                 step_info["ownHealth"] = [info["healthP1"] / float(self.env.max_health)]
@@ -628,7 +625,7 @@ class TrajectoryRecorder(gym.Wrapper):
             to_save = {}
             to_save["commitHash"] = self.commitHash
             to_save["userName"]   = self.userName
-            to_save["playerId"]   = self.env.player_id
+            to_save["playerId"]   = self.env.playerSide
             to_save["difficulty"] = self.env.difficulty
             to_save["ignoreP2"]   = self.ignoreP2
             to_save["nChars"]     = len(self.env.charNames)
@@ -645,14 +642,14 @@ class TrajectoryRecorder(gym.Wrapper):
             # Characters name
             chars = ""
             # If 2P mode
-            if self.env.player_id == "P1P2" and self.ignoreP2 == 0:
+            if self.env.playerSide == "P1P2" and self.ignoreP2 == 0:
                 chars += self.env.charNames[self.env.playingCharacters[0]]
                 chars += self.env.charNames[self.env.playingCharacters[1]]
             # If 1P mode
             else:
-                chars += self.env.charNames[self.env.playingCharacters[0]]
+                chars += self.env.charNames[self.env.playingCharacters[self.env.playerId]]
 
-            savePath = self.filePath + "_mod" + str(self.ignoreP2)  + self.env.player_id + "_" + chars +\
+            savePath = self.filePath + "_mod" + str(self.ignoreP2)  + self.env.playerSide + "_" + chars +\
                        "_diff" + str(self.env.difficulty)  + "_rew" + str(np.round(self.cumulativeRew, 3)) +\
                        "_" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
