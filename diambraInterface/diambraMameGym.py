@@ -23,8 +23,8 @@ class diambraMame(gym.Env):
 
         print("Env_id = {}".format(env_id))
         print("Continue value = {}".format(self.continueGame))
-        print("Action Spaces = ", self.actionSpace)
-        print("Use attack buttons combinations = ", self.attackButCombinations)
+        print("Action Spaces = {}".format(self.actionSpace))
+        print("Use attack buttons combinations = {}".format(self.attackButCombinations))
 
         self.ncontinue = 0
         self.env = Environment(env_id, diambra_kwargs).getEnv()
