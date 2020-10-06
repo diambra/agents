@@ -38,8 +38,11 @@ class NoopResetEnv(gym.Wrapper):
             noops = random.randint(1, self.noop_max + 1)
         assert noops > 0
         obs = None
+        noopAction = [0, 0, 0, 0]
+        if self.env.actionSpace[0] == "discrete" and self.env.playerSide != "P1P2":
+            noopAction = 0
         for _ in range(noops):
-            obs, _, done, _ = self.env.step([0, 0, 0, 0])
+            obs, _, done, _ = self.env.step(noopAction)
             if done:
                 obs = self.env.reset(**kwargs)
         return obs
@@ -403,8 +406,6 @@ class AddObs(gym.Wrapper):
         self.resetInfo["ownWins"] = [0]
         self.resetInfo["oppWins"] = [0]
         self.resetInfo["stage"] = [0.0]
-
-        self.updatePlayingChar(self.resetInfo)
 
     # Update playing char
     def updatePlayingChar(self, dictToUpdate):

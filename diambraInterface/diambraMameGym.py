@@ -11,23 +11,29 @@ class diambraMame(gym.Env):
 
     def __init__(self, env_id, diambra_kwargs, P2brain=None, rewNormFac=0.5,
                  continue_game=0.0, show_final=False, gamePads=[None, None],
-                 actionSpace=["multiDiscrete", "multiDiscrete"]):
+                 actionSpace=["multiDiscrete", "multiDiscrete"],
+                 attackButCombinations=True):
         super(diambraMame, self).__init__()
 
         self.first = True
         self.continueGame = continue_game
         self.showFinal = show_final
         self.actionSpace = actionSpace
+        self.attackButCombinations=attackButCombinations
 
         print("Env_id = {}".format(env_id))
         print("Continue value = {}".format(self.continueGame))
         print("Action Spaces = ", self.actionSpace)
+        print("Use attack buttons combinations = ", self.attackButCombinations)
 
         self.ncontinue = 0
         self.env = Environment(env_id, diambra_kwargs).getEnv()
 
         # N actions
-        self.n_actions = self.env.n_actions
+        if self.attackButCombinations:
+            self.n_actions = self.env.n_actions_butComb
+        else:
+            self.n_actions = self.env.n_actions_noButComb
         # Frame height, width and channel dimensions
         self.hwc_dim = self.env.hwc_dim
         # Maximum players health
@@ -81,15 +87,21 @@ class diambraMame(gym.Env):
             # MultiDiscrete actions:
             # - Arrows -> One discrete set
             # - Buttons -> One discrete set
-            # NB: use the convention NOOP = 0, and buttons combinations are prescripted,
+            # NB: use the convention NOOP = 0, and buttons combinations
+            #     can be prescripted:
             #     e.g. NOOP = [0], ButA = [1], ButB = [2], ButA+ButB = [3]
+            #     or ignored:
+            #     e.g. NOOP = [0], ButA = [1], ButB = [2]
             self.action_space = spaces.MultiDiscrete(self.n_actions)
             print("Using MultiDiscrete action space")
         elif self.actionSpace[0] == "discrete":
             # Discrete actions:
             # - Arrows U Buttons -> One discrete set
-            # NB: use the convention NOOP = 0, and buttons combinations are prescripted,
+            # NB: use the convention NOOP = 0, and buttons combinations
+            #     can be prescripted:
             #     e.g. NOOP = [0], ButA = [1], ButB = [2], ButA+ButB = [3]
+            #     or ignored:
+            #     e.g. NOOP = [0], ButA = [1], ButB = [2]
             self.action_space = spaces.Discrete(self.n_actions[0] + self.n_actions[1] - 1)
             print("Using Discrete action space")
         else:
