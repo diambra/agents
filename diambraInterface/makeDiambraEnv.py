@@ -378,15 +378,15 @@ class AddObs(gym.Wrapper):
         self.resetInfo = {}
         self.resetInfo["actionsBufP1"] = np.concatenate(
                                            (self.actionsVector([0 for i in range(self.env.actBufLen)],
-                                                               self.env.n_actions[0]),
+                                                               self.env.n_actions[0][0]),
                                             self.actionsVector([0 for i in range(self.env.actBufLen)],
-                                                               self.env.n_actions[1]))
+                                                               self.env.n_actions[0][1]))
                                                       )
         self.resetInfo["actionsBufP2"] = np.concatenate(
                                            (self.actionsVector([0 for i in range(self.env.actBufLen)],
-                                                               self.env.n_actions[0]),
+                                                               self.env.n_actions[1][0]),
                                             self.actionsVector([0 for i in range(self.env.actBufLen)],
-                                                               self.env.n_actions[1]))
+                                                               self.env.n_actions[1][1]))
                                                       )
 
         if "ownHealth" in self.key_to_add:
@@ -471,13 +471,13 @@ class AddObs(gym.Wrapper):
 
         step_info = {}
         step_info["actionsBufP1"] = np.concatenate(
-                                      (self.actionsVector( info["actionsBufP1"][0], self.env.n_actions[0] ),
-                                       self.actionsVector( info["actionsBufP1"][1], self.env.n_actions[1] ))
+                                      (self.actionsVector( info["actionsBufP1"][0], self.env.n_actions[0][0] ),
+                                       self.actionsVector( info["actionsBufP1"][1], self.env.n_actions[0][1] ))
                                                   )
         if self.env.playerSide == "P1P2":
             step_info["actionsBufP2"] = np.concatenate(
-                                          (self.actionsVector( info["actionsBufP2"][0], self.env.n_actions[0] ),
-                                           self.actionsVector( info["actionsBufP2"][1], self.env.n_actions[1] ))
+                                          (self.actionsVector( info["actionsBufP2"][0], self.env.n_actions[1][0] ),
+                                           self.actionsVector( info["actionsBufP2"][1], self.env.n_actions[1][1] ))
                                                       )
 
         if self.env.playerSide == "P1" or self.env.playerSide == "P1P2":
