@@ -12,7 +12,7 @@ class diambraMame(gym.Env):
     def __init__(self, env_id, diambra_kwargs, P2brain=None, rewNormFac=0.5,
                  continue_game=0.0, show_final=False, gamePads=[None, None],
                  actionSpace=["multiDiscrete", "multiDiscrete"],
-                 attackButCombinations=True):
+                 attackButCombinations=[True, True]):
         super(diambraMame, self).__init__()
 
         self.first = True
@@ -30,10 +30,10 @@ class diambraMame(gym.Env):
         self.env = Environment(env_id, diambra_kwargs).getEnv()
 
         # N actions
-        if self.attackButCombinations:
-            self.n_actions = self.env.n_actions_butComb
-        else:
-            self.n_actions = self.env.n_actions_noButComb
+        self.n_actions = [self.env.n_actions_butComb, self.env.n_actions_butComb]
+        for idx in range(2):
+            if not self.attackButCombinations[idx]:
+                self.n_actions[idx] = self.env.n_actions_noButComb
         # Frame height, width and channel dimensions
         self.hwc_dim = self.env.hwc_dim
         # Maximum players health
@@ -66,6 +66,8 @@ class diambraMame(gym.Env):
                 gamePads[1] = self.p2Brain
                 if self.actionsSpace[1] != "multiDiscrete":
                     raise Exception("Action Space for P2 must be \"multiDiscrete\" when using gamePad")
+                if not self.attackButCombinations[1]:
+                    raise Exception("Use attack buttons combinations for P2 must be \"True\" when using gamePad")
 
         # Last obs stored (for AIvsAI training)
         self.lastObs = None
@@ -92,7 +94,7 @@ class diambraMame(gym.Env):
             #     e.g. NOOP = [0], ButA = [1], ButB = [2], ButA+ButB = [3]
             #     or ignored:
             #     e.g. NOOP = [0], ButA = [1], ButB = [2]
-            self.action_space = spaces.MultiDiscrete(self.n_actions)
+            self.action_space = spaces.MultiDiscrete(self.n_actions[0])
             print("Using MultiDiscrete action space")
         elif self.actionSpace[0] == "discrete":
             # Discrete actions:
@@ -102,7 +104,7 @@ class diambraMame(gym.Env):
             #     e.g. NOOP = [0], ButA = [1], ButB = [2], ButA+ButB = [3]
             #     or ignored:
             #     e.g. NOOP = [0], ButA = [1], ButB = [2]
-            self.action_space = spaces.Discrete(self.n_actions[0] + self.n_actions[1] - 1)
+            self.action_space = spaces.Discrete(self.n_actions[0][0] + self.n_actions[0][1] - 1)
             print("Using Discrete action space")
         else:
             raise Exception("Not recognized action space: {}".format(self.actionSpace[0]))
@@ -143,12 +145,12 @@ class diambraMame(gym.Env):
         movAct = 0
         attAct = 0
 
-        if action <= self.n_actions[0] - 1:
+        if action <= self.n_actions[0][0] - 1:
             # Move action or no action
             movAct = action # For example, for DOA++ this can be 0 - 8
         else:
             # Attack action
-            attAct = action - self.n_actions[0] + 1 # For example, for DOA++ this can be 1 - 7
+            attAct = action - self.n_actions[0][0] + 1 # For example, for DOA++ this can be 1 - 7
 
         return movAct, attAct
 
