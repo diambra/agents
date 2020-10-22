@@ -113,6 +113,14 @@ class diambraMame(gym.Env):
         self.observation_space = spaces.Box(low=0, high=255,
                                         shape=(self.hwc_dim[0], self.hwc_dim[1], self.hwc_dim[2]), dtype=np.uint8)
 
+        # Saving both action spaces
+        self.action_spaces = [None, None]
+        for idx in range(2):
+            if self.actionSpace[idx] == "multiDiscrete":
+                self.action_spaces[idx] = spaces.MultiDiscrete(self.n_actions[idx])
+            else:
+                self.action_spaces[idx] = spaces.Discrete(self.n_actions[idx][0] + self.n_actions[idx][1] - 1)
+
         self.actBufLen = 12
         self.clearActBuf()
 
