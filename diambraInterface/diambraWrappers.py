@@ -619,21 +619,22 @@ class TrajectoryRecorder(gym.Wrapper):
 
         if done:
             to_save = {}
-            to_save["commitHash"] = self.commitHash
-            to_save["userName"]   = self.userName
-            to_save["playerId"]   = self.env.playerSide
-            to_save["difficulty"] = self.env.difficulty
-            to_save["ignoreP2"]   = self.ignoreP2
-            to_save["nChars"]     = len(self.env.charNames)
-            to_save["actBufLen"]  = self.env.actBufLen
-            to_save["nActions"]   = self.env.n_actions
-            to_save["epLen"]      = len(self.rewardsHist)
-            to_save["cumRew"]     = self.cumulativeRew
-            to_save["keyToAdd"]   = self.key_to_add
-            to_save["frames"]     = self.lastFrameHist
-            to_save["addObs"]     = self.addObsHist
-            to_save["rewards"]    = self.rewardsHist
-            to_save["actions"]    = self.actionsHist
+            to_save["commitHash"]    = self.commitHash
+            to_save["userName"]      = self.userName
+            to_save["playerId"]      = self.env.playerSide
+            to_save["difficulty"]    = self.env.difficulty
+            to_save["ignoreP2"]      = self.ignoreP2
+            to_save["nChars"]        = len(self.env.charNames)
+            to_save["actBufLen"]     = self.env.actBufLen
+            to_save["nActions"]      = self.env.n_actions
+            to_save["attackButComb"] = self.env.attackButCombinations
+            to_save["epLen"]         = len(self.rewardsHist)
+            to_save["cumRew"]        = self.cumulativeRew
+            to_save["keyToAdd"]      = self.key_to_add
+            to_save["frames"]        = self.lastFrameHist
+            to_save["addObs"]        = self.addObsHist
+            to_save["rewards"]       = self.rewardsHist
+            to_save["actions"]       = self.actionsHist
 
             # Characters name
             chars = ""
