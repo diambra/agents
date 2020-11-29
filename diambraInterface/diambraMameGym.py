@@ -127,7 +127,7 @@ class diambraMame(gym.Env):
     # Return min max rewards for the environment
     def minMaxRew(self):
         coeff = 1.0/self.rewNormFac
-        if self.playerSide == "P1P2":
+        if self.env.inputPlayer == "P1P2":
             return (-2*coeff, 2*coeff)
         else:
             return (-coeff*(self.max_stage-1)-2*coeff, self.max_stage*2*coeff)
