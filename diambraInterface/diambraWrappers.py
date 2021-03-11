@@ -385,22 +385,33 @@ class AddObs(gym.Wrapper):
                                                       )
 
         if "ownHealth" in self.key_to_add:
-            self.resetInfo["ownHealth"] = [1]
-            self.resetInfo["oppHealth"] = [1]
+            self.resetInfo["ownHealthP1"] = [1]
+            self.resetInfo["oppHealthP1"] = [1]
+            self.resetInfo["ownHealthP2"] = [1]
+            self.resetInfo["oppHealthP2"] = [1]
         else:
-            self.resetInfo["ownHealth_1"] = [1]
-            self.resetInfo["ownHealth_2"] = [1]
-            self.resetInfo["oppHealth_1"] = [1]
-            self.resetInfo["oppHealth_2"] = [1]
+            self.resetInfo["ownHealth_1P1"] = [1]
+            self.resetInfo["ownHealth_2P1"] = [1]
+            self.resetInfo["oppHealth_1P1"] = [1]
+            self.resetInfo["oppHealth_2P1"] = [1]
+            self.resetInfo["ownHealth_1P2"] = [1]
+            self.resetInfo["ownHealth_2P2"] = [1]
+            self.resetInfo["oppHealth_1P2"] = [1]
+            self.resetInfo["oppHealth_2P2"] = [1]
         if self.env.playerSide == "P1" or self.env.playerSide == "P1P2":
-            self.resetInfo["ownPosition"] = [0]
-            self.resetInfo["oppPosition"] = [1]
+            self.resetInfo["ownPositionP1"] = [0]
+            self.resetInfo["oppPositionP1"] = [1]
         else:
-            self.resetInfo["ownPosition"] = [1]
-            self.resetInfo["oppPosition"] = [0]
-        self.resetInfo["ownWins"] = [0]
-        self.resetInfo["oppWins"] = [0]
-        self.resetInfo["stage"] = [0.0]
+            self.resetInfo["ownPositionP1"] = [1]
+            self.resetInfo["oppPositionP1"] = [0]
+        self.resetInfo["ownPositionP2"] = [1]
+        self.resetInfo["oppPositionP2"] = [0]
+        self.resetInfo["ownWinsP1"] = [0]
+        self.resetInfo["oppWinsP1"] = [0]
+        self.resetInfo["ownWinsP2"] = [0]
+        self.resetInfo["oppWinsP2"] = [0]
+        self.resetInfo["stageP1"] = [0.0]
+        self.resetInfo["stageP2"] = [0.0]
 
     # Update playing char
     def updatePlayingChar(self, dictToUpdate):
@@ -412,7 +423,8 @@ class AddObs(gym.Wrapper):
         else :
             tmpChar1[self.env.playingCharacters[0]] = 1
             tmpChar2[self.env.playingCharacters[1]] = 1
-        dictToUpdate["characters"] = np.concatenate( (tmpChar1, tmpChar2) )
+        dictToUpdate["characterP1"] = tmpChar1
+        dictToUpdate["characterP2"] = tmpChar2
 
         return
 
@@ -442,17 +454,35 @@ class AddObs(gym.Wrapper):
         # Creating the additional channel where to store new info
         obsNewAdd = np.zeros((shp[0], shp[1], 1), dtype=self.env.observation_space.dtype)
 
-        # Adding new info to the additional channel, on a very long line and then reshaping into the obs dim
+        # Adding new info to the additional channel, on a very
+        # long line and then reshaping into the obs dim
         newData = np.zeros((shp[0] * shp[1]))
+
+        # Adding new info for 1P
         counter = 0
         for key in self.key_to_add:
 
-           for addInfo in additionalInfo[key]:
+            for addInfo in additionalInfo[key+"P1"]:
 
-              counter = counter + 1
-              newData[counter] = addInfo
+                counter = counter + 1
+                newData[counter] = addInfo
 
         newData[0] = counter
+
+        # Adding new info for P2 in 2P games
+        if self.env.playerSide == "P1P2":
+            halfPosIdx = int((shp[0] * shp[1]) / 2)
+            counter = halfPosIdx
+
+            for key in self.key_to_add:
+
+                for addInfo in additionalInfo[key+"P2"]:
+
+                    counter = counter + 1
+                    newData[counter] = addInfo
+
+            newData[halfPosIdx] = counter - halfPosIdx
+
         newData = np.reshape(newData, (shp[0], -1))
 
         newData = newData * self.boxHighBound
@@ -478,36 +508,53 @@ class AddObs(gym.Wrapper):
         if self.env.playerSide == "P1" or self.env.playerSide == "P1P2":
 
             if "ownHealth" in self.key_to_add:
-                step_info["ownHealth"] = [info["healthP1"] / float(self.env.max_health)]
-                step_info["oppHealth"] = [info["healthP2"] / float(self.env.max_health)]
+                step_info["ownHealthP1"] = [info["healthP1"] / float(self.env.max_health)]
+                step_info["oppHealthP1"] = [info["healthP2"] / float(self.env.max_health)]
             else:
-                step_info["ownHealth_1"] = [info["healthP1_1"] / float(self.env.max_health)]
-                step_info["ownHealth_2"] = [info["healthP1_2"] / float(self.env.max_health)]
-                step_info["oppHealth_1"] = [info["healthP2_1"] / float(self.env.max_health)]
-                step_info["oppHealth_2"] = [info["healthP2_2"] / float(self.env.max_health)]
+                step_info["ownHealth_1P1"] = [info["healthP1_1"] / float(self.env.max_health)]
+                step_info["ownHealth_2P1"] = [info["healthP1_2"] / float(self.env.max_health)]
+                step_info["oppHealth_1P1"] = [info["healthP2_1"] / float(self.env.max_health)]
+                step_info["oppHealth_2P1"] = [info["healthP2_2"] / float(self.env.max_health)]
 
-            step_info["ownPosition"] = [info["positionP1"]]
-            step_info["oppPosition"] = [info["positionP2"]]
+            step_info["ownPositionP1"] = [info["positionP1"]]
+            step_info["oppPositionP1"] = [info["positionP2"]]
 
-            step_info["ownWins"] = [info["winsP1"]]
-            step_info["oppWins"] = [info["winsP2"]]
+            step_info["ownWinsP1"] = [info["winsP1"]]
+            step_info["oppWinsP1"] = [info["winsP2"]]
         else:
             if "ownHealth" in self.key_to_add:
-                step_info["ownHealth"] = [info["healthP2"] / float(self.env.max_health)]
-                step_info["oppHealth"] = [info["healthP1"] / float(self.env.max_health)]
+                step_info["ownHealthP1"] = [info["healthP2"] / float(self.env.max_health)]
+                step_info["oppHealthP1"] = [info["healthP1"] / float(self.env.max_health)]
             else:
-                step_info["ownHealth_1"] = [info["healthP2_1"] / float(self.env.max_health)]
-                step_info["ownHealth_2"] = [info["healthP2_2"] / float(self.env.max_health)]
-                step_info["oppHealth_1"] = [info["healthP1_1"] / float(self.env.max_health)]
-                step_info["oppHealth_2"] = [info["healthP1_2"] / float(self.env.max_health)]
+                step_info["ownHealth_1P1"] = [info["healthP2_1"] / float(self.env.max_health)]
+                step_info["ownHealth_2P1"] = [info["healthP2_2"] / float(self.env.max_health)]
+                step_info["oppHealth_1P1"] = [info["healthP1_1"] / float(self.env.max_health)]
+                step_info["oppHealth_2P1"] = [info["healthP1_2"] / float(self.env.max_health)]
 
-            step_info["ownPosition"] = [info["positionP2"]]
-            step_info["oppPosition"] = [info["positionP1"]]
+            step_info["ownPositionP1"] = [info["positionP2"]]
+            step_info["oppPositionP1"] = [info["positionP1"]]
 
-            step_info["ownWins"] = [info["winsP2"]]
-            step_info["oppWins"] = [info["winsP1"]]
+            step_info["ownWinsP1"] = [info["winsP2"]]
+            step_info["oppWinsP1"] = [info["winsP1"]]
 
-        step_info["stage"] = [ float(info["stage"]-1) / float(self.env.max_stage - 1) ]
+        step_info["stageP1"] = [ float(info["stage"]-1) / float(self.env.max_stage - 1) ]
+
+        if self.env.playerSide == "P1P2":
+            if "ownHealth" in self.key_to_add:
+                step_info["ownHealthP2"] = step_info["oppHealthP1"]
+                step_info["oppHealthP2"] = step_info["ownHealthP1"]
+            else:
+                step_info["ownHealth_1P2"] = step_info["oppHealth_1P1"]
+                step_info["ownHealth_2P2"] = step_info["oppHealth_2P1"]
+                step_info["oppHealth_1P2"] = step_info["ownHealth_1P1"]
+                step_info["oppHealth_2P2"] = step_info["ownHealth_2P1"]
+
+            step_info["ownPositionP2"] = [info["positionP2"]]
+            step_info["oppPositionP2"] = [info["positionP1"]]
+
+            step_info["ownWinsP2"] = [info["winsP2"]]
+            step_info["oppWinsP2"] = [info["winsP1"]]
+            step_info["stageP2"] = step_info["stageP1"]
 
         self.updatePlayingChar(step_info)
 
