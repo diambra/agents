@@ -4,6 +4,7 @@ import gym
 from gym import spaces
 from Environment import Environment
 from collections import deque
+from policies import P2ToP1AddObsMove
 
 class diambraMame(gym.Env):
     """DiambraMame Environment that follows gym interface"""
@@ -62,7 +63,7 @@ class diambraMame(gym.Env):
 
             # If p2 action logic is gamepad, add it to self.gamepads (for char selection)
             # Check action space is prescribed as "multiDiscrete"
-            if self.p2Brain == "gamepad":
+            if self.p2Brain.id == "gamepad":
                 gamePads[1] = self.p2Brain
                 if self.actionsSpace[1] != "multiDiscrete":
                     raise Exception("Action Space for P2 must be \"multiDiscrete\" when using gamePad")
@@ -187,6 +188,9 @@ class diambraMame(gym.Env):
                         movActP2 = action[2]
                         attActP2 = action[3]
                     else:
+                        if self.p2Brain.id == "rl":
+                            self.lastObs = P2ToP1AddObsMove(self.lastObs)
+
                         [movActP2, attActP2], _ = self.p2Brain.act(self.lastObs)
 
                 else: # P2 Discrete Action Space
@@ -194,6 +198,8 @@ class diambraMame(gym.Env):
                     if self.p2Brain == None:
                         movActP2, attActP2 = self.discreteToMultiDiscreteAction(action[2])
                     else:
+                        if self.p2Brain.id == "rl":
+                            self.lastObs = P2ToP1AddObsMove(self.lastObs)
                         brainActions, _ = self.p2Brain.act(self.lastObs)
                         movActP2, attActP2 = self.discreteToMultiDiscreteAction(brainActions)
 
@@ -218,6 +224,8 @@ class diambraMame(gym.Env):
                         movActP2 = action[1]
                         attActP2 = action[2]
                     else:
+                        if self.p2Brain.id == "rl":
+                            self.lastObs = P2ToP1AddObsMove(self.lastObs)
                         [movActP2, attActP2], _ = self.p2Brain.act(self.lastObs)
 
                 else: # P2 Discrete Action Space
@@ -225,6 +233,8 @@ class diambraMame(gym.Env):
                     if self.p2Brain == None:
                         movActP2, attActP2 = self.discreteToMultiDiscreteAction(action[1])
                     else:
+                        if self.p2Brain.id == "rl":
+                            self.lastObs = P2ToP1AddObsMove(self.lastObs)
                         brainActions, _ = self.p2Brain.act(self.lastObs)
                         movActP2, attActP2 = self.discreteToMultiDiscreteAction(brainActions)
 
