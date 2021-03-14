@@ -625,6 +625,7 @@ class TrajectoryRecorder(gym.Wrapper):
         self.commitHash = commitHash
 
         print("Recording trajectories in \"{}\"".format(self.filePath))
+        os.makedirs(self.filePath, exist_ok = True)
 
     def reset(self, **kwargs):
         """
@@ -671,10 +672,11 @@ class TrajectoryRecorder(gym.Wrapper):
             to_save["playerId"]      = self.env.playerSide
             to_save["difficulty"]    = self.env.difficulty
             to_save["ignoreP2"]      = self.ignoreP2
-            to_save["nChars"]        = len(self.env.charNames)
+            to_save["charNames"]     = self.env.charNames
             to_save["actBufLen"]     = self.env.actBufLen
-            to_save["nActions"]      = self.env.n_actions
-            to_save["attackButComb"] = self.env.attackButCombinations
+            to_save["nActions"]      = self.env.n_actions[0]
+            to_save["attackButComb"] = self.env.attackButCombinations[0]
+            to_save["actionSpace"]   = self.env.actionSpace[0]
             to_save["epLen"]         = len(self.rewardsHist)
             to_save["cumRew"]        = self.cumulativeRew
             to_save["keyToAdd"]      = self.key_to_add
