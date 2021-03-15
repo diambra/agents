@@ -189,7 +189,7 @@ class diambraMame(gym.Env):
                         attActP2 = action[3]
                     else:
                         if self.p2Brain.id == "rl":
-                            self.lastObs = P2ToP1AddObsMove(self.lastObs)
+                            self.lastObs[:,:,-1] = P2ToP1AddObsMove(self.lastObs[:,:,-1])
                         [movActP2, attActP2], _ = self.p2Brain.act(self.lastObs)
 
                 else: # P2 Discrete Action Space
@@ -198,7 +198,7 @@ class diambraMame(gym.Env):
                         movActP2, attActP2 = self.discreteToMultiDiscreteAction(action[2])
                     else:
                         if self.p2Brain.id == "rl":
-                            self.lastObs = P2ToP1AddObsMove(self.lastObs)
+                            self.lastObs[:,:,-1] = P2ToP1AddObsMove(self.lastObs[:,:,-1])
                         brainActions, _ = self.p2Brain.act(self.lastObs)
                         movActP2, attActP2 = self.discreteToMultiDiscreteAction(brainActions)
 
@@ -224,7 +224,7 @@ class diambraMame(gym.Env):
                         attActP2 = action[2]
                     else:
                         if self.p2Brain.id == "rl":
-                            self.lastObs = P2ToP1AddObsMove(self.lastObs)
+                            self.lastObs[:,:,-1] = P2ToP1AddObsMove(self.lastObs[:,:,-1])
                         [movActP2, attActP2], _ = self.p2Brain.act(self.lastObs)
 
                 else: # P2 Discrete Action Space
@@ -233,7 +233,7 @@ class diambraMame(gym.Env):
                         movActP2, attActP2 = self.discreteToMultiDiscreteAction(action[1])
                     else:
                         if self.p2Brain.id == "rl":
-                            self.lastObs = P2ToP1AddObsMove(self.lastObs)
+                            self.lastObs[:,:,-1] = P2ToP1AddObsMove(self.lastObs[:,:,-1])
                         brainActions, _ = self.p2Brain.act(self.lastObs)
                         movActP2, attActP2 = self.discreteToMultiDiscreteAction(brainActions)
 
