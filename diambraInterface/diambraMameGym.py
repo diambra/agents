@@ -190,7 +190,6 @@ class diambraMame(gym.Env):
                     else:
                         if self.p2Brain.id == "rl":
                             self.lastObs = P2ToP1AddObsMove(self.lastObs)
-
                         [movActP2, attActP2], _ = self.p2Brain.act(self.lastObs)
 
                 else: # P2 Discrete Action Space
