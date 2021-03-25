@@ -70,9 +70,6 @@ class diambraMame(gym.Env):
                 if not self.attackButCombinations[1]:
                     raise Exception("Use attack buttons combinations for P2 must be \"True\" when using gamePad")
 
-        # Last obs stored (for AIvsAI training)
-        self.lastObs = None
-
         # Gamepads (for char selection)
         self.gamePads = gamePads
         gamepadNum = 0
@@ -163,6 +160,10 @@ class diambraMame(gym.Env):
 
         return movAct, attAct
 
+    # Save last Observation
+    def updateLastObs(self, obs):
+        self.lastObs = obs
+
     # Step the environment
     def step(self, action):
 
@@ -242,6 +243,7 @@ class diambraMame(gym.Env):
                         movActP1, attActP1 = self.discreteToMultiDiscreteAction(action)
                         if self.p2Brain.id == "rl":
                             self.lastObs[:,:,-1] = P2ToP1AddObsMove(self.lastObs[:,:,-1])
+
                         brainActions, _ = self.p2Brain.act(self.lastObs)
                         movActP2, attActP2 = self.discreteToMultiDiscreteAction(brainActions)
 
@@ -267,7 +269,6 @@ class diambraMame(gym.Env):
             self.movActBufP2.extend([movActP2])
             self.attActBufP2.extend([attActP2])
             info["actionsBufP2"] = [self.movActBufP2, self.attActBufP2]
-
 
         if done:
             if self.showFinal:
