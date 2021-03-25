@@ -290,7 +290,7 @@ def make_diambra(diambraGame, env_id, diambra_kwargs, diambra_gym_kwargs):
     """
 
     env = diambraGame(env_id, diambra_kwargs, **diambra_gym_kwargs)
-    env = NoopResetEnv(env, noop_max=6)
+    #env = NoopResetEnv(env, noop_max=6)
     #env = MaxAndSkipEnv(env, skip=4)
     return env
 
@@ -574,7 +574,7 @@ class AddObs(gym.Wrapper):
         obsNew = self.observation_mod(obs, self.resetInfo)
 
         # Store last observation
-        self.env.lastObs = obsNew
+        self.env.updateLastObs(obsNew)
 
         return obsNew
 
@@ -592,7 +592,7 @@ class AddObs(gym.Wrapper):
         obsNew = self.observation_mod(obs, stepInfo)
 
         # Store last observation
-        self.env.lastObs = obsNew
+        self.env.updateLastObs(obsNew)
 
         return obsNew, reward, done, info
 
