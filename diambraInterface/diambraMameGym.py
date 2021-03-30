@@ -163,6 +163,10 @@ class diambraMame(gym.Env):
     # Save last Observation
     def updateLastObs(self, obs):
         self.lastObs = obs
+        
+    # Update P2Brain RL policy weights
+    def updateP2BrainWeights(self, weightsPath):
+        self.p2Brain.updateWeights(weightsPath)
 
     # Step the environment
     def step(self, action):
