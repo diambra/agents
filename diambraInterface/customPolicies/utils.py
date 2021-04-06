@@ -49,17 +49,21 @@ class AutoSave(BaseCallback):
 
 # Update p2Brain model Callback
 class UpdateRLPolicyWeights(BaseCallback):
-    def __init__(self, check_freq: int, numEnv: int, verbose=1):
+    def __init__(self, check_freq: int, numEnv: int, save_path: str, verbose=1):
         super(UpdateRLPolicyWeights, self).__init__(verbose)
         self.check_freq = int(check_freq/numEnv)
         self.numEnv = numEnv
+        self.save_path = save_path + 'lastModel'
 
     def _on_step(self) -> bool:
         if self.n_calls % self.check_freq == 0:
+            if self.verbose > 0:
+                print("Saving latest model to {}".format(self.save_path))
+            # Save the agent
+            self.model.save(self.save_path)
+            
             # Load new weights
-            wPath = "/home/alexpalms/Work/ArtificialTwin/Diambra/diambraengine/" +\
-                    "stableBaselines/diambraInterface/AIvsCOM/doapp_ppo2_Model_CustCnnSmall_bL_d_noComb/9M"
-            self.training_env.env_method("updateP2BrainWeights", weightsPath=wPath)
+            self.training_env.env_method("updateP2BrainWeights", weightsPath=self.save_path)
 
         return True
 
