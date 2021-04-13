@@ -12,7 +12,9 @@ from stable_baselines.common.schedules import get_schedule_fn
 from stable_baselines.common.tf_util import total_episode_reward_logger
 from stable_baselines.common.math_util import safe_mean
 
-class PPO2_ImitationLearning(ActorCriticRLModel):
+from policies import P2ToP1AddObsMove
+
+class PPO2_SelfPlay(ActorCriticRLModel):
     """
     Proximal Policy Optimization algorithm (GPU version).
     Paper: https://arxiv.org/abs/1707.06347
@@ -52,7 +54,7 @@ class PPO2_ImitationLearning(ActorCriticRLModel):
     def __init__(self, policy, env, gamma=0.99, n_steps=128, ent_coef=0.01, learning_rate=2.5e-4, vf_coef=0.5,
                  max_grad_norm=0.5, lam=0.95, nminibatches=4, noptepochs=4, cliprange=0.2, cliprange_vf=None,
                  verbose=0, tensorboard_log=None, _init_setup_model=True, policy_kwargs=None,
-                 full_tensorboard_log=False, seed=None, n_cpu_tf_sess=None, rendering=False):
+                 full_tensorboard_log=False, seed=None, n_cpu_tf_sess=None):
 
         self.learning_rate = learning_rate
         self.cliprange = cliprange
@@ -87,7 +89,6 @@ class PPO2_ImitationLearning(ActorCriticRLModel):
         self.value = None
         self.n_batch = None
         self.summary = None
-        self.rendering = rendering
 
         super().__init__(policy=policy, env=env, verbose=verbose, requires_vec_env=True,
                          _init_setup_model=_init_setup_model, policy_kwargs=policy_kwargs,
@@ -98,7 +99,7 @@ class PPO2_ImitationLearning(ActorCriticRLModel):
 
     def _make_runner(self):
         return Runner(env=self.env, model=self, n_steps=self.n_steps,
-                      gamma=self.gamma, lam=self.lam, rendering=self.rendering)
+                      gamma=self.gamma, lam=self.lam)
 
     def _get_pretrain_placeholders(self):
         policy = self.act_model
@@ -275,9 +276,9 @@ class PPO2_ImitationLearning(ActorCriticRLModel):
             td_map[self.clip_range_vf_ph] = cliprange_vf
 
         if states is None:
-            update_fac = max(self.n_batch // self.nminibatches // self.noptepochs, 1)
+            update_fac = self.n_batch // self.nminibatches // self.noptepochs + 1
         else:
-            update_fac = max(self.n_batch // self.nminibatches // self.noptepochs // self.n_steps, 1)
+            update_fac = self.n_batch // self.nminibatches // self.noptepochs // self.n_steps + 1
 
         if writer is not None:
             # run loss backprop with summary, but once every 10 runs save the metadata (memory, compute time, ...)
@@ -346,12 +347,12 @@ class PPO2_ImitationLearning(ActorCriticRLModel):
                 self.ep_info_buf.extend(ep_infos)
                 mb_loss_vals = []
                 if states is None:  # nonrecurrent version
-                    update_fac = max(self.n_batch // self.nminibatches // self.noptepochs, 1)
+                    update_fac = self.n_batch // self.nminibatches // self.noptepochs + 1
                     inds = np.arange(self.n_batch)
                     for epoch_num in range(self.noptepochs):
                         np.random.shuffle(inds)
                         for start in range(0, self.n_batch, batch_size):
-                            timestep = self.num_timesteps // update_fac + ((epoch_num *
+                            timestep = self.num_timesteps // update_fac + ((self.noptepochs * self.n_batch + epoch_num *
                                                                             self.n_batch + start) // batch_size)
                             end = start + batch_size
                             mbinds = inds[start:end]
@@ -359,7 +360,7 @@ class PPO2_ImitationLearning(ActorCriticRLModel):
                             mb_loss_vals.append(self._train_step(lr_now, cliprange_now, *slices, writer=writer,
                                                                  update=timestep, cliprange_vf=cliprange_vf_now))
                 else:  # recurrent version
-                    update_fac = max(self.n_batch // self.nminibatches // self.noptepochs // self.n_steps, 1)
+                    update_fac = self.n_batch // self.nminibatches // self.noptepochs // self.n_steps + 1
                     assert self.n_envs % self.nminibatches == 0
                     env_indices = np.arange(self.n_envs)
                     flat_indices = np.arange(self.n_envs * self.n_steps).reshape(self.n_envs, self.n_steps)
@@ -367,7 +368,7 @@ class PPO2_ImitationLearning(ActorCriticRLModel):
                     for epoch_num in range(self.noptepochs):
                         np.random.shuffle(env_indices)
                         for start in range(0, self.n_envs, envs_per_batch):
-                            timestep = self.num_timesteps // update_fac + ((epoch_num *
+                            timestep = self.num_timesteps // update_fac + ((self.noptepochs * self.n_envs + epoch_num *
                                                                             self.n_envs + start) // envs_per_batch)
                             end = start + envs_per_batch
                             mb_env_inds = env_indices[start:end]
@@ -436,7 +437,7 @@ class PPO2_ImitationLearning(ActorCriticRLModel):
 
 
 class Runner(AbstractEnvRunner):
-    def __init__(self, *, env, model, n_steps, gamma, lam, rendering=False):
+    def __init__(self, *, env, model, n_steps, gamma, lam):
         """
         A runner to learn the policy of an environment for a model
 
@@ -449,7 +450,6 @@ class Runner(AbstractEnvRunner):
         super().__init__(env=env, model=model, n_steps=n_steps)
         self.lam = lam
         self.gamma = gamma
-        self.rendering = rendering
 
     def _run(self):
         """
@@ -459,8 +459,7 @@ class Runner(AbstractEnvRunner):
             - observations: (np.ndarray) the observations
             - rewards: (np.ndarray) the rewards
             - masks: (numpy bool) whether an episode is over or not
-            - dummy_actions: (np.ndarray) actions generated by the model, not used
-            - actions: (np.ndarray) the actions read from the imitation learning DB
+            - actions: (np.ndarray) the actions
             - values: (np.ndarray) the value function output
             - negative log probabilities: (np.ndarray)
             - states: (np.ndarray) the internal states of the recurrent policies
@@ -468,26 +467,49 @@ class Runner(AbstractEnvRunner):
         """
         # mb stands for minibatch
         mb_obs, mb_rewards, mb_actions, mb_values, mb_dones, mb_neglogpacs = [], [], [], [], [], []
+        mb_obsP2, mb_rewardsP2, mb_actionsP2, mb_valuesP2, mb_neglogpacsP2 = [], [], [], [], []
+        
         mb_states = self.states
         ep_infos = []
         for _ in range(self.n_steps):
-
-            dummy_actions, values, self.states, neglogpacs = self.model.step(self.obs, self.states, self.dones)
-
+            
+            # P1 inference
+            actions, values, self.states, neglogpacs = self.model.step(self.obs, self.states, self.dones)
+            
+            # P2 inference
+            # Modify Additional Observation for P2, overwriting P1 ones
+            self.lastObs = self.obs.copy()
+            self.lastObs[:,:,-1] = P2ToP1AddObsMove(self.lastObs[:,:,-1])
+            actionsP2, valuesP2, self.states, neglogpacsP2 = self.model.step(self.lastObs, self.states, self.dones)
+            
+            # Minibatches P1
             mb_obs.append(self.obs.copy())
+            mb_actions.append(actions)
             mb_values.append(values)
             mb_neglogpacs.append(neglogpacs)
+            
+            # Minibatches P2
+            mb_obsP2.append(self.lastObs.copy())
+            mb_actionsP2.append(actionsP2)
+            mb_valuesP2.append(valuesP2)
+            mb_neglogpacsP2.append(neglogpacsP2)
+            
             mb_dones.append(self.dones)
+            
+            #clipped_actions = actions
+            concatenatedActions = np.append(actions, actionsP2)
+            
+            # Clip the actions to avoid out of bound error
+            if isinstance(self.env.action_space, gym.spaces.Box):
+                #clipped_actions = np.clip(actions, self.env.action_space.low, self.env.action_space.high)
+                raise Exception("Continuous actions space not implemented")
+                
+            self.obs[:], rewards, self.dones, infos = self.env.step(concatenatedActions)
 
-            self.obs[:], rewards, self.dones, infos = self.env.step(dummy_actions)
-            if self.rendering:
-                self.env.render("human")
-
-            self.model.num_timesteps += self.n_envs
+            self.model.num_timesteps += self.n_envs * 2
 
             if self.callback is not None:
                 # Abort training early
-                self.callback.update_locals(locals())
                 if self.callback.on_step() is False:
                     self.continue_training = False
                     # Return dummy values
@@ -498,23 +520,38 @@ class Runner(AbstractEnvRunner):
                 if maybe_ep_info is not None:
                     ep_infos.append(maybe_ep_info)
 
+            # P1
             mb_rewards.append(rewards)
-            mb_actions.append([info["action"] for info in infos])
 
+        # Modify Additional Observation for P2, overwriting P1 ones
+        self.lastObs = self.obs.copy()
+        self.lastObs[:,:,-1] = P2ToP1AddObsMove(self.lastObs[:,:,-1])
+            
+        mb_rewards = np.asarray(mb_rewards, dtype=np.float32)
+        
+        # Concatenate minibatches [P1, P2]
+        mb_obs = np.append(mb_obs, mb_obsP2)
+        mb_actions = np.append(mb_actions, mb_actionsP2)
+        mb_values = np.append(mb_values, mb_valuesP2)
+        mb_neglogpacs = np.append(mb_neglogpacs, mb_neglogpacsP2)
+        mb_dones = np.append(mb_dones, mb_dones)
+        mb_rewards = np.append(mb_rewards, -mb_rewards)
+        
+        last_values = np.append(self.model.value(self.obs, self.states, self.dones),
+                                self.model.value(self.lastObs, self.states, self.dones)
+            
         # batch of steps to batch of rollouts
         mb_obs = np.asarray(mb_obs, dtype=self.obs.dtype)
-        mb_rewards = np.asarray(mb_rewards, dtype=np.float32)
         mb_actions = np.asarray(mb_actions)
         mb_values = np.asarray(mb_values, dtype=np.float32)
         mb_neglogpacs = np.asarray(mb_neglogpacs, dtype=np.float32)
         mb_dones = np.asarray(mb_dones, dtype=np.bool)
-        last_values = self.model.value(self.obs, self.states, self.dones)
 
         # discount/bootstrap off value fn
         mb_advs = np.zeros_like(mb_rewards)
         true_reward = np.copy(mb_rewards)
         last_gae_lam = 0
-        for step in reversed(range(self.n_steps)):
+        for step in reversed(range(self.n_steps*2)):
             if step == self.n_steps - 1:
                 nextnonterminal = 1.0 - self.dones
                 nextvalues = last_values
