@@ -260,7 +260,6 @@ class diambraMame(gym.Env):
             self.attActBufP2.extend([attActP2])
             info["actionsBufP2"] = [self.movActBufP2, self.attActBufP2]
 
-
         if done:
             if self.showFinal:
                 self.env.show_final()
@@ -284,7 +283,9 @@ class diambraMame(gym.Env):
 
             if continueFlag:
                print("Game done, continuing ...")
-               self.env.continue_game()
+               oldRew = info["rewards"]
+               observation, info = self.env.continue_game()
+               info["rewards"] = oldRew
                self.playingCharacters = self.env.playingCharacters
                self.playerSide = self.env.player
                self.playerId = self.env.playerId
@@ -294,11 +295,15 @@ class diambraMame(gym.Env):
         elif stage_done:
             print("Stage done")
             self.clearActBuf()
-            self.env.next_stage()
+            oldRew = info["rewards"]
+            observation, info = self.env.next_stage()
+            info["rewards"] = oldRew
         elif round_done:
             print("Round done")
             self.clearActBuf()
-            self.env.next_round()
+            oldRew = info["rewards"]
+            observation, info = self.env.next_round()
+            info["rewards"] = oldRew
 
         return observation, reward, done, info
 
@@ -310,9 +315,9 @@ class diambraMame(gym.Env):
 
         if self.first:
             self.first = False
-            observation = self.env.start(gamePads=self.gamePads)
+            observation, info = self.env.start(gamePads=self.gamePads)
         else:
-            observation = self.env.new_game()
+            observation, info = self.env.new_game()
 
         self.playingCharacters = self.env.playingCharacters
         self.playerSide = self.env.player
