@@ -178,6 +178,7 @@ class FrameStack(gym.Wrapper):
 
     def reset(self, **kwargs):
         obs = self.env.reset(**kwargs)
+        # Fill the stack upon reset to avoid black frames
         for _ in range(self.n_frames):
             self.frames.append(obs)
         return self._get_ob()
@@ -185,6 +186,12 @@ class FrameStack(gym.Wrapper):
     def step(self, action):
         obs, reward, done, info = self.env.step(action)
         self.frames.append(obs)
+
+        # Add last obs n_frames - 1 times in case of new round / stage / continue_game
+        if (info["round_done"] or info["stage_done"] or info["game_done"]) and not done:
+            for _ in range(self.n_frames - 1):
+                self.frames.append(obs)
+
         return self._get_ob(), reward, done, info
 
     def _get_ob(self):
