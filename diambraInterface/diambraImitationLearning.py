@@ -5,6 +5,7 @@ from gym import spaces
 import pickle, bz2
 import copy
 import cv2
+from utils.policies import P2ToP1AddObsMove
 
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv
 from stable_baselines.common import set_global_seeds
@@ -14,7 +15,7 @@ class diambraImitationLearning(gym.Env):
     """DiambraMame Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, hwc_dim, n_actions, trajFilesList, rank, totalCpus):
+    def __init__(self, hwc_dim, action_space, n_actions, trajFilesList, rank, totalCpus):
         super(diambraImitationLearning, self).__init__()
 
         # Observation and action space
@@ -22,19 +23,38 @@ class diambraImitationLearning(gym.Env):
         self.obsW = hwc_dim[1]
         self.obsNChannels = hwc_dim[2]
         self.n_actions = n_actions
+        self.actionSpace = action_space
 
         # Define action and observation space
         # They must be gym.spaces objects
-        # MultiDiscrete actions:
-        # - Arrows -> One discrete set
-        # - Buttons -> One discrete set
-        # NB: use the convention NOOP = 0, and buttons combinations are prescripted,
-        #     e.g. NOOP = [0], ButA = [1], ButB = [2], ButA+ButB = [3]
-        self.action_space = spaces.MultiDiscrete(self.n_actions)
+        if self.actionSpace == "multiDiscrete":
+            # MultiDiscrete actions:
+            # - Arrows -> One discrete set
+            # - Buttons -> One discrete set
+            # NB: use the convention NOOP = 0, and buttons combinations
+            #     can be prescripted:
+            #     e.g. NOOP = [0], ButA = [1], ButB = [2], ButA+ButB = [3]
+            #     or ignored:
+            #     e.g. NOOP = [0], ButA = [1], ButB = [2]
+            self.action_space = spaces.MultiDiscrete(self.n_actions)
+            print("Using MultiDiscrete action space")
+        elif self.actionSpace == "discrete":
+            # Discrete actions:
+            # - Arrows U Buttons -> One discrete set
+            # NB: use the convention NOOP = 0, and buttons combinations
+            #     can be prescripted:
+            #     e.g. NOOP = [0], ButA = [1], ButB = [2], ButA+ButB = [3]
+            #     or ignored:
+            #     e.g. NOOP = [0], ButA = [1], ButB = [2]
+            self.action_space = spaces.Discrete(self.n_actions[0] + self.n_actions[1] - 1)
+            print("Using Discrete action space")
+        else:
+            raise Exception("Not recognized action space: {}".format(self.actionSpace))
 
         # Image as input:
         self.observation_space = spaces.Box(low=0.0, high=1.0,
-                                        shape=(self.obsH, self.obsW, self.obsNChannels), dtype=np.float32)
+                                            shape=(self.obsH, self.obsW, self.obsNChannels),
+                                            dtype=np.float32)
 
         # List of RL trajectories files
         self.trajFilesList = trajFilesList
@@ -42,6 +62,10 @@ class diambraImitationLearning(gym.Env):
         # CPU rank for this env instance
         self.rank = rank
         self.totalCpus = totalCpus
+
+        # Check for number of files
+        if self.totalCpus > len(self.trajFilesList):
+            raise Exception("Number of requested CPUs > number of recorded experience available files")
 
         # Idx of trajectory file to read
         self.trajIdx = self.rank
@@ -53,6 +77,24 @@ class diambraImitationLearning(gym.Env):
         # Reset flag
         self.nReset = 0
 
+        # Observations shift counter (for new round/stage/game)
+        self.shiftCounter = 1
+
+    # Discrete to multidiscrete action conversion
+    def discreteToMultiDiscreteAction(self, action):
+
+        movAct = 0
+        attAct = 0
+
+        if action <= self.n_actions[0] - 1:
+            # Move action or no action
+            movAct = action # For example, for DOA++ this can be 0 - 8
+        else:
+            # Attack action
+            attAct = action - self.n_actions[0] + 1 # For example, for DOA++ this can be 1 - 7
+
+        return movAct, attAct
+
     # Print Episode summary
     def trajSummary(self):
 
@@ -61,7 +103,7 @@ class diambraImitationLearning(gym.Env):
         print("Ep. length = {}".format(self.RLTrajDict["epLen"] ))
 
         for key, value in self.RLTrajDict.items():
-            if type(value) == list:
+            if type(value) == list and len(value) > 2:
                 print("len({}): {}".format(key, len(value)))
             else:
                 print("{} : {}".format(key, value))
@@ -69,10 +111,22 @@ class diambraImitationLearning(gym.Env):
     # Step the environment
     def step(self, dummyAction):
 
+        # Done retrieval
+        done = False
+        if self.stepIdx == self.RLTrajDict["epLen"] - 1:
+            done = True
+
+        # Done flags retrieval
+        doneFlags = self.RLTrajDict["doneFlags"][self.stepIdx]
+
+        if (doneFlags[0] or doneFlags[1] or doneFlags[2]) and not done:
+            self.shiftCounter += self.obsNChannels-1
+
         # Observation retrieval
         observation = np.zeros((self.obsH, self.obsW, self.obsNChannels))
         for iFrame in range(self.obsNChannels-1):
-            observation[:,:,iFrame] = self.RLTrajDict["frames"][self.stepIdx + 1 + iFrame]
+            observation[:,:,iFrame] = self.RLTrajDict["frames"][self.stepIdx +
+                                                                self.shiftCounter + iFrame]
         observation[:,:,self.obsNChannels-1] = self.RLTrajDict["addObs"][self.stepIdx + 1]
 
         # Storing last observation for rendering
@@ -81,14 +135,14 @@ class diambraImitationLearning(gym.Env):
         # Reward retrieval
         reward = self.RLTrajDict["rewards"][self.stepIdx]
 
-        # Done retrieval
-        done = False
-        if self.stepIdx == self.RLTrajDict["epLen"] - 1:
-            done = True
-
         # Action retrieval
         action = self.RLTrajDict["actions"][self.stepIdx]
-        action = [action[0], action[1]]
+        if (self.actionSpace == "discrete"):
+            actionNew = self.discreteToMultiDiscreteAction(action)
+        else:
+            actionNew = action
+
+        action = [actionNew[0], actionNew[1]]
         info = {}
         info["action"] = action
 
@@ -105,6 +159,9 @@ class diambraImitationLearning(gym.Env):
 
         # Reset run step
         self.stepIdx = 0
+
+        # Observations shift counter (for new round/stage/game)
+        self.shiftCounter = 1
 
         # Manage ignoreP2 flag for recorded P1P2 trajectory (e.g. when HUMvsAI)
         if self.nReset != 0 and self.RLTrajDict["ignoreP2"] == 1:
@@ -130,9 +187,14 @@ class diambraImitationLearning(gym.Env):
             infile.close()
 
             # Storing env info
-            self.nChars = self.RLTrajDict["nChars"]
+            self.nChars = len(self.RLTrajDict["charNames"])
+            self.charNames = self.RLTrajDict["charNames"]
             self.actBufLen = self.RLTrajDict["actBufLen"]
             self.playerId = self.RLTrajDict["playerId"]
+            assert self.n_actions == self.RLTrajDict["nActions"],\
+                "Recorded episode has {} actions".format(self.RLTrajDict["nActions"])
+            assert self.actionSpace == self.RLTrajDict["actionSpace"],\
+                "Recorded episode has {} action space".format(self.RLTrajDict["actionSpace"])
 
         if self.playerId == "P1P2":
 
@@ -145,9 +207,6 @@ class diambraImitationLearning(gym.Env):
 
                 # Generate P2 Experience from P1 one
                 self.generateP2ExperienceFromP1()
-
-                # Correct additional observation for P1
-                self.RLTrajDict["addObs"] = self.AddObsCorrection(self.RLTrajDict["addObs"], player_id=0)
 
                 # Update reset counter
                 self.nReset += 1
@@ -184,67 +243,20 @@ class diambraImitationLearning(gym.Env):
 
         return observation
 
-    # Correct additional info from P1P2 mode to 1P (for both P1 and P2)
-    # It rebuilds additional Obs as if it had been generated by 1P game (only 1P actions)
-    def AddObsCorrection(self, addObs, player_id):
-
-        newAddObsList = []
-        # For each step, correct additional observation
-        for observation in addObs:
-
-            newAddObs = np.reshape(np.zeros(addObs[0].shape), (-1))
-
-            additionalPar = int(observation[0,0])
-            nScalarAddPar = additionalPar - 2*self.nChars - 2*self.actBufLen*(self.n_actions[0]+self.n_actions[1])
-            addPar = observation[:,:]
-            addPar = np.reshape(addPar, (-1))[1:additionalPar+1]
-            actions = addPar[0:additionalPar-nScalarAddPar-2*self.nChars]
-
-            limAct = [self.actBufLen * self.n_actions[0],
-                      self.actBufLen * self.n_actions[0] + self.actBufLen * self.n_actions[1]]
-
-            moveActionsP1   = actions[0:limAct[0]]
-            attackActionsP1 = actions[limAct[0]:limAct[1]]
-
-            moveActionsP2   = actions[limAct[1]:limAct[1]+limAct[0]]
-            attackActionsP2 = actions[limAct[1]+limAct[0]:limAct[1]+limAct[1]]
-
-            others = addPar[additionalPar-nScalarAddPar-2*self.nChars:]
-
-            P1Health = others[0]
-            P2Health = others[1]
-            P1Position = others[2]
-            P2Position = others[3]
-            P1Char = others[nScalarAddPar              : nScalarAddPar +     self.nChars]
-            P2Char = others[nScalarAddPar + self.nChars: nScalarAddPar + 2 * self.nChars]
-
-            newAdditionalPar = len(moveActionsP1) + len(attackActionsP1) + nScalarAddPar + 2*self.nChars
-            newAddObs[0] = float(newAdditionalPar)
-
-            if player_id == 0:
-                newAddObs[1:1+newAdditionalPar] = np.append( np.append( np.append( np.append(moveActionsP1, attackActionsP1),
-                                                                                   [P1Health, P2Health, P1Position, P2Position]),
-                                                                        P1Char),
-                                                             P2Char)
-            else:
-                newAddObs[1:1+newAdditionalPar] = np.append( np.append( np.append( np.append(moveActionsP2, attackActionsP2),
-                                                                                   [P2Health, P1Health, P2Position, P1Position]),
-                                                                        P2Char),
-                                                             P1Char)
-
-            newAddObs = np.reshape(newAddObs, (addObs[0].shape[0], -1))
-            newAddObsList.append(newAddObs)
-
-        return newAddObsList
-
     # Generate P2 Experience from P1 one
     def generateP2ExperienceFromP1(self):
 
         # Copy P1 Trajectory
         self.RLTrajDictP2 = copy.deepcopy(self.RLTrajDict)
 
-        # Additional Observations
-        self.RLTrajDictP2["addObs"] = self.AddObsCorrection(self.RLTrajDict["addObs"], player_id=1)
+        # Process Additiona Obs for P2 (copy them in P1 position)
+        newAddObsList = []
+
+        for addObs in self.RLTrajDictP2["addObs"]:
+            newAddObs = P2ToP1AddObsMove(addObs)
+            newAddObsList.append(newAddObs)
+
+        self.RLTrajDictP2["addObs"] = newAddObsList
 
         # For each step, convert P1 into P2 experience
         for idx in range(self.RLTrajDict["epLen"]):
