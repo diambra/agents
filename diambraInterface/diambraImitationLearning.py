@@ -5,7 +5,8 @@ from gym import spaces
 import pickle, bz2
 import copy
 import cv2
-from utils.policies import P2ToP1AddObsMove
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../utils'))
+from policies import P2ToP1AddObsMove
 
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv
 from stable_baselines.common import set_global_seeds
@@ -120,7 +121,7 @@ class diambraImitationLearning(gym.Env):
         doneFlags = self.RLTrajDict["doneFlags"][self.stepIdx]
 
         if (doneFlags[0] or doneFlags[1] or doneFlags[2]) and not done:
-            self.shiftCounter += self.obsNChannels-1
+            self.shiftCounter += self.obsNChannels-2
 
         # Observation retrieval
         observation = np.zeros((self.obsH, self.obsW, self.obsNChannels))
