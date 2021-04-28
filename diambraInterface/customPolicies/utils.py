@@ -49,21 +49,42 @@ class AutoSave(BaseCallback):
 
 # Update p2Brain model Callback
 class UpdateRLPolicyWeights(BaseCallback):
-    def __init__(self, check_freq: int, numEnv: int, save_path: str, verbose=1):
+    def __init__(self, check_freq: int, numEnv: int, save_path: str,
+                 prevAgentsSampling={"probability": 0.0, "list":[]}, verbose=1):
         super(UpdateRLPolicyWeights, self).__init__(verbose)
         self.check_freq = int(check_freq/numEnv)
         self.numEnv = numEnv
         self.save_path = save_path + 'lastModel'
+        self.samplingProbability = prevAgentsSampling["probability"]
+        self.prevAgentsList = prevAgentsSampling["list"]
 
     def _on_step(self) -> bool:
         if self.n_calls % self.check_freq == 0:
-            if self.verbose > 0:
-                print("Saving latest model to {}".format(self.save_path))
-            # Save the agent
-            self.model.save(self.save_path)
-            
-            # Load new weights
-            self.training_env.env_method("updateP2BrainWeights", weightsPath=self.save_path)
+            # Selects if using previous agent or the last saved one
+            if np.random.rand() < self.samplingProbability:
+                # Sample an old model from the list
+                if self.verbose > 0:
+                    print("Using an older model")
+
+                # Sample one of the older models
+                idx = int(np.random.rand() * len(self.prevAgentsList))
+                weightsPathsSampled = self.prevAgentsList[idx]
+
+                # Load new weights
+                self.training_env.env_method("updateP2BrainWeights", weightsPath=weightsPathsSampled)
+            else:
+                # Use the last saved model
+                if self.verbose > 0:
+                    print("Using last saved model")
+
+                if self.verbose > 0:
+                    print("Saving latest model to {}".format(self.save_path))
+
+                # Save the agent
+                self.model.save(self.save_path)
+
+                # Load new weights
+                self.training_env.env_method("updateP2BrainWeights", weightsPath=self.save_path)
 
         return True
 
