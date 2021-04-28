@@ -471,7 +471,7 @@ class Runner(AbstractEnvRunner):
         
         mb_states = self.states
         ep_infos = []
-        for _ in range(self.n_steps):
+        for _ in range(self.n_steps//2):
             
             # P1 inference
             actions, values, self.states, neglogpacs = self.model.step(self.obs, self.states, self.dones)
@@ -479,7 +479,8 @@ class Runner(AbstractEnvRunner):
             # P2 inference
             # Modify Additional Observation for P2, overwriting P1 ones
             self.lastObs = self.obs.copy()
-            self.lastObs[:,:,-1] = P2ToP1AddObsMove(self.lastObs[:,:,-1])
+            for envIdx in range(self.n_envs):
+                self.lastObs[envIdx,:,:,-1] = P2ToP1AddObsMove(self.lastObs[envIdx,:,:,-1])
             actionsP2, valuesP2, self.states, neglogpacsP2 = self.model.step(self.lastObs, self.states, self.dones)
             
             # Minibatches P1
@@ -497,7 +498,8 @@ class Runner(AbstractEnvRunner):
             mb_dones.append(self.dones)
             
             #clipped_actions = actions
-            concatenatedActions = np.append(actions, actionsP2)
+            concatenatedActions = np.vstack([np.hstack([actions[x],actionsP2[x]]) for x in range(self.n_envs)])
+            print(concatenatedActions, actions, actionsP2)
             
             # Clip the actions to avoid out of bound error
             if isinstance(self.env.action_space, gym.spaces.Box):
@@ -525,42 +527,62 @@ class Runner(AbstractEnvRunner):
 
         # Modify Additional Observation for P2, overwriting P1 ones
         self.lastObs = self.obs.copy()
-        self.lastObs[:,:,-1] = P2ToP1AddObsMove(self.lastObs[:,:,-1])
-            
-        mb_rewards = np.asarray(mb_rewards, dtype=np.float32)
-        
-        # Concatenate minibatches [P1, P2]
-        mb_obs = np.append(mb_obs, mb_obsP2)
-        mb_actions = np.append(mb_actions, mb_actionsP2)
-        mb_values = np.append(mb_values, mb_valuesP2)
-        mb_neglogpacs = np.append(mb_neglogpacs, mb_neglogpacsP2)
-        mb_dones = np.append(mb_dones, mb_dones)
-        mb_rewards = np.append(mb_rewards, -mb_rewards)
-        
-        last_values = np.append(self.model.value(self.obs, self.states, self.dones),
-                                self.model.value(self.lastObs, self.states, self.dones)
+        for envIdx in range(self.n_envs):
+            self.lastObs[envIdx,:,:,-1] = P2ToP1AddObsMove(self.lastObs[envIdx,:,:,-1])
+
+        last_values   = self.model.value(self.obs, self.states, self.dones)
+        last_valuesP2 = self.model.value(self.lastObs, self.states, self.dones)
             
         # batch of steps to batch of rollouts
-        mb_obs = np.asarray(mb_obs, dtype=self.obs.dtype)
-        mb_actions = np.asarray(mb_actions)
-        mb_values = np.asarray(mb_values, dtype=np.float32)
+        mb_obs        = np.asarray(mb_obs, dtype=self.obs.dtype)
+        mb_rewards    = np.asarray(mb_rewards, dtype=np.float32)
+        mb_actions    = np.asarray(mb_actions)
+        mb_values     = np.asarray(mb_values, dtype=np.float32)
         mb_neglogpacs = np.asarray(mb_neglogpacs, dtype=np.float32)
-        mb_dones = np.asarray(mb_dones, dtype=np.bool)
+        mb_dones      = np.asarray(mb_dones, dtype=np.bool)
+
+        mb_obsP2        = np.asarray(mb_obsP2, dtype=self.obs.dtype)
+        mb_actionsP2    = np.asarray(mb_actionsP2)
+        mb_valuesP2     = np.asarray(mb_valuesP2, dtype=np.float32)
+        mb_neglogpacsP2 = np.asarray(mb_neglogpacsP2, dtype=np.float32)
+
+        # Concatenate minibatches [P1, P2]
+        mb_obs        = np.vstack([mb_obs, mb_obsP2])
+        mb_rewards    = np.vstack([mb_rewards, -mb_rewards])
+        mb_actions    = np.vstack([mb_actions, mb_actionsP2])
+        mb_values     = np.vstack([mb_values, mb_valuesP2])
+        mb_neglogpacs = np.vstack([mb_neglogpacs, mb_neglogpacsP2])
+        mb_dones      = np.vstack([mb_dones, mb_dones])
+
+        print("shapes 1 - 2")
+        print("obs {} {}".format(mb_obs.shape,        mb_obsP2.shape))
+        print("act {} {}".format(mb_actions.shape,    mb_actionsP2.shape))
+        print("val {} {}".format(mb_values.shape,     mb_valuesP2.shape))
+        print("neg {} {}".format(mb_neglogpacs.shape, mb_neglogpacsP2.shape))
+        print("don {} {}".format(mb_dones.shape,      mb_dones.shape))
 
         # discount/bootstrap off value fn
         mb_advs = np.zeros_like(mb_rewards)
         true_reward = np.copy(mb_rewards)
         last_gae_lam = 0
-        for step in reversed(range(self.n_steps*2)):
+        for step in reversed(range(self.n_steps)):
             if step == self.n_steps - 1:
                 nextnonterminal = 1.0 - self.dones
+                nextvalues = last_valuesP2
+            elif step == self.n_steps//2 - 1:
+                nextnonterminal = 1.0 - self.dones
                 nextvalues = last_values
+                last_gae_lam = 0
             else:
                 nextnonterminal = 1.0 - mb_dones[step + 1]
                 nextvalues = mb_values[step + 1]
             delta = mb_rewards[step] + self.gamma * nextvalues * nextnonterminal - mb_values[step]
             mb_advs[step] = last_gae_lam = delta + self.gamma * self.lam * nextnonterminal * last_gae_lam
         mb_returns = mb_advs + mb_values
+
+        print("rew = ", mb_rewards)
+        print("advs = ", mb_advs)
+        print("returns = ", mb_returns)
 
         mb_obs, mb_returns, mb_dones, mb_actions, mb_values, mb_neglogpacs, true_reward = \
             map(swap_and_flatten, (mb_obs, mb_returns, mb_dones, mb_actions, mb_values, mb_neglogpacs, true_reward))
