@@ -34,7 +34,8 @@ class NoopResetEnv(gym.Wrapper):
         assert noops > 0
         obs = None
         noopAction = [0, 0, 0, 0]
-        if self.env.actionSpace[0] == "discrete" and self.env.playerSide != "P1P2":
+        if (self.env.actionSpace[0] == "discrete") and (self.env.playerSide != "P1P2" or\
+                                                        self.env.p2Brain != None):
             noopAction = 0
         for _ in range(noops):
             obs, _, done, _ = self.env.step(noopAction)
@@ -586,7 +587,7 @@ class AddObs(gym.Wrapper):
         obsNew = self.observation_mod(obs, self.resetInfo)
 
         # Store last observation
-        self.env.lastObs = obsNew
+        self.env.updateLastObs(obsNew)
 
         return obsNew
 
@@ -604,7 +605,7 @@ class AddObs(gym.Wrapper):
         obsNew = self.observation_mod(obs, stepInfo)
 
         # Store last observation
-        self.env.lastObs = obsNew
+        self.env.updateLastObs(obsNew)
 
         return obsNew, reward, done, info
 
