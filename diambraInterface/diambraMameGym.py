@@ -163,7 +163,7 @@ class diambraMame(gym.Env):
     # Save last Observation
     def updateLastObs(self, obs):
         self.lastObs = obs
-        
+
     # Update P2Brain RL policy weights
     def updateP2BrainWeights(self, weightsPath):
         self.p2Brain.updateWeights(weightsPath)
@@ -259,20 +259,12 @@ class diambraMame(gym.Env):
         else:
             observation, reward, round_done, stage_done, game_done, done, info = self.env.step(movActP1, attActP1)
 
-        # Adding done to info
-        info["round_done"] = round_done
-        info["stage_done"] = stage_done
-        info["game_done"] = game_done
-        info["episode_done"] = done
-
-        # Add the action buffer to the step info
+        # Extend the actions buffer
         self.movActBufP1.extend([movActP1])
         self.attActBufP1.extend([attActP1])
-        info["actionsBufP1"] = [self.movActBufP1, self.attActBufP1]
         if self.playerSide == "P1P2":
             self.movActBufP2.extend([movActP2])
             self.attActBufP2.extend([attActP2])
-            info["actionsBufP2"] = [self.movActBufP2, self.attActBufP2]
 
         if done:
             if self.showFinal:
@@ -297,7 +289,9 @@ class diambraMame(gym.Env):
 
             if continueFlag:
                print("Game done, continuing ...")
-               self.env.continue_game()
+               oldRew = info["rewards"]
+               observation, info = self.env.continue_game()
+               info["rewards"] = oldRew
                self.playingCharacters = self.env.playingCharacters
                self.playerSide = self.env.player
                self.playerId = self.env.playerId
@@ -307,11 +301,26 @@ class diambraMame(gym.Env):
         elif stage_done:
             print("Stage done")
             self.clearActBuf()
-            self.env.next_stage()
+            oldRew = info["rewards"]
+            observation, info = self.env.next_stage()
+            info["rewards"] = oldRew
         elif round_done:
             print("Round done")
             self.clearActBuf()
-            self.env.next_round()
+            oldRew = info["rewards"]
+            observation, info = self.env.next_round()
+            info["rewards"] = oldRew
+
+        # Adding done to info
+        info["round_done"] = round_done
+        info["stage_done"] = stage_done
+        info["game_done"] = game_done
+        info["episode_done"] = done
+
+        # Add the action buffer to the step info
+        info["actionsBufP1"] = [self.movActBufP1, self.attActBufP1]
+        if self.playerSide == "P1P2":
+            info["actionsBufP2"] = [self.movActBufP2, self.attActBufP2]
 
         return observation, reward, done, info
 
@@ -323,9 +332,9 @@ class diambraMame(gym.Env):
 
         if self.first:
             self.first = False
-            observation = self.env.start(gamePads=self.gamePads)
+            observation, info = self.env.start(gamePads=self.gamePads)
         else:
-            observation = self.env.new_game()
+            observation, info = self.env.new_game()
 
         self.playingCharacters = self.env.playingCharacters
         self.playerSide = self.env.player
