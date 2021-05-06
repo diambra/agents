@@ -303,7 +303,7 @@ def make_diambra(diambraGame, env_id, diambra_kwargs, diambra_gym_kwargs):
     """
 
     env = diambraGame(env_id, diambra_kwargs, **diambra_gym_kwargs)
-    #env = NoopResetEnv(env, noop_max=6)
+    env = NoopResetEnv(env, noop_max=6)
     #env = MaxAndSkipEnv(env, skip=4)
     return env
 
