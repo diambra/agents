@@ -13,7 +13,7 @@ class diambraMame(gym.Env):
     def __init__(self, env_id, diambra_kwargs, P2brain=None, rewNormFac=0.5,
                  continue_game=0.0, show_final=False, gamePads=[None, None],
                  actionSpace=["multiDiscrete", "multiDiscrete"],
-                 attackButCombinations=[True, True]):
+                 attackButCombinations=[True, True], actBufLen=12, headless=False):
         super(diambraMame, self).__init__()
 
         self.first = True
@@ -26,6 +26,10 @@ class diambraMame(gym.Env):
         print("Continue value = {}".format(self.continueGame))
         print("Action Spaces = {}".format(self.actionSpace))
         print("Use attack buttons combinations = {}".format(self.attackButCombinations))
+
+        if headless:
+            os.system("Xvfb :0 -screen 0 800x600x16 +extension RANDR &")
+            os.environ["DISPLAY"] = ":0"
 
         self.ncontinue = 0
         self.env = Environment(env_id, diambra_kwargs).getEnv()
@@ -119,7 +123,7 @@ class diambraMame(gym.Env):
             else:
                 self.action_spaces[idx] = spaces.Discrete(self.n_actions[idx][0] + self.n_actions[idx][1] - 1)
 
-        self.actBufLen = 12
+        self.actBufLen = actBufLen
         self.clearActBuf()
 
     # Return min max rewards for the environment
@@ -277,27 +281,27 @@ class diambraMame(gym.Env):
             # Continuing rule:
             continueFlag = True
             if self.continueGame < 0.0:
-               if self.ncontinue < int(abs(self.continueGame)):
-                  self.ncontinue += 1
-                  continueFlag = True
-               else:
-                  continueFlag = False
+                if self.ncontinue < int(abs(self.continueGame)):
+                    self.ncontinue += 1
+                    continueFlag = True
+                else:
+                    continueFlag = False
             elif self.continueGame <= 1.0:
-               continueFlag = np.random.choice([True, False], p=[self.continueGame, 1.0 - self.continueGame])
+                continueFlag = np.random.choice([True, False], p=[self.continueGame, 1.0 - self.continueGame])
             else:
-               raise ValueError('continue_game must be <= 1.0')
+                raise ValueError('continue_game must be <= 1.0')
 
             if continueFlag:
-               print("Game done, continuing ...")
-               oldRew = info["rewards"]
-               observation, info = self.env.continue_game()
-               info["rewards"] = oldRew
-               self.playingCharacters = self.env.playingCharacters
-               self.playerSide = self.env.player
-               self.playerId = self.env.playerId
+                print("Game done, continuing ...")
+                oldRew = info["rewards"]
+                observation, info = self.env.continue_game()
+                info["rewards"] = oldRew
+                self.playingCharacters = self.env.playingCharacters
+                self.playerSide = self.env.player
+                self.playerId = self.env.playerId
             else:
-               print("Episode done")
-               done = True
+                print("Episode done")
+                done = True
         elif stage_done:
             print("Stage done")
             self.clearActBuf()
