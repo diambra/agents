@@ -8,8 +8,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../utils'))
 import gym
 from gym import spaces
 
-from diambraMameGym import *
-
 import datetime
 from parallelPickle import parallelPickleWriter
 

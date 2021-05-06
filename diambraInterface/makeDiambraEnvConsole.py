@@ -1,3 +1,4 @@
+from diambraMameGym import diambraMame
 from diambraWrappers import *
 
 def make_diambra_env(diambraMame, env_prefix, seed, diambra_kwargs, diambra_gym_kwargs,
