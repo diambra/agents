@@ -406,10 +406,15 @@ class AddObs(gym.Wrapper):
             self.resetInfo["ownHealth_2P1"] = [1]
             self.resetInfo["oppHealth_1P1"] = [1]
             self.resetInfo["oppHealth_2P1"] = [1]
+            self.resetInfo["ownActiveCharP1"] = [0]
+            self.resetInfo["oppActiveCharP1"] = [0]
+
             self.resetInfo["ownHealth_1P2"] = [1]
             self.resetInfo["ownHealth_2P2"] = [1]
             self.resetInfo["oppHealth_1P2"] = [1]
             self.resetInfo["oppHealth_2P2"] = [1]
+            self.resetInfo["ownActiveCharP2"] = [0]
+            self.resetInfo["oppActiveCharP2"] = [0]
         if self.env.playerSide == "P1" or self.env.playerSide == "P1P2":
             self.resetInfo["ownPositionP1"] = [0]
             self.resetInfo["oppPositionP1"] = [1]
@@ -528,6 +533,9 @@ class AddObs(gym.Wrapper):
                 step_info["oppHealth_1P1"] = [info["healthP2_1"] / float(self.env.max_health)]
                 step_info["oppHealth_2P1"] = [info["healthP2_2"] / float(self.env.max_health)]
 
+                step_info["ownActiveCharP1"] = [info["activeCharP1"]]
+                step_info["oppActiveCharP1"] = [info["activeCharP2"]]
+
             step_info["ownPositionP1"] = [info["positionP1"]]
             step_info["oppPositionP1"] = [info["positionP2"]]
 
@@ -542,6 +550,9 @@ class AddObs(gym.Wrapper):
                 step_info["ownHealth_2P1"] = [info["healthP2_2"] / float(self.env.max_health)]
                 step_info["oppHealth_1P1"] = [info["healthP1_1"] / float(self.env.max_health)]
                 step_info["oppHealth_2P1"] = [info["healthP1_2"] / float(self.env.max_health)]
+
+                step_info["ownActiveCharP1"] = [info["activeCharP2"]]
+                step_info["oppActiveCharP1"] = [info["activeCharP1"]]
 
             step_info["ownPositionP1"] = [info["positionP2"]]
             step_info["oppPositionP1"] = [info["positionP1"]]
@@ -560,6 +571,9 @@ class AddObs(gym.Wrapper):
                 step_info["ownHealth_2P2"] = step_info["oppHealth_2P1"]
                 step_info["oppHealth_1P2"] = step_info["ownHealth_1P1"]
                 step_info["oppHealth_2P2"] = step_info["ownHealth_2P1"]
+
+                step_info["ownActiveCharP2"] = [info["activeCharP2"]]
+                step_info["oppActiveCharP2"] = [info["activeCharP1"]]
 
             step_info["ownPositionP2"] = [info["positionP2"]]
             step_info["oppPositionP2"] = [info["positionP1"]]
