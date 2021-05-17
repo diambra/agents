@@ -16,15 +16,15 @@ class diambraImitationLearning(gym.Env):
     """DiambraMame Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, hwc_dim, action_space, n_actions, trajFilesList, rank, totalCpus):
+    def __init__(self, hwcDim, actionSpace, nActions, trajFilesList, rank, totalCpus):
         super(diambraImitationLearning, self).__init__()
 
         # Observation and action space
-        self.obsH = hwc_dim[0]
-        self.obsW = hwc_dim[1]
-        self.obsNChannels = hwc_dim[2]
-        self.n_actions = n_actions
-        self.actionSpace = action_space
+        self.obsH = hwcDim[0]
+        self.obsW = hwcDim[1]
+        self.obsNChannels = hwcDim[2]
+        self.nActions = nActions
+        self.actionSpace = actionSpace
 
         # Define action and observation space
         # They must be gym.spaces objects
@@ -37,7 +37,7 @@ class diambraImitationLearning(gym.Env):
             #     e.g. NOOP = [0], ButA = [1], ButB = [2], ButA+ButB = [3]
             #     or ignored:
             #     e.g. NOOP = [0], ButA = [1], ButB = [2]
-            self.action_space = spaces.MultiDiscrete(self.n_actions)
+            self.action_space = spaces.MultiDiscrete(self.nActions)
             print("Using MultiDiscrete action space")
         elif self.actionSpace == "discrete":
             # Discrete actions:
@@ -47,7 +47,7 @@ class diambraImitationLearning(gym.Env):
             #     e.g. NOOP = [0], ButA = [1], ButB = [2], ButA+ButB = [3]
             #     or ignored:
             #     e.g. NOOP = [0], ButA = [1], ButB = [2]
-            self.action_space = spaces.Discrete(self.n_actions[0] + self.n_actions[1] - 1)
+            self.action_space = spaces.Discrete(self.nActions[0] + self.nActions[1] - 1)
             print("Using Discrete action space")
         else:
             raise Exception("Not recognized action space: {}".format(self.actionSpace))
@@ -87,12 +87,12 @@ class diambraImitationLearning(gym.Env):
         movAct = 0
         attAct = 0
 
-        if action <= self.n_actions[0] - 1:
+        if action <= self.nActions[0] - 1:
             # Move action or no action
             movAct = action # For example, for DOA++ this can be 0 - 8
         else:
             # Attack action
-            attAct = action - self.n_actions[0] + 1 # For example, for DOA++ this can be 1 - 7
+            attAct = action - self.nActions[0] + 1 # For example, for DOA++ this can be 1 - 7
 
         return movAct, attAct
 
@@ -192,7 +192,7 @@ class diambraImitationLearning(gym.Env):
             self.charNames = self.RLTrajDict["charNames"]
             self.actBufLen = self.RLTrajDict["actBufLen"]
             self.playerId = self.RLTrajDict["playerId"]
-            assert self.n_actions == self.RLTrajDict["nActions"],\
+            assert self.nActions == self.RLTrajDict["nActions"],\
                 "Recorded episode has {} actions".format(self.RLTrajDict["nActions"])
             assert self.actionSpace == self.RLTrajDict["actionSpace"],\
                 "Recorded episode has {} action space".format(self.RLTrajDict["actionSpace"])
@@ -282,30 +282,30 @@ class diambraImitationLearning(gym.Env):
             return output
 
 # Function to vectorialize envs
-def make_diambra_imitationLearning_env(diambraIL, diambraIL_kwargs, seed=0,
-                                       allow_early_resets=True):
+def makeDiambraImitationLearningEnv(diambraIL, diambraILKwargs, seed=0,
+                                       allowEarlyResets=True):
     """
     Utility function for multiprocessed env.
 
-    :param diambraIL_kwargs: (dict) kwargs for Diambra IL env
+    :param diambraILKwargs: (dict) kwargs for Diambra IL env
     """
 
-    num_env = diambraIL_kwargs["totalCpus"]
+    numEnv = diambraILKwargs["totalCpus"]
 
-    def make_env(rank):
-        def _thunk():
+    def makeEnv(rank):
+        def thunk():
 
             # Create log dir
-            log_dir = "tmp"+str(rank)+"/"
-            os.makedirs(log_dir, exist_ok=True)
-            env = diambraIL(**diambraIL_kwargs, rank=rank)
-            env = Monitor(env, log_dir, allow_early_resets=allow_early_resets)
+            logDir = "tmp"+str(rank)+"/"
+            os.makedirs(logDir, exist_ok=True)
+            env = diambraIL(**diambraILKwargs, rank=rank)
+            env = Monitor(env, logDir, allow_early_resets=allowEarlyResets)
             return env
         set_global_seeds(seed)
-        return _thunk
+        return thunk
 
     # When using one environment, no need to start subprocesses
-    if num_env == 1:
-        return DummyVecEnv([make_env(i) for i in range(num_env)])
+    if numEnv == 1:
+        return DummyVecEnv([makeEnv(i) for i in range(numEnv)])
 
-    return SubprocVecEnv([make_env(i) for i in range(num_env)])
+    return SubprocVecEnv([makeEnv(i) for i in range(numEnv)])
