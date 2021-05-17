@@ -4,6 +4,7 @@ import gym
 from gym import spaces
 from Environment import Environment
 from collections import deque
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../utils'))
 from policies import P2ToP1AddObsMove
 
 class diambraMame(gym.Env):
