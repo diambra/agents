@@ -15,21 +15,24 @@ try:
     parser.add_argument('--nEpisodes',    type=int,   default=1,          help='Number of episodes')
     parser.add_argument('--continueGame', type=float, default=-1.0,       help='ContinueGame flag (-inf,+1.0]')
     parser.add_argument('--actionSpace1', type=str,   default="discrete", help='(discrete)/multidiscrete')
-    parser.add_argument('--actionSpace2', type=bool,  default=False,      help='(False)/True')
+    parser.add_argument('--actionSpace2', type=int,   default=0,          help='If to use attack button combinations (0=False)/1=True')
+    parser.add_argument('--noAction',     type=int,   default=0,          help='If to use no action policy (0=False)')
     opt = parser.parse_args()
     print(opt)
 
-    sys.path.append(os.path.join(os.path.abspath(''), '../../games'))
-    sys.path.append(os.path.join(os.path.abspath(''), '../../utils'))
-    sys.path.append(os.path.join(os.path.abspath(''), '../../pythonGamePadInterface'))
+    base_path = os.path.dirname(__file__)
+
+    sys.path.append(base_path)
+    sys.path.append(os.path.join(base_path, '../../utils'))
+    sys.path.append(os.path.join(base_path, '../../pythonGamePadInterface'))
 
     from diambraMameGym import diambraMame
     from diambraGamepad import diambraGamepad
     from policies import gamepadPolicy, RLPolicy # To train AI against another AI or HUM
 
     diambraKwargs = {}
-    diambraKwargs["romsPath"] = "../../roms/mame/"
-    diambraKwargs["binaryPath"] = "../../customMAME/"
+    diambraKwargs["romsPath"] = os.path.join(base_path, "../../roms/mame/")
+    diambraKwargs["binaryPath"] = os.path.join(base_path, "../../customMAME/")
     diambraKwargs["frameRatio"] = opt.frameRatio
     diambraKwargs["throttle"] = False
     diambraKwargs["sound"] = diambraKwargs["throttle"]
@@ -76,7 +79,10 @@ try:
 
     observation = env.reset()
 
-    while True:
+    maxNumEp = opt.nEpisodes
+    currNumEp = 0
+
+    while currNumEp < maxNumEp:
 
         actions = [None, None]
         for idx in range(2):
@@ -90,6 +96,13 @@ try:
 
             if diambraKwargs["player"] != "P1P2" and idx == 1:
                 continue
+
+            if opt.noAction == 1 and idx == 0:
+                if diambraGymKwargs["actionSpace"][idx] == "multiDiscrete":
+                    for elem in actions[idx]:
+                        elem = 0
+                else:
+                    actions[idx] = 0
 
             print("(P{}) {} {}".format(idx+1, actionsPrintDict[0][moveAction],
                                               actionsPrintDict[1][attAction]))
@@ -139,10 +152,12 @@ try:
 
         if done:
             print("Resetting Env")
+            currNumEp += 1
             observation = env.reset()
 
     env.close()
 
     print("ALL GOOD!")
-except:
+except Exception as e:
+    print(e)
     print("ALL BAD")
