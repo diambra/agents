@@ -1,4 +1,4 @@
-import cv2, sys, os
+import sys, os
 import random
 import numpy as np
 import argparse
