@@ -209,6 +209,15 @@ class diambraImitationLearning(gym.Env):
                 # Generate P2 Experience from P1 one
                 self.generateP2ExperienceFromP1()
 
+                # For each step, isolate P1 actions from P1P2 experience
+                for idx in range(self.RLTrajDict["epLen"]):
+                    # Actions (inverting positions)
+                    if (self.actionSpace == "discrete"):
+                        self.RLTrajDict["actions"][idx] = self.RLTrajDict["actions"][idx][0]
+                    else:
+                        self.RLTrajDict["actions"][idx] = [self.RLTrajDict["actions"][idx][0],
+                                                     self.RLTrajDict["actions"][idx][1]]
+
                 # Update reset counter
                 self.nReset += 1
 
@@ -266,8 +275,11 @@ class diambraImitationLearning(gym.Env):
             self.RLTrajDictP2["rewards"][idx] = -self.RLTrajDict["rewards"][idx]
 
             # Actions (inverting positions)
-            self.RLTrajDictP2["actions"][idx] = [self.RLTrajDict["actions"][idx][2],
-                                                 self.RLTrajDict["actions"][idx][3]]
+            if (self.actionSpace == "discrete"):
+                self.RLTrajDictP2["actions"][idx] = self.RLTrajDict["actions"][idx][1]
+            else:
+                self.RLTrajDictP2["actions"][idx] = [self.RLTrajDict["actions"][idx][2],
+                                                     self.RLTrajDict["actions"][idx][3]]
 
     # Rendering the environment
     def render(self, mode='human'):
