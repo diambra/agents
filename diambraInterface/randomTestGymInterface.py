@@ -14,8 +14,8 @@ try:
     parser.add_argument('--frameRatio',   type=int,   default=3,          help='Frame ratio')
     parser.add_argument('--nEpisodes',    type=int,   default=1,          help='Number of episodes')
     parser.add_argument('--continueGame', type=float, default=-1.0,       help='ContinueGame flag (-inf,+1.0]')
-    parser.add_argument('--actionSpace1', type=str,   default="discrete", help='(discrete)/multidiscrete')
-    parser.add_argument('--actionSpace2', type=int,   default=0,          help='If to use attack button combinations (0=False)/1=True')
+    parser.add_argument('--actionSpace',  type=str,   default="discrete", help='(discrete)/multidiscrete')
+    parser.add_argument('--attButComb',   type=int,   default=0,          help='If to use attack button combinations (0=False)/1=True')
     parser.add_argument('--noAction',     type=int,   default=0,          help='If to use no action policy (0=False)')
     opt = parser.parse_args()
     print(opt)
@@ -54,8 +54,8 @@ try:
     diambraGymKwargs["continueGame"] = opt.continueGame
     diambraGymKwargs["showFinal"] = False
     diambraGymKwargs["gamePads"] = [None, diambraGymKwargs["P2brain"]]
-    diambraGymKwargs["actionSpace"] = [opt.actionSpace1, opt.actionSpace1]
-    diambraGymKwargs["attackButCombinations"] = [opt.actionSpace2, opt.actionSpace2]
+    diambraGymKwargs["actionSpace"] = [opt.actionSpace, opt.actionSpace]
+    diambraGymKwargs["attackButCombinations"] = [opt.attButComb, opt.attButComb]
     diambraGymKwargs["actBufLen"]             = 12
 
     envId = opt.gameId + "_Test"
