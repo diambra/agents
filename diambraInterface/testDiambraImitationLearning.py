@@ -15,7 +15,10 @@ try:
     print(opt)
 
     homeDir = expanduser("~")
-    sys.path.append(os.path.join(os.path.abspath(''), '../../utils'))
+    base_path = os.path.dirname(__file__)
+
+    sys.path.append(base_path)
+    sys.path.append(os.path.join(base_path, '../../utils'))
 
     from diambraImitationLearning import *
 
