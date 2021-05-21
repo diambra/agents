@@ -79,6 +79,9 @@ try:
 
     observation = env.reset()
 
+    cumulativeEpRew = 0.0
+    cumulativeEpRewAll = []
+
     maxNumEp = opt.nEpisodes
     currNumEp = 0
 
@@ -113,6 +116,8 @@ try:
             actions = np.append(actions[0], actions[1])
 
         observation, reward, done, info = env.step(actions)
+
+        cumulativeEpRew += reward
 
         print("Frames shape:", observation.shape)
         print("Reward:", reward)
@@ -154,8 +159,28 @@ try:
             print("Resetting Env")
             currNumEp += 1
             observation = env.reset()
+            cumulativeEpRewAll.append(cumulativeEpRew)
+            cumulativeEpRew = 0.0
+
+    print("Cumulative reward = ", cumulativeEpRewAll)
+    print("Mean cumulative reward = ", np.mean(cumulativeEpRewAll))
+    print("Std cumulative reward = ", np.std(cumulativeEpRewAll))
 
     env.close()
+
+    if len(cumulativeEpRewAll) != maxNumEp:
+        raise RuntimeError("Not run all episodes")
+
+    if opt.continueGame <= 0.0:
+        maxContinue = int(-opt.continueGame)
+    else:
+        maxContinue = 0
+
+    if opt.gameId == "tektagt":
+        maxContinue = maxContinue / 2
+
+    if opt.noAction == 1 and np.mean(cumulativeEpRewAll) > -2*(maxContinue+1)*env.maxHealth+0.001:
+        raise RuntimeError("NoAction policy and average reward different than {} ({})".format(-2*(maxContinue+1)*env.maxHealth, np.mean(cumulativeEpRewAll)))
 
     print("ALL GOOD!")
 except Exception as e:

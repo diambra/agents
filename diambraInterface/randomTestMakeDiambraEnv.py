@@ -289,6 +289,20 @@ try:
 
     env.close()
 
+    if len(cumulativeEpRewAll) != maxNumEp:
+        raise RuntimeError("Not run all episodes")
+
+    if opt.continueGame <= 0.0:
+        maxContinue = int(-opt.continueGame)
+    else:
+        maxContinue = 0
+
+    if opt.gameId == "tektagt":
+        maxContinue = maxContinue / 2
+
+    if opt.noAction == 1 and np.mean(cumulativeEpRewAll) > -(maxContinue+1)*3.999:
+        raise RuntimeError("NoAction policy and average reward different than {} ({})".format(-(maxContinue+1)*4, np.mean(cumulativeEpRewAll)))
+
     print("ALL GOOD!")
 except Exception as e:
     print(e)
