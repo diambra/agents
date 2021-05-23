@@ -141,7 +141,8 @@ try:
     additionalParP1 = int(observation[0,0,shp[2]-1])
     print("Additional Parameters P1 =", additionalParP1)
 
-    nScalarAddParP1 = additionalParP1 - len(env.charNames)                - env.actBufLen*(env.nActions[0][0]+env.nActions[0][1]) # 1P
+    nScalarAddParP1 = additionalParP1 - len(env.charNames)\
+                    - env.actBufLen*(env.nActions[0][0]+env.nActions[0][1]) # 1P
     print("Number of scalar Parameters P1 =", nScalarAddParP1)
 
 
@@ -149,7 +150,8 @@ try:
         additionalParP2 = int(observation[int(shp[0]/2),0,shp[2]-1])
         print("Additional Parameters P2 =", additionalParP2)
 
-        nScalarAddParP2 = additionalParP2 - len(env.charNames)                    - env.actBufLen*(env.nActions[1][0]+env.nActions[1][1])# 2P
+        nScalarAddParP2 = additionalParP2 - len(env.charNames)\
+                        - env.actBufLen*(env.nActions[1][0]+env.nActions[1][1])# 2P
         print("Number of scalar Parameters P2 =", nScalarAddParP2)
 
     limAct = [None, None]
@@ -168,7 +170,10 @@ try:
         # 1P
         action = env.actionSpaces[0].sample()
         if opt.noAction == 1:
-            action = 0
+            if diambraGymKwargs["actionSpace"][idx] == "multiDiscrete":
+                action = [0, 0]
+            else:
+                action = 0
 
         # 2P
         action2 = env.actionSpaces[1].sample()

@@ -92,6 +92,13 @@ try:
 
             actions[idx] = env.actionSpaces[idx].sample()
 
+            if opt.noAction == 1 and idx == 0:
+                if diambraGymKwargs["actionSpace"][idx] == "multiDiscrete":
+                    for iEl, _ in enumerate(actions[idx]):
+                        actions[idx][iEl] = 0
+                else:
+                    actions[idx] = 0
+
             if diambraGymKwargs["actionSpace"][idx] == "discrete":
                 moveAction, attAction = env.discreteToMultiDiscreteAction(actions[idx])
             else:
@@ -99,13 +106,6 @@ try:
 
             if diambraKwargs["player"] != "P1P2" and idx == 1:
                 continue
-
-            if opt.noAction == 1 and idx == 0:
-                if diambraGymKwargs["actionSpace"][idx] == "multiDiscrete":
-                    for elem in actions[idx]:
-                        elem = 0
-                else:
-                    actions[idx] = 0
 
             print("(P{}) {} {}".format(idx+1, actionsPrintDict[0][moveAction],
                                               actionsPrintDict[1][attAction]))
