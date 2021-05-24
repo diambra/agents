@@ -2,9 +2,10 @@ import sys, platform, os
 import numpy as np
 import gym
 from gym import spaces
-from Environment import Environment
 from collections import deque
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../utils'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../games'))
+from Environment import Environment
 from policies import P2ToP1AddObsMove
 
 class diambraMame(gym.Env):
