@@ -383,6 +383,9 @@ class AddObs(gym.Wrapper):
                                             shape=(shp[0], shp[1], shp[2] + 1),
                                             dtype=np.float32)
 
+        # Initialize last observation
+        self.env.updateLastObs(np.zeros((shp[0], shp[1], shp[2]+1), dtype=self.env.observation_space.dtype))
+
         self.resetInfo = {}
         self.resetInfo["actionsBufP1"] = np.concatenate(
                                            (self.actionsVector([0 for i in range(self.env.actBufLen)],
