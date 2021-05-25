@@ -62,7 +62,6 @@ try:
     diambraGymKwargs["P2brain"] = None
     diambraGymKwargs["continueGame"] = 0.0 # If < 0.0 means number of continues
     diambraGymKwargs["showFinal"] = False
-    diambraGymKwargs["gamePads"] = [None, None]
     diambraGymKwargs["actionSpace"] = ["discrete", "discrete"]
     diambraGymKwargs["attackButCombinations"] = [False, False]
 
