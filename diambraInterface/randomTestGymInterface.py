@@ -133,6 +133,8 @@ try:
             print("Char = ", env.charNames[env.playingCharacters[env.playerId]])
 
         if opt.gameId == "tektagt":
+            print("FightingP1 = ", info["fightingP1"])
+            print("FightingP2 = ", info["fightingP2"])
             print("healthP1_1 = ", info["healthP1_1"])
             print("healthP1_2 = ", info["healthP1_2"])
             print("healthP2_1 = ", info["healthP2_1"])
