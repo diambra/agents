@@ -13,7 +13,7 @@ class diambraMame(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self, envId, diambraKwargs, P2brain=None, rewNormFac=0.5,
-                 continueGame=0.0, showFinal=False, gamePads=[None, None],
+                 continueGame=0.0, showFinal=False,
                  actionSpace=["multiDiscrete", "multiDiscrete"],
                  attackButCombinations=[True, True], actBufLen=12, headless=False):
         super(diambraMame, self).__init__()
@@ -70,19 +70,10 @@ class diambraMame(gym.Env):
             # Check action space is prescribed as "multiDiscrete"
             if self.p2Brain.id == "gamepad":
                 self.p2Brain.initialize(self.env.actionList())
-                gamePads[1] = self.p2Brain
                 if self.actionsSpace[1] != "multiDiscrete":
                     raise Exception("Action Space for P2 must be \"multiDiscrete\" when using gamePad")
                 if not self.attackButCombinations[1]:
                     raise Exception("Use attack buttons combinations for P2 must be \"True\" when using gamePad")
-
-        # Gamepads (for char selection)
-        self.gamePads = gamePads
-        gamepadNum = 0
-        for idx in range(2):
-            if self.gamePads[idx] != None:
-                self.gamePads[idx].initialize(self.env.actionList(), gamepadNum=gamepadNum)
-                gamepadNum += 1
 
         # Define action and observation space
         # They must be gym.spaces objects
@@ -338,7 +329,7 @@ class diambraMame(gym.Env):
 
         if self.first:
             self.first = False
-            observation, info = self.env.startGame(gamePads=self.gamePads)
+            observation, info = self.env.startGame()
         else:
             observation, info = self.env.newGame()
 

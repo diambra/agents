@@ -53,7 +53,6 @@ try:
     diambraGymKwargs["P2brain"] = None#gamePad_policy
     diambraGymKwargs["continueGame"] = opt.continueGame
     diambraGymKwargs["showFinal"] = False
-    diambraGymKwargs["gamePads"] = [None, diambraGymKwargs["P2brain"]]
     diambraGymKwargs["actionSpace"] = [opt.actionSpace, opt.actionSpace]
     diambraGymKwargs["attackButCombinations"] = [opt.attButComb, opt.attButComb]
     diambraGymKwargs["actBufLen"]             = 12
