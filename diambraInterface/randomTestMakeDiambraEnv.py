@@ -45,6 +45,7 @@ try:
     diambraKwargs["frameRatio"] = opt.frameRatio
     diambraKwargs["throttle"] = False
     diambraKwargs["sound"] = diambraKwargs["throttle"]
+    #diambraKwargs["disableKeyboard"] = False
 
     diambraKwargs["player"] = opt.player
 
@@ -169,7 +170,7 @@ try:
         # 1P
         action = env.actionSpaces[0].sample()
         if opt.noAction == 1:
-            if diambraGymKwargs["actionSpace"][idx] == "multiDiscrete":
+            if diambraGymKwargs["actionSpace"][0] == "multiDiscrete":
                 action = [0, 0]
             else:
                 action = 0
@@ -177,6 +178,10 @@ try:
         # 2P
         action2 = env.actionSpaces[1].sample()
         if diambraKwargs["player"] == "P1P2":
+            #if diambraGymKwargs["actionSpace"][1] == "multiDiscrete":
+            #    action2 = [0, 0]
+            #else:
+            #    action2 = 0
             action = np.append(action, action2)
 
         #action = int(input("Action"))
