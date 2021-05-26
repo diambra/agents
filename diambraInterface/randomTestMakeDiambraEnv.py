@@ -302,7 +302,7 @@ try:
         maxContinue = 0
 
     if opt.gameId == "tektagt":
-        maxContinue = maxContinue / 2
+        maxContinue = (maxContinue + 1) * 0.7 - 1
 
     if opt.noAction == 1 and np.mean(cumulativeEpRewAll) > -(maxContinue+1)*3.999:
         raise RuntimeError("NoAction policy and average reward different than {} ({})".format(-(maxContinue+1)*4, np.mean(cumulativeEpRewAll)))
