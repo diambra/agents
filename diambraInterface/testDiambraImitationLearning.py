@@ -103,6 +103,10 @@ try:
 
         dummyActions = [0 for i in range(diambraILKwargs["totalCpus"])]
         observation, reward, done, info = env.step(dummyActions)
+
+        if np.any(env.get_attr("exhausted")):
+            break
+
         env.render(mode="human")
 
         observation = observation[procIdx]
@@ -110,13 +114,19 @@ try:
         done = done[procIdx]
         action = info[procIdx]["action"]
         print("Reward = ", reward)
-        if done:
-            observation = info[procIdx]["terminal_observation"]
+        #if done:
+        #    observation = info[procIdx]["terminal_observation"]
 
         # Visualize observations content
         observationViz(observation, limAct) # Keep space bar pressed to continue env execution
 
         cumulativeEpRew += reward
+
+        if np.any([info[procIdx]["roundDone"], info[procIdx]["stageDone"], info[procIdx]["gameDone"], info[procIdx]["episodeDone"]]):
+            # Frames equality check
+            for frameIdx in range(observation.shape[2]-2):
+                if np.any(observation[:,:,frameIdx] != observation[:,:,frameIdx+1]):
+                    raise RuntimeError("Frames inside observation after round/stage/game/episode done are not equal. Dones =", info[procIdx]["roundDone"], info[procIdx]["stageDone"], info[procIdx]["gameDone"], info[procIdx]["episodeDone"])
 
         if done:
             currNumEp += 1
@@ -125,9 +135,6 @@ try:
 
             cumulativeEpRewAll.append(cumulativeEpRew)
             cumulativeEpRew = 0.0
-
-        if np.any(env.get_attr("exhausted")):
-            break
 
     if diambraILKwargs["totalCpus"] == 1:
         print("All ep. rewards =", cumulativeEpRewAll)
