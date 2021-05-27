@@ -146,6 +146,10 @@ class diambraImitationLearning(gym.Env):
         action = [actionNew[0], actionNew[1]]
         info = {}
         info["action"] = action
+        info["roundDone"] = doneFlags[0]
+        info["stageDone"] = doneFlags[1]
+        info["gameDone"] = doneFlags[2]
+        info["episodeDone"] = doneFlags[3]
 
         if np.any(done):
             print("(Rank {}) Episode done".format(self.rank))
