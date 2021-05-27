@@ -120,6 +120,7 @@ try:
 
         print("Frames shape:", observation.shape)
         print("Reward:", reward)
+        print("Current Cumulative Reward:", cumulativeEpRew)
         print("Actions Buffer P1 = ", info["actionsBufP1"])
         if diambraKwargs["player"] == "P1P2":
             print("Actions Buffer P2 = ", info["actionsBufP2"])

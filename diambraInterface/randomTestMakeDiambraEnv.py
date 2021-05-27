@@ -254,8 +254,11 @@ try:
             print("Playing Char P2 = ", env.charNames[list(othersP2[nScalarAddParP2:
                                                                     nScalarAddParP2 + env.numberOfCharacters]).index(1.0)])
 
+        cumulativeEpRew += reward
+
         print("Frames shape:", observation.shape)
         print("Reward:", reward)
+        print("Current Cumulative Reward:", cumulativeEpRew)
         print("Actions Buffer P1 = ", info["actionsBufP1"])
         if diambraKwargs["player"] == "P1P2":
             print("Actions Buffer P2 = ", info["actionsBufP2"])
@@ -281,8 +284,6 @@ try:
         print("Stage done = ", info["stageDone"])
         print("Game done = ", info["gameDone"])
         print("Episode done = ", info["episodeDone"])
-
-        cumulativeEpRew += reward
 
         if np.any(done):
             currNumEp += 1
