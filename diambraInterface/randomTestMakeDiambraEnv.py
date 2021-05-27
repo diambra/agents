@@ -219,8 +219,29 @@ try:
             print("ownPositionP1 = ", othersP1[6])
             print("oppPositionP1 = ", othersP1[7])
             print("stageP1 = ", othersP1[8])
-        print("Playing Char P1 = ", env.charNames[list(othersP1[nScalarAddParP1:
-                                                                nScalarAddParP1 + env.numberOfCharacters]).index(1.0)])
+        charFromObsP1 = env.charNames[list(othersP1[nScalarAddParP1:
+                                                    nScalarAddParP1 + env.numberOfCharacters]).index(1.0)]
+        print("Playing Char P1 = ", charFromObsP1)
+        if env.playerSide == "P2":
+            if opt.gameId != "tektagt":
+                if opt.character2 != "Random" and charFromObsP1 != opt.character2:
+                    raise RuntimeError("Character in obs does not match with the selected one:",
+                                       charFromObsP1, opt.character2)
+            else:
+                if opt.character2 != "Random" and opt.character2_2 != "Random" and\
+                   charFromObsP1 != opt.character2 and charFromObsP1 != opt.character2_2:
+                    raise RuntimeError("Character in obs does not match with the selected ones:",
+                                       charFromObsP1, opt.character2, opt.character2_2)
+        else:
+            if opt.gameId != "tektagt":
+                if opt.character1 != "Random" and charFromObsP1 != opt.character1:
+                    raise RuntimeError("Character in obs does not match with the selected one:",
+                                       charFromObsP1, opt.character1)
+            else:
+                if opt.character1 != "Random" and opt.character1_2 != "Random" and\
+                   charFromObsP1 != opt.character1 and charFromObsP1 != opt.character1_2:
+                    raise RuntimeError("Character in obs does not match with the selected ones:",
+                                       charFromObsP1, opt.character1, opt.character1_2)
 
         # 2P
         if diambraKwargs["player"] == "P1P2":
@@ -251,8 +272,18 @@ try:
                 print("ownPositionP2 = ", othersP2[6])
                 print("oppPositionP2 = ", othersP2[7])
                 print("stageP2 = ", othersP2[8])
-            print("Playing Char P2 = ", env.charNames[list(othersP2[nScalarAddParP2:
-                                                                    nScalarAddParP2 + env.numberOfCharacters]).index(1.0)])
+            charFromObsP2 = env.charNames[list(othersP2[nScalarAddParP2:
+                                                        nScalarAddParP2 + env.numberOfCharacters]).index(1.0)]
+            print("Playing Char P2 = ", charFromObsP2)
+            if opt.gameId != "tektagt":
+                if opt.character2 != "Random" and charFromObsP2 != opt.character2:
+                    raise RuntimeError("Character in obs does not match with the selected one:",
+                                       charFromObsP2, opt.character2)
+            else:
+                if opt.character2 != "Random" and opt.character2_2 != "Random" and\
+                   charFromObsP2 != opt.character2 and charFromObsP2 != opt.character2_2:
+                    raise RuntimeError("Character in obs does not match with the selected ones:",
+                                       charFromObsP2, opt.character2, opt.character2_2)
 
         cumulativeEpRew += reward
 
@@ -293,6 +324,11 @@ try:
             cumulativeEpRew = 0.0
 
             observation = env.reset()
+
+        if np.any([info["roundDone"], info["stageDone"], info["gameDone"], info["episodeDone"]]):
+            for frameIdx in range(shp[2]-2):
+                if np.all(observation[:,:,frameIdx] != observation[:,:,frameIdx+1]):
+                    raise RuntimeError("Frames inside observation after round/stage/game/episode done are not equal. Dones =", info["roundDone"], info["stageDone"], info["gameDone"], info["episodeDone"])
 
     print("Mean cumulative reward = ", np.mean(cumulativeEpRewAll))
     print("Std cumulative reward = ", np.std(cumulativeEpRewAll))
