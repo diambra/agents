@@ -326,8 +326,31 @@ try:
             observation = env.reset()
 
         if np.any([info["roundDone"], info["stageDone"], info["gameDone"], info["episodeDone"]]):
+
+            addPar = observation[:,:,shp[2]-1]
+            addPar = np.reshape(addPar, (-1))
+            addParP1 = addPar[1:additionalParP1+1]
+            othersP1 = addParP1[additionalParP1-nScalarAddParP1-env.numberOfCharacters:]
+
+            # Position check
+            if env.playerSide == "P2":
+                if opt.gameId != "tektagt":
+                    if othersP1[2] != 1.0 or othersP1[3] != 0.0:
+                        raise RuntimeError("Wrong starting positions:", othersP1[2], othersP1[3])
+                else:
+                    if othersP1[6] != 1.0 or othersP1[7] != 0.0:
+                        raise RuntimeError("Wrong starting positions:", othersP1[6], othersP1[7])
+            else:
+                if opt.gameId != "tektagt":
+                    if othersP1[2] != 0.0 or othersP1[3] != 1.0:
+                        raise RuntimeError("Wrong starting positions:", othersP1[2], othersP1[3])
+                else:
+                    if othersP1[6] != 0.0 or othersP1[7] != 1.0:
+                        raise RuntimeError("Wrong starting positions:", othersP1[6], othersP1[7])
+
+            # Frames equality check
             for frameIdx in range(shp[2]-2):
-                if np.all(observation[:,:,frameIdx] != observation[:,:,frameIdx+1]):
+                if np.any(observation[:,:,frameIdx] != observation[:,:,frameIdx+1]):
                     raise RuntimeError("Frames inside observation after round/stage/game/episode done are not equal. Dones =", info["roundDone"], info["stageDone"], info["gameDone"], info["episodeDone"])
 
     print("Mean cumulative reward = ", np.mean(cumulativeEpRewAll))
