@@ -386,6 +386,8 @@ class AddObs(gym.Wrapper):
         # Initialize last observation
         self.env.updateLastObs(np.zeros((shp[0], shp[1], shp[2]+1), dtype=self.env.observation_space.dtype))
 
+    # Set reset info
+    def updateResetInfo(self):
         self.resetInfo = {}
         self.resetInfo["actionsBufP1"] = np.concatenate(
                                            (self.actionsVector([0 for i in range(self.env.actBufLen)],
@@ -599,6 +601,7 @@ class AddObs(gym.Wrapper):
         obs = self.env.reset(**kwargs)
         obs = np.array(obs).astype(np.float32)
 
+        self.updateResetInfo()
         self.updatePlayingChar(self.resetInfo)
         obsNew = self.observationMod(obs, self.resetInfo)
 
