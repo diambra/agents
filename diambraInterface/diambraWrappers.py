@@ -12,30 +12,30 @@ import datetime
 from parallelPickle import parallelPickleWriter
 
 class NoopResetEnv(gym.Wrapper):
-    def __init__(self, env, noop_max=6):
+    def __init__(self, env, noOpMax=6):
         """
         Sample initial states by taking random number of no-ops on reset.
         No-op is assumed to be first action (0).
         :param env: (Gym Environment) the environment to wrap
-        :param noop_max: (int) the maximum value of no-ops to run
+        :param noOpMax: (int) the maximum value of no-ops to run
         """
         gym.Wrapper.__init__(self, env)
-        self.noop_max = noop_max
-        self.override_num_noops = None
+        self.noOpMax = noOpMax
+        self.overrideNumNoOps = None
 
     def reset(self, **kwargs):
         self.env.reset(**kwargs)
-        if self.override_num_noops is not None:
-            noops = self.override_num_noops
+        if self.overrideNumNoOps is not None:
+            noOps = self.overrideNumNoOps
         else:
-            noops = random.randint(1, self.noop_max + 1)
-        assert noops > 0
+            noOps = random.randint(1, self.noOpMax + 1)
+        assert noOps > 0
         obs = None
         noopAction = [0, 0, 0, 0]
         if (self.env.actionSpace[0] == "discrete") and (self.env.playerSide != "P1P2" or\
                                                         self.env.p2Brain != None):
             noopAction = 0
-        for _ in range(noops):
+        for _ in range(noOps):
             obs, _, done, _ = self.env.step(noopAction)
             if done:
                 obs = self.env.reset(**kwargs)
@@ -52,9 +52,10 @@ class MaxAndSkipEnv(gym.Wrapper):
         :param skip: (int) number of `skip`-th frame
         """
         gym.Wrapper.__init__(self, env)
+
         # most recent raw observations (for max pooling across time steps)
-        self._obs_buffer = np.zeros((2,)+env.observation_space.shape, dtype=env.observation_space.dtype)
-        self._skip = skip
+        self.obsBuffer = np.zeros((2,) + env.observation_space.shape, dtype=env.observation_space.dtype)
+        self.skip = skip
 
     def step(self, action):
         """
@@ -63,22 +64,22 @@ class MaxAndSkipEnv(gym.Wrapper):
         :param action: ([int] or [float]) the action
         :return: ([int] or [float], [float], [bool], dict) observation, reward, done, information
         """
-        total_reward = 0.0
+        totalReward = 0.0
         done = None
-        for i in range(self._skip):
+        for i in range(self.skip):
             obs, reward, done, info = self.env.step(action)
-            if i == self._skip - 2:
-                self._obs_buffer[0] = obs
-            if i == self._skip - 1:
-                self._obs_buffer[1] = obs
-            total_reward += reward
+            if i == self.skip - 2:
+                self.obsBuffer[0] = obs
+            if i == self.skip - 1:
+                self.obsBuffer[1] = obs
+            totalReward += reward
             if done:
                 break
         # Note that the observation on the done=True frame
         # doesn't matter
-        max_frame = self._obs_buffer.max(axis=0)
+        maxFrame = self.obsBuffer.max(axis=0)
 
-        return max_frame, total_reward, done, info
+        return maxFrame, totalReward, done, info
 
     def reset(self, **kwargs):
         return self.env.reset(**kwargs)
@@ -108,21 +109,21 @@ class NormalizeRewardEnv(gym.RewardWrapper):
 
     def reward(self, reward):
         """
-        Nomralize reward dividing by reward normalization factor*max_health.
+        Nomralize reward dividing by reward normalization factor*maxHealth.
         :param reward: (float)
         """
-        return float(reward)/float(self.env.rewNormFac*self.env.max_health)
+        return float(reward)/float(self.env.rewNormFac*self.env.maxHealth)
 
 
 class WarpFrame(gym.ObservationWrapper):
-    def __init__(self, env, hw_obs_resize = [84, 84]):
+    def __init__(self, env, hwObsResize = [84, 84]):
         """
         Warp frames to 84x84 as done in the Nature paper and later work.
         :param env: (Gym Environment) the environment
         """
         gym.ObservationWrapper.__init__(self, env)
-        self.width = hw_obs_resize[1]
-        self.height = hw_obs_resize[0]
+        self.width = hwObsResize[1]
+        self.height = hwObsResize[0]
         self.observation_space = spaces.Box(low=0, high=255, shape=(self.height, self.width, 1),
                                             dtype=env.observation_space.dtype)
 
@@ -137,14 +138,14 @@ class WarpFrame(gym.ObservationWrapper):
         return frame[:, :, None]
 
 class WarpFrame3C(gym.ObservationWrapper):
-    def __init__(self, env, hw_obs_resize = [224, 224]):
+    def __init__(self, env, hwObsResize = [224, 224]):
         """
         Warp frames to 84x84 as done in the Nature paper and later work.
         :param env: (Gym Environment) the environment
         """
         gym.ObservationWrapper.__init__(self, env)
-        self.width = hw_obs_resize[1]
-        self.height = hw_obs_resize[0]
+        self.width = hwObsResize[1]
+        self.height = hwObsResize[0]
         self.observation_space = spaces.Box(low=0, high=255, shape=(self.height, self.width, 3),
                                             dtype=env.observation_space.dtype)
 
@@ -159,86 +160,86 @@ class WarpFrame3C(gym.ObservationWrapper):
 
 
 class FrameStack(gym.Wrapper):
-    def __init__(self, env, n_frames):
-        """Stack n_frames last frames.
+    def __init__(self, env, nFrames):
+        """Stack nFrames last frames.
         Returns lazy array, which is much more memory efficient.
         See Also
         --------
         stable_baselines.common.atari_wrappers.LazyFrames
         :param env: (Gym Environment) the environment
-        :param n_frames: (int) the number of frames to stack
+        :param nFrames: (int) the number of frames to stack
         """
         gym.Wrapper.__init__(self, env)
-        self.n_frames = n_frames
-        self.frames = deque([], maxlen=n_frames)
+        self.nFrames = nFrames
+        self.frames = deque([], maxlen=nFrames)
         shp = env.observation_space.shape
-        self.observation_space = spaces.Box(low=0, high=255, shape=(shp[0], shp[1], shp[2] * n_frames),
+        self.observation_space = spaces.Box(low=0, high=255, shape=(shp[0], shp[1], shp[2] * nFrames),
                                             dtype=env.observation_space.dtype)
 
     def reset(self, **kwargs):
         obs = self.env.reset(**kwargs)
         # Fill the stack upon reset to avoid black frames
-        for _ in range(self.n_frames):
+        for _ in range(self.nFrames):
             self.frames.append(obs)
-        return self._get_ob()
+        return self.getOb()
 
     def step(self, action):
         obs, reward, done, info = self.env.step(action)
         self.frames.append(obs)
 
-        # Add last obs n_frames - 1 times in case of new round / stage / continue_game
-        if (info["round_done"] or info["stage_done"] or info["game_done"]) and not done:
-            for _ in range(self.n_frames - 1):
+        # Add last obs nFrames - 1 times in case of new round / stage / continueGame
+        if (info["roundDone"] or info["stageDone"] or info["gameDone"]) and not done:
+            for _ in range(self.nFrames - 1):
                 self.frames.append(obs)
 
-        return self._get_ob(), reward, done, info
+        return self.getOb(), reward, done, info
 
-    def _get_ob(self):
-        assert len(self.frames) == self.n_frames
+    def getOb(self):
+        assert len(self.frames) == self.nFrames
         return LazyFrames(list(self.frames))
 
 
 class FrameStackDilated(gym.Wrapper):
-    def __init__(self, env, n_frames, dilation):
-        """Stack n_frames last frames with dilation factor.
+    def __init__(self, env, nFrames, dilation):
+        """Stack nFrames last frames with dilation factor.
         Returns lazy array, which is much more memory efficient.
         See Also
         --------
         stable_baselines.common.atari_wrappers.LazyFrames
         :param env: (Gym Environment) the environment
-        :param n_frames: (int) the number of frames to stack
+        :param nFrames: (int) the number of frames to stack
         :param dilation: (int) the dilation factor
         """
         gym.Wrapper.__init__(self, env)
-        self.n_frames = n_frames
+        self.nFrames = nFrames
         self.dilation = dilation
-        self.frames = deque([], maxlen=n_frames*dilation) # Keeping all n_frames*dilation in memory,
+        self.frames = deque([], maxlen=nFrames*dilation) # Keeping all nFrames*dilation in memory,
                                                           # then extract the subset given by the dilation factor
         shp = env.observation_space.shape
-        self.observation_space = spaces.Box(low=0, high=255, shape=(shp[0], shp[1], shp[2] * n_frames),
+        self.observation_space = spaces.Box(low=0, high=255, shape=(shp[0], shp[1], shp[2] * nFrames),
                                             dtype=env.observation_space.dtype)
 
     def reset(self, **kwargs):
         obs = self.env.reset(**kwargs)
-        for _ in range(self.n_frames*self.dilation):
+        for _ in range(self.nFrames*self.dilation):
             self.frames.append(obs)
-        return self._get_ob()
+        return self.getOb()
 
     def step(self, action):
         obs, reward, done, info = self.env.step(action)
         self.frames.append(obs)
 
-        # Add last obs n_frames - 1 times in case of new round / stage / continue_game
-        if (info["round_done"] or info["stage_done"] or info["game_done"]) and not done:
-            for _ in range(self.n_frames*self.dilation - 1):
+        # Add last obs nFrames - 1 times in case of new round / stage / continueGame
+        if (info["roundDone"] or info["stageDone"] or info["gameDone"]) and not done:
+            for _ in range(self.nFrames*self.dilation - 1):
                 self.frames.append(obs)
 
-        return self._get_ob(), reward, done, info
+        return self.getOb(), reward, done, info
 
-    def _get_ob(self):
-        frames_subset = list(self.frames)[self.dilation-1::self.dilation]
-        assert len(frames_subset) == self.n_frames
-        return LazyFrames(list(frames_subset))
+    def getOb(self):
+        framesSubset = list(self.frames)[self.dilation-1::self.dilation]
+        assert len(framesSubset) == self.nFrames
+        return LazyFrames(list(framesSubset))
 
 
 class ScaledFloatFrameNeg(gym.ObservationWrapper):
@@ -271,49 +272,49 @@ class LazyFrames(object):
         This object should only be converted to np.ndarray before being passed to the model.
         :param frames: ([int] or [float]) environment frames
         """
-        self._frames = frames
-        self._out = None
+        self.frames = frames
+        self.out = None
 
-    def _force(self):
-        if self._out is None:
-            self._out = np.concatenate(self._frames, axis=2)
-            self._frames = None
-        return self._out
+    def force(self):
+        if self.out is None:
+            self.out = np.concatenate(self.frames, axis=2)
+            self.frames = None
+        return self.out
 
     def __array__(self, dtype=None):
-        out = self._force()
+        out = self.force()
         if dtype is not None:
             out = out.astype(dtype)
         return out
 
     def __len__(self):
-        return len(self._force())
+        return len(self.force())
 
     def __getitem__(self, i):
-        return self._force()[i]
+        return self.force()[i]
 
 
-def make_diambra(diambraGame, env_id, diambra_kwargs, diambra_gym_kwargs):
+def makeDiambra(diambraGame, envId, diambraKwargs, diambraGymKwargs):
     """
     Create a wrapped diambra Environment
-    :param env_id: (str) the environment ID
+    :param envId: (str) the environment ID
     :return: (Gym Environment) the wrapped diambra environment
     """
 
-    env = diambraGame(env_id, diambra_kwargs, **diambra_gym_kwargs)
-    env = NoopResetEnv(env, noop_max=6)
+    env = diambraGame(envId, diambraKwargs, **diambraGymKwargs)
+    env = NoopResetEnv(env, noOpMax=6)
     #env = MaxAndSkipEnv(env, skip=4)
     return env
 
 # Deepmind env processing (rewards normalization, resizing, grayscaling, etc)
-def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1,
-                  scale=False, scale_mod = 0, hwc_obs_resize = [84, 84, 1], dilation=1):
+def wrapDeepmind(env, clipRewards=True, normalizeRewards=False, frameStack=1,
+                 scale=False, scaleMod = 0, hwcObsResize = [84, 84, 1], dilation=1):
     """
     Configure environment for DeepMind-style Atari.
     :param env: (Gym Environment) the diambra environment
-    :param clip_rewards: (bool) wrap the reward clipping wrapper
-    :param normalize_rewards: (bool) wrap the reward normalizing wrapper
-    :param frame_stack: (int) wrap the frame stacking wrapper using #frame_stack frames
+    :param clipRewards: (bool) wrap the reward clipping wrapper
+    :param normalizeRewards: (bool) wrap the reward normalizing wrapper
+    :param frameStack: (int) wrap the frame stacking wrapper using #frameStack frames
     :param dilation (frame stacking): (int) stack one frame every #dilation frames, useful
                                             to assure action every step considering a dilated
                                             subset of previous frames
@@ -321,37 +322,37 @@ def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1
     :return: (Gym Environment) the wrapped diambra environment
     """
 
-    if hwc_obs_resize[2] == 1:
-       # Resizing observation from H x W x 3 to hw_obs_resize[0] x hw_obs_resize[1] x 1
-       env = WarpFrame(env, hwc_obs_resize)
-    elif hwc_obs_resize[2] == 3:
-       # Resizing observation from H x W x 3 to hw_obs_resize[0] x hw_obs_resize[1] x hw_obs_resize[2]
-       env = WarpFrame3C(env, hwc_obs_resize)
+    if hwcObsResize[2] == 1:
+       # Resizing observation from H x W x 3 to hwObsResize[0] x hwObsResize[1] x 1
+       env = WarpFrame(env, hwcObsResize)
+    elif hwcObsResize[2] == 3:
+       # Resizing observation from H x W x 3 to hwObsResize[0] x hwObsResize[1] x hwObsResize[2]
+       env = WarpFrame3C(env, hwcObsResize)
     else:
        raise ValueError("Number of channel must be either 3 or 1")
 
     # Normalize rewards
-    if normalize_rewards:
+    if normalizeRewards:
        env = NormalizeRewardEnv(env)
 
     # Clip rewards using sign function
-    if clip_rewards:
+    if clipRewards:
         env = ClipRewardEnv(env)
 
-    # Stack #frame_stack frames together
-    if frame_stack > 1:
+    # Stack #frameStack frames together
+    if frameStack > 1:
         if dilation == 1:
-            env = FrameStack(env, frame_stack)
+            env = FrameStack(env, frameStack)
         else:
             print("Using frame stacking with dilation = {}".format(dilation))
-            env = FrameStackDilated(env, frame_stack, dilation)
+            env = FrameStackDilated(env, frameStack, dilation)
 
     # Scales observations normalizing them
     if scale:
-        if scale_mod == 0:
+        if scaleMod == 0:
            # Between 0.0 and 1.0
            env = ScaledFloatFrame(env)
-        elif scale_mod == -1:
+        elif scaleMod == -1:
            # Between -1.0 and 1.0
            env = ScaledFloatFrameNeg(env)
         else:
@@ -361,14 +362,14 @@ def wrap_deepmind(env, clip_rewards=True, normalize_rewards=False, frame_stack=1
 
 # Diambra additional observations (previous moves, character side, ecc)
 class AddObs(gym.Wrapper):
-    def __init__(self, env, key_to_add):
+    def __init__(self, env, keyToAdd):
         """
-        Add to observations additional info requested via `key_to_add` str list
+        Add to observations additional info requested via `keyToAdd` str list
         :param env: (Gym Environment) the environment to wrap
-        :param key_to_add: (list of str) list of info to add to the observation
+        :param keyToAdd: (list of str) list of info to add to the observation
         """
         gym.Wrapper.__init__(self, env)
-        self.key_to_add = key_to_add
+        self.keyToAdd = keyToAdd
         shp = self.env.observation_space.shape
 
         self.boxHighBound = self.env.observation_space.high.max()
@@ -382,21 +383,26 @@ class AddObs(gym.Wrapper):
                                             shape=(shp[0], shp[1], shp[2] + 1),
                                             dtype=np.float32)
 
+        # Initialize last observation
+        self.env.updateLastObs(np.zeros((shp[0], shp[1], shp[2]+1), dtype=self.env.observation_space.dtype))
+
+    # Set reset info
+    def updateResetInfo(self):
         self.resetInfo = {}
         self.resetInfo["actionsBufP1"] = np.concatenate(
                                            (self.actionsVector([0 for i in range(self.env.actBufLen)],
-                                                               self.env.n_actions[0][0]),
+                                                               self.env.nActions[0][0]),
                                             self.actionsVector([0 for i in range(self.env.actBufLen)],
-                                                               self.env.n_actions[0][1]))
+                                                               self.env.nActions[0][1]))
                                                       )
         self.resetInfo["actionsBufP2"] = np.concatenate(
                                            (self.actionsVector([0 for i in range(self.env.actBufLen)],
-                                                               self.env.n_actions[1][0]),
+                                                               self.env.nActions[1][0]),
                                             self.actionsVector([0 for i in range(self.env.actBufLen)],
-                                                               self.env.n_actions[1][1]))
+                                                               self.env.nActions[1][1]))
                                                       )
 
-        if "ownHealth" in self.key_to_add:
+        if "ownHealth" in self.keyToAdd:
             self.resetInfo["ownHealthP1"] = [1]
             self.resetInfo["oppHealthP1"] = [1]
             self.resetInfo["ownHealthP2"] = [1]
@@ -458,7 +464,7 @@ class AddObs(gym.Wrapper):
         return actionsVector
 
     # Observation modification (adding one channel to store additional info)
-    def observation_mod(self, obs, additionalInfo):
+    def observationMod(self, obs, additionalInfo):
 
         shp = self.observation_space.shape
 
@@ -477,7 +483,7 @@ class AddObs(gym.Wrapper):
 
         # Adding new info for 1P
         counter = 0
-        for key in self.key_to_add:
+        for key in self.keyToAdd:
 
             for addInfo in additionalInfo[key+"P1"]:
 
@@ -491,7 +497,7 @@ class AddObs(gym.Wrapper):
             halfPosIdx = int((shp[0] * shp[1]) / 2)
             counter = halfPosIdx
 
-            for key in self.key_to_add:
+            for key in self.keyToAdd:
 
                 for addInfo in additionalInfo[key+"P2"]:
 
@@ -509,82 +515,82 @@ class AddObs(gym.Wrapper):
         return obsNew
 
     # Creating dictionary for additional info of the step
-    def to_step_info(self, info, action):
+    def toStepInfo(self, info, action):
 
-        step_info = {}
-        step_info["actionsBufP1"] = np.concatenate(
-                                      (self.actionsVector( info["actionsBufP1"][0], self.env.n_actions[0][0] ),
-                                       self.actionsVector( info["actionsBufP1"][1], self.env.n_actions[0][1] ))
+        stepInfo = {}
+        stepInfo["actionsBufP1"] = np.concatenate(
+                                      (self.actionsVector( info["actionsBufP1"][0], self.env.nActions[0][0] ),
+                                       self.actionsVector( info["actionsBufP1"][1], self.env.nActions[0][1] ))
                                                   )
         if self.env.playerSide == "P1P2":
-            step_info["actionsBufP2"] = np.concatenate(
-                                          (self.actionsVector( info["actionsBufP2"][0], self.env.n_actions[1][0] ),
-                                           self.actionsVector( info["actionsBufP2"][1], self.env.n_actions[1][1] ))
+            stepInfo["actionsBufP2"] = np.concatenate(
+                                          (self.actionsVector( info["actionsBufP2"][0], self.env.nActions[1][0] ),
+                                           self.actionsVector( info["actionsBufP2"][1], self.env.nActions[1][1] ))
                                                       )
 
         if self.env.playerSide == "P1" or self.env.playerSide == "P1P2":
 
-            if "ownHealth" in self.key_to_add:
-                step_info["ownHealthP1"] = [info["healthP1"] / float(self.env.max_health)]
-                step_info["oppHealthP1"] = [info["healthP2"] / float(self.env.max_health)]
+            if "ownHealth" in self.keyToAdd:
+                stepInfo["ownHealthP1"] = [info["healthP1"] / float(self.env.maxHealth)]
+                stepInfo["oppHealthP1"] = [info["healthP2"] / float(self.env.maxHealth)]
             else:
-                step_info["ownHealth_1P1"] = [info["healthP1_1"] / float(self.env.max_health)]
-                step_info["ownHealth_2P1"] = [info["healthP1_2"] / float(self.env.max_health)]
-                step_info["oppHealth_1P1"] = [info["healthP2_1"] / float(self.env.max_health)]
-                step_info["oppHealth_2P1"] = [info["healthP2_2"] / float(self.env.max_health)]
+                stepInfo["ownHealth_1P1"] = [info["healthP1_1"] / float(self.env.maxHealth)]
+                stepInfo["ownHealth_2P1"] = [info["healthP1_2"] / float(self.env.maxHealth)]
+                stepInfo["oppHealth_1P1"] = [info["healthP2_1"] / float(self.env.maxHealth)]
+                stepInfo["oppHealth_2P1"] = [info["healthP2_2"] / float(self.env.maxHealth)]
 
-                step_info["ownActiveCharP1"] = [info["activeCharP1"]]
-                step_info["oppActiveCharP1"] = [info["activeCharP2"]]
+                stepInfo["ownActiveCharP1"] = [info["activeCharP1"]]
+                stepInfo["oppActiveCharP1"] = [info["activeCharP2"]]
 
-            step_info["ownPositionP1"] = [info["positionP1"]]
-            step_info["oppPositionP1"] = [info["positionP2"]]
+            stepInfo["ownPositionP1"] = [info["positionP1"]]
+            stepInfo["oppPositionP1"] = [info["positionP2"]]
 
-            step_info["ownWinsP1"] = [info["winsP1"]]
-            step_info["oppWinsP1"] = [info["winsP2"]]
+            stepInfo["ownWinsP1"] = [info["winsP1"]]
+            stepInfo["oppWinsP1"] = [info["winsP2"]]
         else:
-            if "ownHealth" in self.key_to_add:
-                step_info["ownHealthP1"] = [info["healthP2"] / float(self.env.max_health)]
-                step_info["oppHealthP1"] = [info["healthP1"] / float(self.env.max_health)]
+            if "ownHealth" in self.keyToAdd:
+                stepInfo["ownHealthP1"] = [info["healthP2"] / float(self.env.maxHealth)]
+                stepInfo["oppHealthP1"] = [info["healthP1"] / float(self.env.maxHealth)]
             else:
-                step_info["ownHealth_1P1"] = [info["healthP2_1"] / float(self.env.max_health)]
-                step_info["ownHealth_2P1"] = [info["healthP2_2"] / float(self.env.max_health)]
-                step_info["oppHealth_1P1"] = [info["healthP1_1"] / float(self.env.max_health)]
-                step_info["oppHealth_2P1"] = [info["healthP1_2"] / float(self.env.max_health)]
+                stepInfo["ownHealth_1P1"] = [info["healthP2_1"] / float(self.env.maxHealth)]
+                stepInfo["ownHealth_2P1"] = [info["healthP2_2"] / float(self.env.maxHealth)]
+                stepInfo["oppHealth_1P1"] = [info["healthP1_1"] / float(self.env.maxHealth)]
+                stepInfo["oppHealth_2P1"] = [info["healthP1_2"] / float(self.env.maxHealth)]
 
-                step_info["ownActiveCharP1"] = [info["activeCharP2"]]
-                step_info["oppActiveCharP1"] = [info["activeCharP1"]]
+                stepInfo["ownActiveCharP1"] = [info["activeCharP2"]]
+                stepInfo["oppActiveCharP1"] = [info["activeCharP1"]]
 
-            step_info["ownPositionP1"] = [info["positionP2"]]
-            step_info["oppPositionP1"] = [info["positionP1"]]
+            stepInfo["ownPositionP1"] = [info["positionP2"]]
+            stepInfo["oppPositionP1"] = [info["positionP1"]]
 
-            step_info["ownWinsP1"] = [info["winsP2"]]
-            step_info["oppWinsP1"] = [info["winsP1"]]
+            stepInfo["ownWinsP1"] = [info["winsP2"]]
+            stepInfo["oppWinsP1"] = [info["winsP1"]]
 
-        step_info["stageP1"] = [ float(info["stage"]-1) / float(self.env.max_stage - 1) ]
+        stepInfo["stageP1"] = [ float(info["stage"]-1) / float(self.env.maxStage - 1) ]
 
         if self.env.playerSide == "P1P2":
-            if "ownHealth" in self.key_to_add:
-                step_info["ownHealthP2"] = step_info["oppHealthP1"]
-                step_info["oppHealthP2"] = step_info["ownHealthP1"]
+            if "ownHealth" in self.keyToAdd:
+                stepInfo["ownHealthP2"] = stepInfo["oppHealthP1"]
+                stepInfo["oppHealthP2"] = stepInfo["ownHealthP1"]
             else:
-                step_info["ownHealth_1P2"] = step_info["oppHealth_1P1"]
-                step_info["ownHealth_2P2"] = step_info["oppHealth_2P1"]
-                step_info["oppHealth_1P2"] = step_info["ownHealth_1P1"]
-                step_info["oppHealth_2P2"] = step_info["ownHealth_2P1"]
+                stepInfo["ownHealth_1P2"] = stepInfo["oppHealth_1P1"]
+                stepInfo["ownHealth_2P2"] = stepInfo["oppHealth_2P1"]
+                stepInfo["oppHealth_1P2"] = stepInfo["ownHealth_1P1"]
+                stepInfo["oppHealth_2P2"] = stepInfo["ownHealth_2P1"]
 
-                step_info["ownActiveCharP2"] = [info["activeCharP2"]]
-                step_info["oppActiveCharP2"] = [info["activeCharP1"]]
+                stepInfo["ownActiveCharP2"] = [info["activeCharP2"]]
+                stepInfo["oppActiveCharP2"] = [info["activeCharP1"]]
 
-            step_info["ownPositionP2"] = [info["positionP2"]]
-            step_info["oppPositionP2"] = [info["positionP1"]]
+            stepInfo["ownPositionP2"] = [info["positionP2"]]
+            stepInfo["oppPositionP2"] = [info["positionP1"]]
 
-            step_info["ownWinsP2"] = [info["winsP2"]]
-            step_info["oppWinsP2"] = [info["winsP1"]]
-            step_info["stageP2"] = step_info["stageP1"]
+            stepInfo["ownWinsP2"] = [info["winsP2"]]
+            stepInfo["oppWinsP2"] = [info["winsP1"]]
+            stepInfo["stageP2"] = stepInfo["stageP1"]
 
-        self.updatePlayingChar(step_info)
+        self.updatePlayingChar(stepInfo)
 
-        return step_info
+        return stepInfo
 
     def reset(self, **kwargs):
         """
@@ -595,8 +601,9 @@ class AddObs(gym.Wrapper):
         obs = self.env.reset(**kwargs)
         obs = np.array(obs).astype(np.float32)
 
+        self.updateResetInfo()
         self.updatePlayingChar(self.resetInfo)
-        obsNew = self.observation_mod(obs, self.resetInfo)
+        obsNew = self.observationMod(obs, self.resetInfo)
 
         # Store last observation
         self.env.updateLastObs(obsNew)
@@ -612,41 +619,41 @@ class AddObs(gym.Wrapper):
         """
         obs, reward, done, info = self.env.step(action)
 
-        stepInfo = self.to_step_info(info, action)
+        stepInfo = self.toStepInfo(info, action)
 
-        obsNew = self.observation_mod(obs, stepInfo)
+        obsNew = self.observationMod(obs, stepInfo)
 
         # Store last observation
         self.env.updateLastObs(obsNew)
 
         return obsNew, reward, done, info
 
-def additional_obs(env, key_to_add):
+def additionalObs(env, keyToAdd):
     """
     Add additional observations to the environment output.
     :param env: (Gym Environment) the diambra environment
-    :param ket_to_add: (list of str) additional info to add to the obs
+    :param keyToAdd: (list of str) additional info to add to the obs
     :return: (Gym Environment) the wrapped diambra environment
     """
 
-    if key_to_add != None:
-       env = AddObs(env, key_to_add)
+    if keyToAdd != None:
+       env = AddObs(env, keyToAdd)
 
     return env
 
 # Trajectory recorder wrapper
 class TrajectoryRecorder(gym.Wrapper):
-    def __init__(self, env, file_path, user_name, ignore_p2, commitHash, key_to_add):
+    def __init__(self, env, filePath, userName, ignoreP2, commitHash, keyToAdd):
         """
         Record trajectories to use them for imitation learning
         :param env: (Gym Environment) the environment to wrap
         :param filePath: (str) file path specifying where to store the trajectory file
         """
         gym.Wrapper.__init__(self, env)
-        self.filePath = file_path
-        self.userName = user_name
-        self.ignoreP2 = ignore_p2
-        self.key_to_add = key_to_add
+        self.filePath = filePath
+        self.userName = userName
+        self.ignoreP2 = ignoreP2
+        self.keyToAdd = keyToAdd
         self.shp = self.env.observation_space.shape
         self.commitHash = commitHash
 
@@ -694,38 +701,38 @@ class TrajectoryRecorder(gym.Wrapper):
 
         self.lastFrameHist.append(obs[:,:,self.shp[2]-2])
 
-        # Add last obs n_frames - 1 times in case of new round / stage / continue_game
-        if (info["round_done"] or info["stage_done"] or info["game_done"]) and not done:
+        # Add last obs nFrames - 1 times in case of new round / stage / continue_game
+        if (info["roundDone"] or info["stageDone"] or info["gameDone"]) and not done:
             for _ in range(self.shp[2]-2):
                 self.lastFrameHist.append(obs[:,:,self.shp[2]-2])
 
         self.addObsHist.append(obs[:,:,self.shp[2]-1])
         self.rewardsHist.append(reward)
         self.actionsHist.append(action)
-        self.flagHist.append([info["round_done"], info["stage_done"],
-                              info["game_done"], info["episode_done"]])
+        self.flagHist.append([info["roundDone"], info["stageDone"],
+                              info["gameDone"], info["episodeDone"]])
         self.cumulativeRew += reward
 
         if done:
-            to_save = {}
-            to_save["commitHash"]    = self.commitHash
-            to_save["userName"]      = self.userName
-            to_save["playerId"]      = self.env.playerSide
-            to_save["difficulty"]    = self.env.difficulty
-            to_save["ignoreP2"]      = self.ignoreP2
-            to_save["charNames"]     = self.env.charNames
-            to_save["actBufLen"]     = self.env.actBufLen
-            to_save["nActions"]      = self.env.n_actions[0]
-            to_save["attackButComb"] = self.env.attackButCombinations[0]
-            to_save["actionSpace"]   = self.env.actionSpace[0]
-            to_save["epLen"]         = len(self.rewardsHist)
-            to_save["cumRew"]        = self.cumulativeRew
-            to_save["keyToAdd"]      = self.key_to_add
-            to_save["frames"]        = self.lastFrameHist
-            to_save["addObs"]        = self.addObsHist
-            to_save["rewards"]       = self.rewardsHist
-            to_save["actions"]       = self.actionsHist
-            to_save["doneFlags"]     = self.flagHist
+            toSave = {}
+            toSave["commitHash"]    = self.commitHash
+            toSave["userName"]      = self.userName
+            toSave["playerId"]      = self.env.playerSide
+            toSave["difficulty"]    = self.env.difficulty
+            toSave["ignoreP2"]      = self.ignoreP2
+            toSave["charNames"]     = self.env.charNames
+            toSave["actBufLen"]     = self.env.actBufLen
+            toSave["nActions"]      = self.env.nActions[0]
+            toSave["attackButComb"] = self.env.attackButCombinations[0]
+            toSave["actionSpace"]   = self.env.actionSpace[0]
+            toSave["epLen"]         = len(self.rewardsHist)
+            toSave["cumRew"]        = self.cumulativeRew
+            toSave["keyToAdd"]      = self.keyToAdd
+            toSave["frames"]        = self.lastFrameHist
+            toSave["addObs"]        = self.addObsHist
+            toSave["rewards"]       = self.rewardsHist
+            toSave["actions"]       = self.actionsHist
+            toSave["doneFlags"]     = self.flagHist
 
             # Characters name
             chars = ""
@@ -741,7 +748,7 @@ class TrajectoryRecorder(gym.Wrapper):
                        "_diff" + str(self.env.difficulty)  + "_rew" + str(np.round(self.cumulativeRew, 3)) +\
                        "_" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
-            pickleWriter = parallelPickleWriter(os.path.join(self.filePath, savePath), to_save)
+            pickleWriter = parallelPickleWriter(os.path.join(self.filePath, savePath), toSave)
             pickleWriter.start()
 
         return obs, reward, done, info

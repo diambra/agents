@@ -2,27 +2,29 @@ import sys, platform, os
 import numpy as np
 import gym
 from gym import spaces
-from Environment import Environment
 from collections import deque
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../utils'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../games'))
+from Environment import Environment
 from policies import P2ToP1AddObsMove
 
 class diambraMame(gym.Env):
     """DiambraMame Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, env_id, diambra_kwargs, P2brain=None, rewNormFac=0.5,
-                 continue_game=0.0, show_final=False, gamePads=[None, None],
+    def __init__(self, envId, diambraKwargs, P2brain=None, rewNormFac=0.5,
+                 continueGame=0.0, showFinal=False,
                  actionSpace=["multiDiscrete", "multiDiscrete"],
                  attackButCombinations=[True, True], actBufLen=12, headless=False):
         super(diambraMame, self).__init__()
 
         self.first = True
-        self.continueGame = continue_game
-        self.showFinal = show_final
+        self.continueGame = continueGame
+        self.showFinal = showFinal
         self.actionSpace = actionSpace
         self.attackButCombinations=attackButCombinations
 
-        print("Env_id = {}".format(env_id))
+        print("EnvId = {}".format(envId))
         print("Continue value = {}".format(self.continueGame))
         print("Action Spaces = {}".format(self.actionSpace))
         print("Use attack buttons combinations = {}".format(self.attackButCombinations))
@@ -32,25 +34,25 @@ class diambraMame(gym.Env):
             os.environ["DISPLAY"] = ":0"
 
         self.ncontinue = 0
-        self.env = Environment(env_id, diambra_kwargs).getEnv()
+        self.env = Environment(envId, diambraKwargs).getEnv()
 
         # N actions
-        self.n_actions = [self.env.n_actions_butComb, self.env.n_actions_butComb]
+        self.nActions = [self.env.nActionsButComb, self.env.nActionsButComb]
         for idx in range(2):
             if not self.attackButCombinations[idx]:
-                self.n_actions[idx] = self.env.n_actions_noButComb
+                self.nActions[idx] = self.env.nActionsNoButComb
         # Frame height, width and channel dimensions
-        self.hwc_dim = self.env.hwc_dim
+        self.hwcDim = self.env.hwcDim
         # Maximum players health
-        self.max_health = self.env.max_health
+        self.maxHealth = self.env.maxHealth
         # Maximum number of stages (1P game vs COM)
-        self.max_stage = self.env.max_stage
+        self.maxStage = self.env.maxStage
         # Player Side (P1, P2, P1P2)
         self.playerSide = self.env.player
         # Player Id (P1->0, P2->1, P1P2->None)
         self.playerId = self.env.playerId
         # Characters names list
-        self.charNames = self.env.charNames()
+        self.charNames = self.env.charNames
         # Number of characters of the game
         self.numberOfCharacters = len(self.charNames)
         # Character(s) in use
@@ -68,19 +70,10 @@ class diambraMame(gym.Env):
             # Check action space is prescribed as "multiDiscrete"
             if self.p2Brain.id == "gamepad":
                 self.p2Brain.initialize(self.env.actionList())
-                gamePads[1] = self.p2Brain
                 if self.actionsSpace[1] != "multiDiscrete":
                     raise Exception("Action Space for P2 must be \"multiDiscrete\" when using gamePad")
                 if not self.attackButCombinations[1]:
                     raise Exception("Use attack buttons combinations for P2 must be \"True\" when using gamePad")
-
-        # Gamepads (for char selection)
-        self.gamePads = gamePads
-        gamepadNum = 0
-        for idx in range(2):
-            if self.gamePads[idx] != None:
-                self.gamePads[idx].initialize(self.env.actionList(), gamepadNum=gamepadNum)
-                gamepadNum += 1
 
         # Define action and observation space
         # They must be gym.spaces objects
@@ -96,7 +89,7 @@ class diambraMame(gym.Env):
             #     e.g. NOOP = [0], ButA = [1], ButB = [2], ButA+ButB = [3]
             #     or ignored:
             #     e.g. NOOP = [0], ButA = [1], ButB = [2]
-            self.action_space = spaces.MultiDiscrete(self.n_actions[0])
+            self.action_space = spaces.MultiDiscrete(self.nActions[0])
             print("Using MultiDiscrete action space")
         elif self.actionSpace[0] == "discrete":
             # Discrete actions:
@@ -106,22 +99,22 @@ class diambraMame(gym.Env):
             #     e.g. NOOP = [0], ButA = [1], ButB = [2], ButA+ButB = [3]
             #     or ignored:
             #     e.g. NOOP = [0], ButA = [1], ButB = [2]
-            self.action_space = spaces.Discrete(self.n_actions[0][0] + self.n_actions[0][1] - 1)
+            self.action_space = spaces.Discrete(self.nActions[0][0] + self.nActions[0][1] - 1)
             print("Using Discrete action space")
         else:
             raise Exception("Not recognized action space: {}".format(self.actionSpace[0]))
 
         # Image as input:
         self.observation_space = spaces.Box(low=0, high=255,
-                                        shape=(self.hwc_dim[0], self.hwc_dim[1], self.hwc_dim[2]), dtype=np.uint8)
+                                        shape=(self.hwcDim[0], self.hwcDim[1], self.hwcDim[2]), dtype=np.uint8)
 
         # Saving both action spaces
-        self.action_spaces = [None, None]
+        self.actionSpaces = [None, None]
         for idx in range(2):
             if self.actionSpace[idx] == "multiDiscrete":
-                self.action_spaces[idx] = spaces.MultiDiscrete(self.n_actions[idx])
+                self.actionSpaces[idx] = spaces.MultiDiscrete(self.nActions[idx])
             else:
-                self.action_spaces[idx] = spaces.Discrete(self.n_actions[idx][0] + self.n_actions[idx][1] - 1)
+                self.actionSpaces[idx] = spaces.Discrete(self.nActions[idx][0] + self.nActions[idx][1] - 1)
 
         self.actBufLen = actBufLen
         self.clearActBuf()
@@ -132,11 +125,11 @@ class diambraMame(gym.Env):
         if self.env.inputPlayer == "P1P2":
             return (-2*coeff, 2*coeff)
         else:
-            return (-coeff*(self.max_stage-1)-2*coeff, self.max_stage*2*coeff)
+            return (-coeff*(self.maxStage-1)-2*coeff, self.maxStage*2*coeff)
 
     # Return actions dict
-    def print_actions_dict(self):
-        return self.env.print_actions_dict()
+    def printActionsDict(self):
+        return self.env.printActionsDict()
 
     # Return env action list
     def actionList(self):
@@ -155,12 +148,12 @@ class diambraMame(gym.Env):
         movAct = 0
         attAct = 0
 
-        if action <= self.n_actions[0][0] - 1:
+        if action <= self.nActions[0][0] - 1:
             # Move action or no action
             movAct = action # For example, for DOA++ this can be 0 - 8
         else:
             # Attack action
-            attAct = action - self.n_actions[0][0] + 1 # For example, for DOA++ this can be 1 - 7
+            attAct = action - self.nActions[0][0] + 1 # For example, for DOA++ this can be 1 - 7
 
         return movAct, attAct
 
@@ -256,12 +249,12 @@ class diambraMame(gym.Env):
                         movActP2, attActP2 = self.discreteToMultiDiscreteAction(brainActions)
 
         if self.playerSide == "P1P2":
-            observation, reward, round_done, done, info = self.env.step2P(movActP1, attActP1, movActP2, attActP2)
-            stage_done = False
-            game_done = done
-            episode_done = done
+            observation, reward, roundDone, done, info = self.env.step2P(movActP1, attActP1, movActP2, attActP2)
+            stageDone = False
+            gameDone = done
+            episodeDone = done
         else:
-            observation, reward, round_done, stage_done, game_done, done, info = self.env.step(movActP1, attActP1)
+            observation, reward, roundDone, stageDone, gameDone, done, info = self.env.step(movActP1, attActP1)
 
         # Extend the actions buffer
         self.movActBufP1.extend([movActP1])
@@ -272,10 +265,10 @@ class diambraMame(gym.Env):
 
         if done:
             if self.showFinal:
-                self.env.show_final()
+                self.env.showFinal()
 
             print("Episode done")
-        elif game_done:
+        elif gameDone:
             self.clearActBuf()
 
             # Continuing rule:
@@ -289,12 +282,12 @@ class diambraMame(gym.Env):
             elif self.continueGame <= 1.0:
                 continueFlag = np.random.choice([True, False], p=[self.continueGame, 1.0 - self.continueGame])
             else:
-                raise ValueError('continue_game must be <= 1.0')
+                raise ValueError('continueGame must be <= 1.0')
 
             if continueFlag:
                 print("Game done, continuing ...")
                 oldRew = info["rewards"]
-                observation, info = self.env.continue_game()
+                observation, info = self.env.continueGame()
                 info["rewards"] = oldRew
                 self.playingCharacters = self.env.playingCharacters
                 self.playerSide = self.env.player
@@ -302,24 +295,24 @@ class diambraMame(gym.Env):
             else:
                 print("Episode done")
                 done = True
-        elif stage_done:
+        elif stageDone:
             print("Stage done")
             self.clearActBuf()
             oldRew = info["rewards"]
-            observation, info = self.env.next_stage()
+            observation, info = self.env.nextStage()
             info["rewards"] = oldRew
-        elif round_done:
+        elif roundDone:
             print("Round done")
             self.clearActBuf()
             oldRew = info["rewards"]
-            observation, info = self.env.next_round()
+            observation, info = self.env.nextRound()
             info["rewards"] = oldRew
 
         # Adding done to info
-        info["round_done"] = round_done
-        info["stage_done"] = stage_done
-        info["game_done"] = game_done
-        info["episode_done"] = done
+        info["roundDone"] = roundDone
+        info["stageDone"] = stageDone
+        info["gameDone"] = gameDone
+        info["episodeDone"] = done
 
         # Add the action buffer to the step info
         info["actionsBufP1"] = [self.movActBufP1, self.attActBufP1]
@@ -336,9 +329,9 @@ class diambraMame(gym.Env):
 
         if self.first:
             self.first = False
-            observation, info = self.env.start(gamePads=self.gamePads)
+            observation, info = self.env.startGame()
         else:
-            observation, info = self.env.new_game()
+            observation, info = self.env.newGame()
 
         self.playingCharacters = self.env.playingCharacters
         self.playerSide = self.env.player

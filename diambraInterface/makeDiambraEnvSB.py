@@ -6,58 +6,58 @@ from stable_baselines.bench import Monitor
 from stable_baselines.common.misc_util import set_global_seeds
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecFrameStack
 
-def make_diambra_env(diambraMame, env_prefix, num_env, seed, diambra_kwargs,
-                     diambra_gym_kwargs, wrapper_kwargs=None, traj_rec_kwargs=None,
-                     start_index=0, allow_early_resets=True, start_method=None,
-                     key_to_add=None, no_vec=False, use_subprocess=False):
+def makeDiambraEnv(diambraMame, envPrefix, numEnv, seed, diambraKwargs,
+                     diambraGymKwargs, wrapperKwargs=None, trajRecKwargs=None,
+                     startIndex=0, allowEarlyResets=True, startMethod=None,
+                     keyToAdd=None, noVec=False, useSubprocess=False):
     """
     Create a wrapped, monitored VecEnv for Atari.
     :param diambraMame: (class) DIAMBRAGym interface class
-    :param num_env: (int) the number of environment you wish to have in subprocesses
+    :param numEnv: (int) the number of environment you wish to have in subprocesses
     :param seed: (int) the initial seed for RNG
-    :param wrapper_kwargs: (dict) the parameters for wrap_deepmind function
-    :param start_index: (int) start rank index
-    :param allow_early_resets: (bool) allows early reset of the environment
-    :param start_method: (str) method used to start the subprocesses.
+    :param wrapperKwargs: (dict) the parameters for wrapDeepmind function
+    :param startIndex: (int) start rank index
+    :param allowEarlyResets: (bool) allows early reset of the environment
+    :param startMethod: (str) method used to start the subprocesses.
         See SubprocVecEnv doc for more information
-    :param use_subprocess: (bool) Whether to use `SubprocVecEnv` or `DummyVecEnv` when
-    :param no_vec: (bool) Whether to avoid usage of Vectorized Env or not. Default: False
+    :param useSubprocess: (bool) Whether to use `SubprocVecEnv` or `DummyVecEnv` when
+    :param noVec: (bool) Whether to avoid usage of Vectorized Env or not. Default: False
     :return: (VecEnv) The diambra environment
     """
-    if wrapper_kwargs is None:
-        wrapper_kwargs = {}
+    if wrapperKwargs is None:
+        wrapperKwargs = {}
 
-    def make_env(rank):
-        def _thunk():
-            env_id = env_prefix + str(rank)
-            env = make_diambra(diambraMame, env_id, diambra_kwargs, diambra_gym_kwargs)
+    def makeEnv(rank):
+        def thunk():
+            envId = envPrefix + str(rank)
+            env = makeDiambra(diambraMame, envId, diambraKwargs, diambraGymKwargs)
             env.seed(seed + rank)
-            env = wrap_deepmind(env, **wrapper_kwargs)
-            env = additional_obs(env, key_to_add)
-            if type(traj_rec_kwargs) != type(None):
-                env = TrajectoryRecorder(env, **traj_rec_kwargs, key_to_add=key_to_add)
+            env = wrapDeepmind(env, **wrapperKwargs)
+            env = additionalObs(env, keyToAdd)
+            if type(trajRecKwargs) != type(None):
+                env = TrajectoryRecorder(env, **trajRecKwargs, keyToAdd=keyToAdd)
             env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
-                          allow_early_resets=allow_early_resets)
+                          allow_early_resets=allowEarlyResets)
             return env
-        return _thunk
+        return thunk
     set_global_seeds(seed)
 
     # If not wanting vectorized envs
-    if no_vec and num_env == 1:
-        env_id = env_prefix + str(0)
-        env = make_diambra(diambraMame, env_id, diambra_kwargs, diambra_gym_kwargs)
+    if noVec and numEnv == 1:
+        envId = envPrefix + str(0)
+        env = makeDiambra(diambraMame, envId, diambraKwargs, diambraGymKwargs)
         env.seed(seed)
-        env = wrap_deepmind(env, **wrapper_kwargs)
-        env = additional_obs(env, key_to_add)
-        if type(traj_rec_kwargs) != type(None):
-            env = TrajectoryRecorder(env, **traj_rec_kwargs, key_to_add=key_to_add)
+        env = wrapDeepmind(env, **wrapperKwargs)
+        env = additionalObs(env, keyToAdd)
+        if type(trajRecKwargs) != type(None):
+            env = TrajectoryRecorder(env, **trajRecKwargs, keyToAdd=keyToAdd)
         env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
-                      allow_early_resets=allow_early_resets)
+                      allow_early_resets=allowEarlyResets)
         return env
 
     # When using one environment, no need to start subprocesses
-    if num_env == 1 or not use_subprocess:
-        return DummyVecEnv([make_env(i + start_index) for i in range(num_env)])
+    if numEnv == 1 or not useSubprocess:
+        return DummyVecEnv([makeEnv(i + startIndex) for i in range(numEnv)])
 
-    return SubprocVecEnv([make_env(i + start_index) for i in range(num_env)],
-                         start_method=start_method)
+    return SubprocVecEnv([makeEnv(i + startIndex) for i in range(numEnv)],
+                         start_method=startMethod)
