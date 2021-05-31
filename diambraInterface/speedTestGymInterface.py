@@ -12,13 +12,13 @@ def reject_outliers(data):
 
 try:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--gameId',      type=str,   default="doapp",    help='Game ID [(doapp), sfiii3n, tektagt, umk3]')
-    parser.add_argument('--player',      type=str,   default="Random",   help='Player [(Random), P1, P2, P1P2]')
-    parser.add_argument('--frameRatio',  type=int,   default=1,          help='Frame ratio')
-    parser.add_argument('--nEpisodes',   type=int,   default=1,          help='Number of episodes')
-    parser.add_argument('--actionSpace', type=str,   default="discrete", help='(discrete)/multidiscrete')
-    parser.add_argument('--attButComb',  type=int,   default=0,          help='If to use attack button combinations (0=False)/1=True')
-    parser.add_argument('--targetSpeed', type=int, default=1,            help='Number of episodes')
+    parser.add_argument('--gameId',      type=str, default="doapp",    help='Game ID [(doapp), sfiii3n, tektagt, umk3]')
+    parser.add_argument('--player',      type=str, default="Random",   help='Player [(Random), P1, P2, P1P2]')
+    parser.add_argument('--frameRatio',  type=int, default=1,          help='Frame ratio')
+    parser.add_argument('--nEpisodes',   type=int, default=1,          help='Number of episodes')
+    parser.add_argument('--actionSpace', type=str, default="discrete", help='(discrete)/multidiscrete')
+    parser.add_argument('--attButComb',  type=int, default=0,          help='If to use attack button combinations (0=False)/1=True')
+    parser.add_argument('--targetSpeed', type=int, default=100,        help='Number of episodes')
     opt = parser.parse_args()
     print(opt)
 
@@ -69,7 +69,7 @@ try:
         toc = time.time()
         fps = 1/(toc - tic)
         tic = toc
-        print("FPS = {}".format(fps))
+        #print("FPS = {}".format(fps))
         fpsVal.append(fps)
 
         actions = [None, None]
@@ -95,8 +95,8 @@ try:
     avgFps = np.mean(fpsVal2)
     print("Average speed = {} FPS, STD {} FPS", avgFps, np.std(fpsVal2))
 
-    if avgFps < opt.targetSpeed*0.975:
-        raise RuntimeError("Fps lower than expected: {} VS {}".format(avgFps, opt.targetSpeed))
+    if abs(avgFps - opt.targetSpeed) > opt.targetSpeed*0.025:
+        raise RuntimeError("Fps different than expected: {} VS {}".format(avgFps, opt.targetSpeed))
 
     print("ALL GOOD!")
 except Exception as e:
