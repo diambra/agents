@@ -23,12 +23,8 @@ try:
     base_path = os.path.dirname(__file__)
 
     sys.path.append(base_path)
-    sys.path.append(os.path.join(base_path, '../../utils'))
-    sys.path.append(os.path.join(base_path, '../../pythonGamePadInterface'))
 
     from diambraMameGym import diambraMame
-    from diambraGamepad import diambraGamepad
-    from policies import gamepadPolicy, RLPolicy # To train AI against another AI or HUM
 
     diambraKwargs = {}
     diambraKwargs["romsPath"] = os.path.join(base_path, "../../roms/mame/")
@@ -45,12 +41,9 @@ try:
         diambraKwargs["characters"] = [[opt.character1, opt.character1_2], [opt.character2, opt.character2_2]]
     diambraKwargs["charOutfits"] = [2, 2]
 
-    # Initialize P2 policy = GamePad
-    gamePad_policy = gamepadPolicy(diambraGamepad)
-
     # DIAMBRA gym kwargs
     diambraGymKwargs = {}
-    diambraGymKwargs["P2brain"] = None#gamePad_policy
+    diambraGymKwargs["P2brain"] = None
     diambraGymKwargs["continueGame"] = opt.continueGame
     diambraGymKwargs["showFinal"] = False
     diambraGymKwargs["actionSpace"] = [opt.actionSpace, opt.actionSpace]
