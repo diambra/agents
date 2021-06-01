@@ -29,11 +29,6 @@ try:
     base_path = os.path.dirname(__file__)
 
     sys.path.append(base_path)
-    sys.path.append(os.path.join(base_path, '../../utils'))
-    sys.path.append(os.path.join(base_path, '../../pythonGamePadInterface'))
-
-    from diambraGamepad import diambraGamepad
-    from policies import gamepadPolicy, RLPolicy # To train AI against another AI or HUM
 
     from diambraMameGym import diambraMame
     from makeDiambraEnv import makeDiambraEnv
@@ -45,7 +40,6 @@ try:
     diambraKwargs["frameRatio"] = opt.frameRatio
     diambraKwargs["throttle"] = False
     diambraKwargs["sound"] = diambraKwargs["throttle"]
-    #diambraKwargs["disableKeyboard"] = False
 
     diambraKwargs["player"] = opt.player
 
@@ -77,12 +71,9 @@ try:
         diambraKwargs["characters"] = [[opt.character1, opt.character1_2], [opt.character2, opt.character2_2]]
     diambraKwargs["charOutfits"] = [2, 2]
 
-    # GamePad policy initialization
-    gamePad_policy = gamepadPolicy(diambraGamepad)
-
     # DIAMBRA gym kwargs
     diambraGymKwargs = {}
-    diambraGymKwargs["P2brain"] = None#gamePad_policy
+    diambraGymKwargs["P2brain"] = None
     diambraGymKwargs["continueGame"] = opt.continueGame
     diambraGymKwargs["showFinal"] = False
     diambraGymKwargs["actionSpace"] = [opt.actionSpace, opt.actionSpace]
