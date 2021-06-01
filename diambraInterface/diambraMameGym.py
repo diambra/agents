@@ -15,7 +15,8 @@ class diambraMame(gym.Env):
     def __init__(self, envId, diambraKwargs, P2brain=None, rewNormFac=0.5,
                  continueGame=0.0, showFinal=False,
                  actionSpace=["multiDiscrete", "multiDiscrete"],
-                 attackButCombinations=[True, True], actBufLen=12, headless=False):
+                 attackButCombinations=[True, True], actBufLen=12,
+                 headless=False):
         super(diambraMame, self).__init__()
 
         self.first = True
@@ -346,6 +347,14 @@ class diambraMame(gym.Env):
     # Rendering the environment
     def render(self, mode='human'):
         pass
+
+    # Returning size of env episode frames history
+    def episodeFramesNum(self):
+        return len(self.env.episodeFrames)
+
+    # Returning env episode frames history
+    def episodeFrames(self):
+        return self.env.episodeFrames
 
     # Closing the environment
     def close (self):
