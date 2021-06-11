@@ -2,7 +2,6 @@ import sys, os
 from os.path import expanduser
 from os import listdir
 import time
-import pickle, bz2
 import numpy as np
 import argparse
 
@@ -17,8 +16,7 @@ try:
     homeDir = expanduser("~")
     base_path = os.path.dirname(__file__)
 
-    sys.path.append(base_path)
-    sys.path.append(os.path.join(base_path, '../../utils'))
+    sys.path.append(os.path.join(base_path, '../.'))
 
     from diambraImitationLearning import *
 
@@ -32,7 +30,7 @@ try:
     print(trajectoriesFiles)
 
     diambraILKwargs = {}
-    diambraILKwargs["hwcDim"] = [128,128,5]
+    diambraILKwargs["hwcDim"] = [128,128,4]
     diambraILKwargs["actionSpace"] = opt.actionSpace
     diambraILKwargs["nActions"] = [9, 8]
     diambraILKwargs["trajFilesList"] = trajectoriesFiles# P1
