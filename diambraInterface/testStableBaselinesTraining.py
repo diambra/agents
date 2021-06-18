@@ -4,7 +4,7 @@ import argparse
 
 try:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--gameId', type=str, default="doapp", help='Game ID [(doapp), sfiii3n, tektagt, umk3]')
+    parser.add_argument('--gameId', type=str, default="doapp", help='Game ID [(doapp), sfiii3n, tektagt, umk3, samsh5sp]')
     opt = parser.parse_args()
     print(opt)
 
@@ -51,6 +51,9 @@ try:
         diambraKwargs["characters"] =[["Random", "Random"], ["Random", "Random"]]
     elif opt.gameId == "umk3":
         diambraKwargs["difficulty"]  = 3
+        diambraKwargs["characters"] =["Random", "Random"]
+    elif opt.gameId == "samsh5sp":
+        diambraKwargs["difficulty"]  = 4
         diambraKwargs["characters"] =["Random", "Random"]
     else:
         raise Exception("Game not implemented: {}".format(opt.gameId))
