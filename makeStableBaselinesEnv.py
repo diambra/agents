@@ -1,4 +1,8 @@
+import sys, os
+base_path = os.path.dirname(__file__)
+sys.path.append(os.path.join(base_path, '../gym/.'))
 from makeEnv import *
+from addObsWrap import AdditionalObsToChannel
 
 from stable_baselines import logger
 from stable_baselines.bench import Monitor
@@ -6,14 +10,16 @@ from stable_baselines.common.misc_util import set_global_seeds
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecFrameStack
 
 def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwargs,
-                           wrapperKwargs=None, trajRecKwargs=None, hardCore=False,
+                           wrapperKwargs=None, trajRecKwargs=None, hardCore=False, keyToAdd=None,
                            startIndex=0, allowEarlyResets=True, startMethod=None,
-                           keyToAdd=None, noVec=False, useSubprocess=False):
+                           noVec=False, useSubprocess=False):
     """
     Create a wrapped, monitored VecEnv for Atari.
-    :param numEnv: (int) the number of environment you wish to have in subprocesses
-    :param seed: (int) the initial seed for RNG
-    :param wrapperKwargs: (dict) the parameters for wrapDeepmind function
+    :param numEnv: (int) number of environments you wish to have in subprocesses
+    :param seed: (int) initial seed for RNG
+    :param wrapperKwargs: (dict) parameters for environment wraping function
+    :param trajRecKwargs: (dict) parameters for environment recording wraping function
+    :param keyToAdd: (list) ordered parameters for environment stable baselines converter wraping function
     :param startIndex: (int) start rank index
     :param allowEarlyResets: (bool) allows early reset of the environment
     :param startMethod: (str) method used to start the subprocesses.
@@ -28,6 +34,7 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwa
             envId = envPrefix + str(rank)
             env = makeEnv(envId, seed+rank, diambraKwargs, diambraGymKwargs,
                           wrapperKwargs, trajRecKwargs, hardCore)
+            env = AdditionalObsToChannel(env, keyToAdd)
             env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                           allow_early_resets=allowEarlyResets)
             return env
@@ -39,6 +46,7 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwa
         envId = envPrefix + str(0)
         env = makeEnv(envId, seed, diambraKwargs, diambraGymKwargs, wrapperKwargs,
                       trajRecKwargs, hardCore)
+        env = AdditionalObsToChannel(env, keyToAdd)
         env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                       allow_early_resets=allowEarlyResets)
         return env
