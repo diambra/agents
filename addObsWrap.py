@@ -49,11 +49,24 @@ def processObs(obs, shp, dtype, boxHighBound, playerSide, keyToAdd, keysToDict):
         counter = halfPosIdx
 
         for key in keyToAdd:
+            tmpList = keysToDict[key]
+            if tmpList[0] == "Px":
+                val = obs["P2"]
 
-            for addInfo in additionalInfo[key+"P2"]:
+                for idx in range(len(tmpList)-1):
 
+                    if tmpList[idx+1] == "actionsBuf":
+                        val = np.concatenate((val["actionsBuf"]["move"], val["actionsBuf"]["attack"]))
+                    elif "Char" in tmpList[idx+1]:
+                        val = val[tmpList[idx+1]]
+                    else:
+                        val = [val[tmpList[idx+1]]]
+            else:
+                val = [obs[tmpList[0]]]
+
+            for elem in val:
                 counter = counter + 1
-                newData[counter] = addInfo
+                newData[counter] = elem
 
         newData[halfPosIdx] = counter - halfPosIdx
 
