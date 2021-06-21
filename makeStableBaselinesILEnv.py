@@ -33,7 +33,7 @@ def makeStableBaselinesILEnv(envPrefix, diambraILKwargs, seed, hardCore=False, k
                 env = diambraImitationLearningHardCore(**diambraILKwargs, rank=rank)
             else:
                 env = diambraImitationLearning(**diambraILKwargs, rank=rank)
-            env = AdditionalObsToChannel(env, keyToAdd, imitationLearning=True)
+                env = AdditionalObsToChannel(env, keyToAdd, imitationLearning=True)
             env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                           allow_early_resets=allowEarlyResets)
             return env
@@ -47,7 +47,7 @@ def makeStableBaselinesILEnv(envPrefix, diambraILKwargs, seed, hardCore=False, k
             env = diambraImitationLearningHardCore(**diambraILKwargs, rank=0)
         else:
             env = diambraImitationLearning(**diambraILKwargs, rank=0)
-        env = AdditionalObsToChannel(env, keyToAdd, imitationLearning=True)
+            env = AdditionalObsToChannel(env, keyToAdd, imitationLearning=True)
         env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                       allow_early_resets=allowEarlyResets)
         return env

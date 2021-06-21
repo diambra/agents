@@ -35,7 +35,8 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwa
             envId = envPrefix + str(rank)
             env = makeEnv(envId, seed+rank, diambraKwargs, diambraGymKwargs,
                           wrapperKwargs, trajRecKwargs, hardCore)
-            env = AdditionalObsToChannel(env, keyToAdd)
+            if not hardCore:
+                env = AdditionalObsToChannel(env, keyToAdd)
             env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                           allow_early_resets=allowEarlyResets)
             return env
@@ -47,7 +48,8 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwa
         envId = envPrefix + str(0)
         env = makeEnv(envId, seed, diambraKwargs, diambraGymKwargs, wrapperKwargs,
                       trajRecKwargs, hardCore)
-        env = AdditionalObsToChannel(env, keyToAdd)
+        if not hardCore:
+            env = AdditionalObsToChannel(env, keyToAdd)
         env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                       allow_early_resets=allowEarlyResets)
         return env
