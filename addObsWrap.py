@@ -3,7 +3,7 @@ from gym import spaces
 import numpy as np
 
 # Observation modification (adding one channel to store additional info)
-def processObs(obs, shp, dtype, boxHighBound, playerSide, keyToAdd, keysToDict):
+def processObs(obs, shp, dtype, boxHighBound, playerSide, keyToAdd, keysToDict, imitationLearning=False):
 
     # Adding a channel to the standard image, it will be in last position and it will store additional obs
     obsNew = np.zeros((shp[0], shp[1], shp[2]), dtype=dtype)
@@ -44,7 +44,7 @@ def processObs(obs, shp, dtype, boxHighBound, playerSide, keyToAdd, keysToDict):
     newData[0] = counter
 
     # Adding new info for P2 in 2P games
-    if playerSide == "P1P2":
+    if playerSide == "P1P2" and not imitationLearning:
         halfPosIdx = int((shp[0] * shp[1]) / 2)
         counter = halfPosIdx
 
@@ -80,7 +80,7 @@ def processObs(obs, shp, dtype, boxHighBound, playerSide, keyToAdd, keysToDict):
 
 # Convert additional obs to fifth observation channel for stable baselines
 class AdditionalObsToChannel(gym.ObservationWrapper):
-    def __init__(self, env, keyToAdd):
+    def __init__(self, env, keyToAdd, imitationLearning=False):
         """
         Add to observations additional info
         :param env: (Gym Environment) the environment to wrap
@@ -89,6 +89,7 @@ class AdditionalObsToChannel(gym.ObservationWrapper):
         gym.ObservationWrapper.__init__(self, env)
         shp = self.env.observation_space["frame"].shape
         self.keyToAdd = keyToAdd
+        self.imitationLearning = imitationLearning
 
         self.boxHighBound = self.env.observation_space["frame"].high.max()
         self.boxLowBound = self.env.observation_space["frame"].low.min()
@@ -133,4 +134,4 @@ class AdditionalObsToChannel(gym.ObservationWrapper):
     def observation(self, obs):
 
         return processObs(obs, self.shp, self.observation_space.dtype, self.boxHighBound,
-                          self.env.playerSide, self.keyToAdd, self.keysToDict)
+                          self.env.playerSide, self.keyToAdd, self.keysToDict, self.imitationLearning)
