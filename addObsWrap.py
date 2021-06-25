@@ -19,7 +19,7 @@ def addKeys(counter, keyToAdd, keysToDict, obs, newData, playerId):
                     else:
                         val = val[tmpList[idx+1]]
 
-                    if isinstance(val, (float, int)):
+                    if isinstance(val, (float, int)) or val.size == 1:
                         val = [val]
             else:
                 val = [obs[tmpList[0]]]
@@ -29,6 +29,8 @@ def addKeys(counter, keyToAdd, keysToDict, obs, newData, playerId):
                 newData[counter] = elem
 
         newData[dataPos] = counter - dataPos
+
+        return counter
 
 # Observation modification (adding one channel to store additional info)
 def processObs(obs, shp, dtype, boxHighBound, playerSide, keyToAdd, keysToDict, imitationLearning=False):
@@ -85,7 +87,7 @@ class AdditionalObsToChannel(gym.ObservationWrapper):
 
         # Loop among all keys
         self.keysToDict = {}
-        for key in keyToAdd:
+        for key in self.keyToAdd:
             elemToAdd = []
             # Loop among all spaces
             for k in env.observation_space.spaces:
@@ -109,11 +111,18 @@ class AdditionalObsToChannel(gym.ObservationWrapper):
                         elemToAdd.append(k)
                         self.keysToDict[key] = elemToAdd
 
-
+        self.oldObsSpace = self.observation_space
         self.observation_space = spaces.Box(low=self.boxLowBound, high=self.boxHighBound,
                                             shape=(shp[0], shp[1], shp[2] + 1),
                                             dtype=np.float32)
         self.shp = self.observation_space.shape
+
+        # Return keyToAdd count
+        self.keyToAddCount = []
+        for key in self.keyToAdd:
+            self.keyToAddCount.append(addKeys(0, [key], self.keysToDict,
+                                      self.oldObsSpace.sample(), np.zeros((shp[0] * shp[1])),
+                                      0))
 
     # Process observation
     def observation(self, obs):
