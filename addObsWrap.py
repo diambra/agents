@@ -2,6 +2,34 @@ import gym
 from gym import spaces
 import numpy as np
 
+# Positioning element on last frame channel
+def addKeys(counter, keyToAdd, keysToDict, obs, newData, playerId):
+
+        dataPos = counter
+
+        for key in keyToAdd:
+            tmpList = keysToDict[key]
+            if tmpList[0] == "Px":
+                val = obs["P{}".format(playerId+1)]
+
+                for idx in range(len(tmpList)-1):
+
+                    if tmpList[idx+1] == "actionsBuf":
+                        val = np.concatenate((val["actionsBuf"]["move"], val["actionsBuf"]["attack"]))
+                    else:
+                        val = val[tmpList[idx+1]]
+
+                    if isinstance(val, (float, int)):
+                        val = [val]
+            else:
+                val = [obs[tmpList[0]]]
+
+            for elem in val:
+                counter = counter + 1
+                newData[counter] = elem
+
+        newData[dataPos] = counter - dataPos
+
 # Observation modification (adding one channel to store additional info)
 def processObs(obs, shp, dtype, boxHighBound, playerSide, keyToAdd, keysToDict, imitationLearning=False):
 
@@ -20,55 +48,12 @@ def processObs(obs, shp, dtype, boxHighBound, playerSide, keyToAdd, keysToDict, 
 
     # Adding new info for 1P
     counter = 0
-    for key in keyToAdd:
-
-        tmpList = keysToDict[key]
-        if tmpList[0] == "Px":
-            val = obs["P1"]
-
-            for idx in range(len(tmpList)-1):
-
-                if tmpList[idx+1] == "actionsBuf":
-                    val = np.concatenate((val["actionsBuf"]["move"], val["actionsBuf"]["attack"]))
-                elif "Char" in tmpList[idx+1]:
-                    val = val[tmpList[idx+1]]
-                else:
-                    val = [val[tmpList[idx+1]]]
-        else:
-            val = [obs[tmpList[0]]]
-
-        for elem in val:
-            counter = counter + 1
-            newData[counter] = elem
-
-    newData[0] = counter
+    addKeys(counter, keyToAdd, keysToDict, obs, newData, playerId=0)
 
     # Adding new info for P2 in 2P games
     if playerSide == "P1P2" and not imitationLearning:
-        halfPosIdx = int((shp[0] * shp[1]) / 2)
-        counter = halfPosIdx
-
-        for key in keyToAdd:
-            tmpList = keysToDict[key]
-            if tmpList[0] == "Px":
-                val = obs["P2"]
-
-                for idx in range(len(tmpList)-1):
-
-                    if tmpList[idx+1] == "actionsBuf":
-                        val = np.concatenate((val["actionsBuf"]["move"], val["actionsBuf"]["attack"]))
-                    elif "Char" in tmpList[idx+1]:
-                        val = val[tmpList[idx+1]]
-                    else:
-                        val = [val[tmpList[idx+1]]]
-            else:
-                val = [obs[tmpList[0]]]
-
-            for elem in val:
-                counter = counter + 1
-                newData[counter] = elem
-
-        newData[halfPosIdx] = counter - halfPosIdx
+        counter = int((shp[0] * shp[1]) / 2)
+        addKeys(counter, keyToAdd, keysToDict, obs, newData, playerId=1)
 
     newData = np.reshape(newData, (shp[0], -1))
 
