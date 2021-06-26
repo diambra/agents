@@ -120,9 +120,14 @@ class AdditionalObsToChannel(gym.ObservationWrapper):
         # Return keyToAdd count
         self.keyToAddCount = []
         for key in self.keyToAdd:
-            self.keyToAddCount.append(addKeys(0, [key], self.keysToDict,
-                                      self.oldObsSpace.sample(), np.zeros((shp[0] * shp[1])),
-                                      0))
+            p1Val = addKeys(0, [key], self.keysToDict, self.oldObsSpace.sample(),
+                            np.zeros((shp[0] * shp[1])),0)
+            if self.env.playerSide == "P1P2":
+                p2Val = addKeys(0, [key], self.keysToDict, self.oldObsSpace.sample(),
+                                np.zeros((shp[0] * shp[1])),1)
+                self.keyToAddCount.append([p1Val, p2Val])
+            else:
+                self.keyToAddCount.append([p1Val])
 
     # Process observation
     def observation(self, obs):
