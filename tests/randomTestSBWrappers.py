@@ -6,71 +6,8 @@ base_path = os.path.dirname(__file__)
 sys.path.append(os.path.join(base_path, '../.'))
 sys.path.append(os.path.join(base_path, '../../gym/'))
 
-from utils import discreteToMultiDiscreteAction
+from gymUtils import discreteToMultiDiscreteAction
 from makeStableBaselinesEnv import makeStableBaselinesEnv
-
-# Visualize Obs content
-def showObs(observation, gameId, actBufLen, waitKey, viz, charList, limAct, hardCore, idxList):
-
-    if not hardCore:
-        shp = observation.shape
-        nChars = len(charList)
-
-        for idx in idxList:
-            additionalPar = int(observation[0+idx*int(shp[0]/2),0,shp[2]-1])
-
-            nScalarAddPar = additionalPar - 2*nChars - limAct[idx][1]
-
-            print("Additional Par P{} =".format(idx+1), additionalPar)
-            print("N scalar actions P{} =".format(idx+1), nScalarAddPar)
-
-            addPar = observation[:,:,shp[2]-1]
-            addPar = np.reshape(addPar, (-1))
-            addPar = addPar[1+idx*int((shp[0]*shp[1])/2):additionalPar+1+idx*int((shp[0]*shp[1])/2)]
-            actions = addPar[0:additionalPar-nScalarAddPar-2*nChars]
-
-            moveActions   = actions[0:limAct[idx][0]]
-            attackActions = actions[limAct[idx][0]:limAct[idx][1]]
-            moveActions   = np.reshape(moveActions, (actBufLen,-1))
-            attackActions = np.reshape(attackActions, (actBufLen,-1))
-            print("Move actions P{} =\n".format(idx+1), moveActions)
-            print("Attack actions P{} =\n ".format(idx+1), attackActions)
-
-            others = addPar[additionalPar-nScalarAddPar-2*nChars:]
-            if gameId != "tektagt":
-                print("ownHealthP{} =".format(idx+1), others[0])
-                print("oppHealthP{} =".format(idx+1), others[1])
-                print("ownPositionP{} =".format(idx+1), others[2])
-                print("oppPositionP{} =".format(idx+1), others[3])
-                if nScalarAddPar == 5:
-                    print("stage =", others[4])
-            else:
-                print("ownHealth1P{} =".format(idx+1), others[0])
-                print("ownHealth2P{} =".format(idx+1), others[1])
-                print("oppHealth1P{} =".format(idx+1), others[2])
-                print("oppHealth2P{} =".format(idx+1), others[3])
-                print("ownActiveCharP{} =".format(idx+1), others[4])
-                print("oppActiveCharP{} =".format(idx+1), others[5])
-                print("ownPositionP{} =".format(idx+1), others[6])
-                print("oppPositionP{} =".format(idx+1), others[7])
-                if nScalarAddPar == 9:
-                    print("stage =".format(idx+1), others[8])
-            print("ownCharP{} =".format(idx+1), charList[list(others[nScalarAddPar:
-                                                                     nScalarAddPar + nChars]).index(1.0)])
-            print("oppCharP{} =".format(idx+1), charList[list(others[nScalarAddPar + nChars:
-                                                                     nScalarAddPar + 2*nChars]).index(1.0)])
-
-        if viz:
-            obs = np.array(observation[:,:,0:shp[2]-1]).astype(np.float32)
-    else:
-        if viz:
-            obs = np.array(observation).astype(np.float32)
-
-    if viz:
-        for idx in range(obs.shape[2]):
-            cv2.imshow("image"+str(idx), obs[:,:,idx])
-
-        cv2.waitKey(waitKey)
 
 if __name__ == '__main__':
     timeDepSeed = int((time.time()-int(time.time()-0.5))*1000)

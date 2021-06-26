@@ -18,8 +18,8 @@ def showObs(observation, keyToAdd, keyToAddCount, actBufLen, nActions, waitKey, 
 
             for idK in range(len(keyToAdd)):
 
-                var = addPar[counter:counter+keyToAddCount[idK]] if keyToAddCount[idK] > 1 else addPar[counter]
-                counter += keyToAddCount[idK]
+                var = addPar[counter:counter+keyToAddCount[idK][idx]] if keyToAddCount[idK][idx] > 1 else addPar[counter]
+                counter += keyToAddCount[idK][idx]
 
                 if "actions" in keyToAdd[idK]:
 
