@@ -2,6 +2,34 @@ import gym
 from gym import spaces
 import numpy as np
 
+# KeysToDict from KeysToAdd
+def keysToDictCalc(keyToAdd, observation_space)
+    for key in keyToAdd:
+        elemToAdd = []
+        # Loop among all spaces
+        for k in observation_space.spaces:
+            # Skip frame and consider only a single player
+            if k == "frame" or k == "P2":
+                continue
+            if isinstance(observation_space[k], == gym.spaces.dict.Dict):
+                for l in observation_space.spaces[k].spaces:
+                    if isinstance(observation_space[k][l], gym.spaces.dict.Dict):
+                        if key == l:
+                            elemToAdd.append("Px")
+                            elemToAdd.append(l)
+                            keysToDict[key] = elemToAdd
+                    else:
+                        if key == l:
+                            elemToAdd.append("Px")
+                            elemToAdd.append(l)
+                            keysToDict[key] = elemToAdd
+            else:
+                if key == k:
+                    elemToAdd.append(k)
+                    keysToDict[key] = elemToAdd
+
+    return keysToDict
+
 # Positioning element on last frame channel
 def addKeys(counter, keyToAdd, keysToDict, obs, newData, playerId):
 
@@ -33,9 +61,10 @@ def addKeys(counter, keyToAdd, keysToDict, obs, newData, playerId):
         return counter
 
 # Observation modification (adding one channel to store additional info)
-def processObs(obs, shp, dtype, boxHighBound, playerSide, keyToAdd, keysToDict, imitationLearning=False):
+def processObs(obs, dtype, boxHighBound, playerSide, keyToAdd, keysToDict, imitationLearning=False):
 
     # Adding a channel to the standard image, it will be in last position and it will store additional obs
+    shp = obs.shape
     obsNew = np.zeros((shp[0], shp[1], shp[2]), dtype=dtype)
 
     # Storing standard image in the first channel leaving the last one for additional obs
@@ -85,31 +114,8 @@ class AdditionalObsToChannel(gym.ObservationWrapper):
         assert (self.boxLowBound == 0.0 or self.boxLowBound == -1.0),\
                 "Observation space min bound must be either 0.0 or -1.0 to use Additional Obs"
 
-        # Loop among all keys
-        self.keysToDict = {}
-        for key in self.keyToAdd:
-            elemToAdd = []
-            # Loop among all spaces
-            for k in env.observation_space.spaces:
-                # Skip frame and consider only a single player
-                if k == "frame" or k == "P2":
-                    continue
-                if type(env.observation_space[k]) == gym.spaces.dict.Dict:
-                    for l in env.observation_space.spaces[k].spaces:
-                        if type(env.observation_space[k][l]) == gym.spaces.dict.Dict:
-                            if key == l:
-                                elemToAdd.append("Px")
-                                elemToAdd.append(l)
-                                self.keysToDict[key] = elemToAdd
-                        else:
-                            if key == l:
-                                elemToAdd.append("Px")
-                                elemToAdd.append(l)
-                                self.keysToDict[key] = elemToAdd
-                else:
-                    if key == k:
-                        elemToAdd.append(k)
-                        self.keysToDict[key] = elemToAdd
+        # Build keyToAdd - Observation Space dict connectivity
+        self.keysToDict = keysToDictCalc(self.keyToAdd, self.env.observation_space)
 
         self.oldObsSpace = self.observation_space
         self.observation_space = spaces.Box(low=self.boxLowBound, high=self.boxHighBound,
@@ -132,5 +138,5 @@ class AdditionalObsToChannel(gym.ObservationWrapper):
     # Process observation
     def observation(self, obs):
 
-        return processObs(obs, self.shp, self.observation_space.dtype, self.boxHighBound,
+        return processObs(obs, self.observation_space.dtype, self.boxHighBound,
                           self.env.playerSide, self.keyToAdd, self.keysToDict, self.imitationLearning)
