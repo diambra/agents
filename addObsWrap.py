@@ -3,7 +3,8 @@ from gym import spaces
 import numpy as np
 
 # KeysToDict from KeysToAdd
-def keysToDictCalc(keyToAdd, observation_space)
+def keysToDictCalc(keyToAdd, observation_space):
+    keysToDict = {}
     for key in keyToAdd:
         elemToAdd = []
         # Loop among all spaces
@@ -11,7 +12,7 @@ def keysToDictCalc(keyToAdd, observation_space)
             # Skip frame and consider only a single player
             if k == "frame" or k == "P2":
                 continue
-            if isinstance(observation_space[k], == gym.spaces.dict.Dict):
+            if isinstance(observation_space[k], gym.spaces.dict.Dict):
                 for l in observation_space.spaces[k].spaces:
                     if isinstance(observation_space[k][l], gym.spaces.dict.Dict):
                         if key == l:
@@ -64,11 +65,11 @@ def addKeys(counter, keyToAdd, keysToDict, obs, newData, playerId):
 def processObs(obs, dtype, boxHighBound, playerSide, keyToAdd, keysToDict, imitationLearning=False):
 
     # Adding a channel to the standard image, it will be in last position and it will store additional obs
-    shp = obs.shape
-    obsNew = np.zeros((shp[0], shp[1], shp[2]), dtype=dtype)
+    shp = obs["frame"].shape
+    obsNew = np.zeros((shp[0], shp[1], shp[2]+1), dtype=dtype)
 
     # Storing standard image in the first channel leaving the last one for additional obs
-    obsNew[:,:,0:shp[2]-1] = obs["frame"]
+    obsNew[:,:,0:shp[2]] = obs["frame"]
 
     # Creating the additional channel where to store new info
     obsNewAdd = np.zeros((shp[0], shp[1], 1), dtype=dtype)
@@ -90,7 +91,7 @@ def processObs(obs, dtype, boxHighBound, playerSide, keyToAdd, keysToDict, imita
 
     newData = newData * boxHighBound
 
-    obsNew[:,:,shp[2]-1] = newData
+    obsNew[:,:,shp[2]] = newData
 
     return obsNew
 
