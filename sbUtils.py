@@ -45,3 +45,14 @@ def showObs(observation, keyToAdd, keyToAddCount, actBufLen, nActions, waitKey, 
             cv2.imshow("image"+str(idx), obs[:,:,idx])
 
         cv2.waitKey(waitKey)
+
+# Util to copy P2 additional OBS into P1 position on last (add info dedicated) channel
+def P2ToP1AddObsMove(observation):
+    shp = observation.shape
+    startIdx = int((shp[0]*shp[1])/2)
+    observation = np.reshape(observation, (-1))
+    numAddParP2 = int(observation[startIdx])
+    addParP2 = observation[startIdx:startIdx+numAddParP2 + 1]
+    observation[0:numAddParP2 + 1] = addParP2
+    observation = np.reshape(observation, (shp[0], -1))
+    return observation

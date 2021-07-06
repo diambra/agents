@@ -10,7 +10,8 @@ from stable_baselines.common.misc_util import set_global_seeds
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecFrameStack
 
 def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwargs,
-                           wrapperKwargs=None, trajRecKwargs=None, hardCore=False, keyToAdd=None,
+                           wrapperKwargs=None, trajRecKwargs=None, hardCore=False,
+                           keyToAdd=None, 2pMode=None, p2Policy=None,
                            startIndex=0, allowEarlyResets=True, startMethod=None,
                            noVec=False, useSubprocess=False):
     """
@@ -37,6 +38,12 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwa
                           wrapperKwargs, trajRecKwargs, hardCore)
             if not hardCore:
                 env = AdditionalObsToChannel(env, keyToAdd)
+            if 2pMode != None:
+                if 2pMode == "selfPlayVsRL":
+                    env = selfPlayVsRL(env, p2Policy)
+                elif 2pMode == "vsHum":
+                    env = vsHum(env, p2Policy)
+
             env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                           allow_early_resets=allowEarlyResets)
             return env
@@ -45,14 +52,7 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwa
 
     # If not wanting vectorized envs
     if noVec and numEnv == 1:
-        envId = envPrefix + str(0)
-        env = makeEnv(envId, seed, diambraKwargs, diambraGymKwargs, wrapperKwargs,
-                      trajRecKwargs, hardCore)
-        if not hardCore:
-            env = AdditionalObsToChannel(env, keyToAdd)
-        env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
-                      allow_early_resets=allowEarlyResets)
-        return env
+        return makeSbEnv(0)()
 
     # When using one environment, no need to start subprocesses
     if numEnv == 1 or not useSubprocess:
