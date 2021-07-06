@@ -1,7 +1,7 @@
 import sys, os
 base_path = os.path.dirname(__file__)
 sys.path.append(os.path.join(base_path, '../gym/.'))
-from diambraImitationLearning import *
+from diambraImitationLearning import diambraImitationLearningHardCore, diambraImitationLearning
 from addObsWrap import AdditionalObsToChannel
 
 from stable_baselines import logger
@@ -10,8 +10,8 @@ from stable_baselines.common.misc_util import set_global_seeds
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecFrameStack
 
 def makeStableBaselinesILEnv(envPrefix, diambraILKwargs, seed, hardCore=False, keyToAdd=None,
-                           startIndex=0, allowEarlyResets=True, startMethod=None,
-                           noVec=False, useSubprocess=False):
+                             startIndex=0, allowEarlyResets=True, startMethod=None,
+                             noVec=False, useSubprocess=False):
     """
     Create a wrapped, monitored VecEnv.
     :param diambraKwargs: (dict) parameters for DIAMBRA IL environment
@@ -42,15 +42,7 @@ def makeStableBaselinesILEnv(envPrefix, diambraILKwargs, seed, hardCore=False, k
 
     # If not wanting vectorized envs
     if noVec and diambraILKwargs["totalCpus"] == 1:
-        envId = envPrefix + str(0)
-        if hardCore:
-            env = diambraImitationLearningHardCore(**diambraILKwargs, rank=0)
-        else:
-            env = diambraImitationLearning(**diambraILKwargs, rank=0)
-            env = AdditionalObsToChannel(env, keyToAdd, imitationLearning=True)
-        env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
-                      allow_early_resets=allowEarlyResets)
-        return env
+        return makeSbEnv(0)()
 
     # When using one environment, no need to start subprocesses
     if diambraILKwargs["totalCpus"] == 1 or not useSubprocess:

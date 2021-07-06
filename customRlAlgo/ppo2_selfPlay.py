@@ -12,7 +12,7 @@ from stable_baselines.common.schedules import get_schedule_fn
 from stable_baselines.common.tf_util import total_episode_reward_logger
 from stable_baselines.common.math_util import safe_mean
 
-from policies import P2ToP1AddObsMove
+from sbUtils import P2ToP1AddObsMove
 
 class PPO2_SelfPlay(ActorCriticRLModel):
     """
@@ -468,44 +468,44 @@ class Runner(AbstractEnvRunner):
         # mb stands for minibatch
         mb_obs, mb_rewards, mb_actions, mb_values, mb_dones, mb_neglogpacs = [], [], [], [], [], []
         mb_obsP2, mb_rewardsP2, mb_actionsP2, mb_valuesP2, mb_neglogpacsP2 = [], [], [], [], []
-        
+
         mb_states = self.states
         ep_infos = []
         for _ in range(self.n_steps//2):
-            
+
             # P1 inference
             actions, values, self.states, neglogpacs = self.model.step(self.obs, self.states, self.dones)
-            
+
             # P2 inference
             # Modify Additional Observation for P2, overwriting P1 ones
             self.lastObs = self.obs.copy()
             for envIdx in range(self.n_envs):
                 self.lastObs[envIdx,:,:,-1] = P2ToP1AddObsMove(self.lastObs[envIdx,:,:,-1])
             actionsP2, valuesP2, self.states, neglogpacsP2 = self.model.step(self.lastObs, self.states, self.dones)
-            
+
             # Minibatches P1
             mb_obs.append(self.obs.copy())
             mb_actions.append(actions)
             mb_values.append(values)
             mb_neglogpacs.append(neglogpacs)
-            
+
             # Minibatches P2
             mb_obsP2.append(self.lastObs.copy())
             mb_actionsP2.append(actionsP2)
             mb_valuesP2.append(valuesP2)
             mb_neglogpacsP2.append(neglogpacsP2)
-            
+
             mb_dones.append(self.dones)
-            
+
             #clipped_actions = actions
             concatenatedActions = np.vstack([np.hstack([actions[x],actionsP2[x]]) for x in range(self.n_envs)])
             print(concatenatedActions, actions, actionsP2)
-            
+
             # Clip the actions to avoid out of bound error
             if isinstance(self.env.action_space, gym.spaces.Box):
                 #clipped_actions = np.clip(actions, self.env.action_space.low, self.env.action_space.high)
                 raise Exception("Continuous actions space not implemented")
-                
+
             self.obs[:], rewards, self.dones, infos = self.env.step(concatenatedActions)
 
             self.model.num_timesteps += self.n_envs * 2
@@ -532,7 +532,7 @@ class Runner(AbstractEnvRunner):
 
         last_values   = self.model.value(self.obs, self.states, self.dones)
         last_valuesP2 = self.model.value(self.lastObs, self.states, self.dones)
-            
+
         # batch of steps to batch of rollouts
         mb_obs        = np.asarray(mb_obs, dtype=self.obs.dtype)
         mb_rewards    = np.asarray(mb_rewards, dtype=np.float32)
@@ -554,12 +554,12 @@ class Runner(AbstractEnvRunner):
         mb_neglogpacs = np.vstack([mb_neglogpacs, mb_neglogpacsP2])
         mb_dones      = np.vstack([mb_dones, mb_dones])
 
-        print("shapes 1 - 2")
-        print("obs {} {}".format(mb_obs.shape,        mb_obsP2.shape))
-        print("act {} {}".format(mb_actions.shape,    mb_actionsP2.shape))
-        print("val {} {}".format(mb_values.shape,     mb_valuesP2.shape))
-        print("neg {} {}".format(mb_neglogpacs.shape, mb_neglogpacsP2.shape))
-        print("don {} {}".format(mb_dones.shape,      mb_dones.shape))
+        #print("shapes 1 - 2")
+        #print("obs {} {}".format(mb_obs.shape,        mb_obsP2.shape))
+        #print("act {} {}".format(mb_actions.shape,    mb_actionsP2.shape))
+        #print("val {} {}".format(mb_values.shape,     mb_valuesP2.shape))
+        #print("neg {} {}".format(mb_neglogpacs.shape, mb_neglogpacsP2.shape))
+        #print("don {} {}".format(mb_dones.shape,      mb_dones.shape))
 
         # discount/bootstrap off value fn
         mb_advs = np.zeros_like(mb_rewards)
@@ -580,9 +580,9 @@ class Runner(AbstractEnvRunner):
             mb_advs[step] = last_gae_lam = delta + self.gamma * self.lam * nextnonterminal * last_gae_lam
         mb_returns = mb_advs + mb_values
 
-        print("rew = ", mb_rewards)
-        print("advs = ", mb_advs)
-        print("returns = ", mb_returns)
+        #print("rew = ", mb_rewards)
+        #print("advs = ", mb_advs)
+        #print("returns = ", mb_returns)
 
         mb_obs, mb_returns, mb_dones, mb_actions, mb_values, mb_neglogpacs, true_reward = \
             map(swap_and_flatten, (mb_obs, mb_returns, mb_dones, mb_actions, mb_values, mb_neglogpacs, true_reward))
