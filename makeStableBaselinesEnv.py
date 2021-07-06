@@ -1,7 +1,7 @@
 import sys, os
 base_path = os.path.dirname(__file__)
 sys.path.append(os.path.join(base_path, '../gym/.'))
-from makeEnv import *
+from makeEnv import makeEnv
 from addObsWrap import AdditionalObsToChannel
 
 from stable_baselines import logger
