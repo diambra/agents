@@ -3,6 +3,7 @@ base_path = os.path.dirname(__file__)
 sys.path.append(os.path.join(base_path, '../gym/.'))
 from makeEnv import makeEnv
 from addObsWrap import AdditionalObsToChannel
+from p2Wrap import selfPlayVsRL, vsHum
 
 from stable_baselines import logger
 from stable_baselines.bench import Monitor
@@ -11,7 +12,7 @@ from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecFrame
 
 def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwargs,
                            wrapperKwargs=None, trajRecKwargs=None, hardCore=False,
-                           keyToAdd=None, 2pMode=None, p2Policy=None,
+                           keyToAdd=None, p2Mode=None, p2Policy=None,
                            startIndex=0, allowEarlyResets=True, startMethod=None,
                            noVec=False, useSubprocess=False):
     """
@@ -38,10 +39,10 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwa
                           wrapperKwargs, trajRecKwargs, hardCore)
             if not hardCore:
                 env = AdditionalObsToChannel(env, keyToAdd)
-            if 2pMode != None:
-                if 2pMode == "selfPlayVsRL":
+            if p2Mode != None:
+                if p2Mode == "selfPlayVsRL":
                     env = selfPlayVsRL(env, p2Policy)
-                elif 2pMode == "vsHum":
+                elif p2Mode == "vsHum":
                     env = vsHum(env, p2Policy)
 
             env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),

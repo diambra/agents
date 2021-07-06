@@ -3,9 +3,13 @@ import gym
 
 # Gym Env wrapper for two players mode with RL algo on P2
 class selfPlayVsRL(gym.Wrapper):
-    def __init__(self, env, p2Policy)
+    def __init__(self, env, p2Policy):
 
         gym.Wrapper.__init__(self, env)
+
+        # Modify action space
+        self.action_space = self.action_space["P1"]
+
         # P2 action logic
         self.p2Policy = p2Policy
 
@@ -28,9 +32,13 @@ class selfPlayVsRL(gym.Wrapper):
 
 # Gym Env wrapper for two players mode with HUM+Gamepad on P2
 class vsHum(gym.Wrapper):
-    def __init__(self, env, p2Policy)
+    def __init__(self, env, p2Policy):
 
         gym.Wrapper.__init__(self, env)
+
+        # Modify action space
+        self.action_space = self.action_space["P1"]
+
         # P2 action logic
         self.p2Policy = p2Policy
 
