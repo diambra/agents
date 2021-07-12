@@ -1,5 +1,6 @@
 from sbUtils import P2ToP1AddObsMove
 import gym
+import numpy as np
 
 # Gym Env wrapper for two players mode with RL algo on P2
 class selfPlayVsRL(gym.Wrapper):
@@ -28,7 +29,18 @@ class selfPlayVsRL(gym.Wrapper):
         self.lastObs[:,:,-1] = P2ToP1AddObsMove(self.lastObs[:,:,-1])
         p2PolicyActions, _ = self.p2Policy.act(self.lastObs)
 
-        return self.env.step(np.hstack((action, p2PolicyActions)))
+        obs, reward, done, info = self.env.step(np.hstack((action, p2PolicyActions)))
+        self.updateLastObs(obs)
+
+        return obs, reward, done, info
+
+    # Reset the environment
+    def reset(self):
+
+        obs = self.env.reset()
+        self.updateLastObs(obs)
+
+        return obs
 
 # Gym Env wrapper for two players mode with HUM+Gamepad on P2
 class vsHum(gym.Wrapper):
