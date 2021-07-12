@@ -2,6 +2,28 @@ from sbUtils import P2ToP1AddObsMove
 import gym
 import numpy as np
 
+# Gym Env wrapper for two players mode to be used in integrated Self Play
+class integratedSelfPlay(gym.Wrapper):
+    def __init__(self, env):
+
+        gym.Wrapper.__init__(self, env)
+
+        # Modify action space
+        assert self.action_space["P1"] == self.action_space["P2"],\
+               "P1 and P2 action spaces are supposed to be identical: {} {}"\
+                   .format(self.action_space["P1"], self.action_space["P2"])
+        self.action_space = self.action_space["P1"]
+
+    # Step the environment
+    def step(self, action):
+
+        return self.env.step(action)
+
+    # Reset the environment
+    def reset(self):
+
+        return self.env.reset()
+
 # Gym Env wrapper for two players mode with RL algo on P2
 class selfPlayVsRL(gym.Wrapper):
     def __init__(self, env, p2Policy):
