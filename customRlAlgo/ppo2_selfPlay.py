@@ -499,7 +499,7 @@ class Runner(AbstractEnvRunner):
 
             #clipped_actions = actions
             concatenatedActions = np.vstack([np.hstack([actions[x],actionsP2[x]]) for x in range(self.n_envs)])
-            print(concatenatedActions, actions, actionsP2)
+            #print(concatenatedActions, actions, actionsP2)
 
             # Clip the actions to avoid out of bound error
             if isinstance(self.env.action_space, gym.spaces.Box):

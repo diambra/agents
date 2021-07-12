@@ -3,7 +3,7 @@ base_path = os.path.dirname(__file__)
 sys.path.append(os.path.join(base_path, '../gym/.'))
 from makeEnv import makeEnv
 from addObsWrap import AdditionalObsToChannel
-from p2Wrap import selfPlayVsRL, vsHum
+from p2Wrap import selfPlayVsRL, vsHum, integratedSelfPlay
 
 from stable_baselines import logger
 from stable_baselines.bench import Monitor
@@ -40,7 +40,9 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwa
             if not hardCore:
                 env = AdditionalObsToChannel(env, keyToAdd)
             if p2Mode != None:
-                if p2Mode == "selfPlayVsRL":
+                if p2Mode == "integratedSelfPlay":
+                    env = integratedSelfPlay(env)
+                elif p2Mode == "selfPlayVsRL":
                     env = selfPlayVsRL(env, p2Policy)
                 elif p2Mode == "vsHum":
                     env = vsHum(env, p2Policy)
