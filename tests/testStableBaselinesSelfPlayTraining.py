@@ -13,8 +13,8 @@ try:
     sys.path.append(os.path.join(base_path, '../'))
     sys.path.append(os.path.join(base_path, '../../gym/'))
 
-    tensorBoardFolder = "./{}stableBaselinesSelfPlayTestTensorboard/".format(opt.gameId)
-    modelFolder = "./{}stableBaselinesSelfPlayTestModel/".format(opt.gameId)
+    tensorBoardFolder = "./{}StableBaselinesSelfPlayTestTensorboard/".format(opt.gameId)
+    modelFolder = "./{}StableBaselinesSelfPlayTestModel/".format(opt.gameId)
 
     os.makedirs(modelFolder, exist_ok=True)
 
@@ -82,7 +82,7 @@ try:
     keyToAdd.append("ownChar")       # len(env.charNames)
     keyToAdd.append("oppChar")       # len(env.charNames)
 
-    if gameId == "doapp":
+    if opt.gameId == "doapp":
         nActions = [9, 8] if algoOpt.attackButComb else [9, 4]
     else:
         raise ValueError("nActions not provided for selected gameId = {}".format(gameId))
