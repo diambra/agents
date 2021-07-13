@@ -1,78 +1,59 @@
-import sys, os
-import time
+import sys, os, time
 import argparse
 
 try:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--gameId', type=str, default="doapp", help='Game ID [(doapp), sfiii3n, tektagt, umk3]')
+    parser.add_argument('--gameId', type=str, default="doapp", help='Game ID [(doapp), sfiii3n, tektagt, umk3, samsh5sp]')
     opt = parser.parse_args()
     print(opt)
 
     timeDepSeed = int((time.time()-int(time.time()-0.5))*1000)
 
     base_path = os.path.dirname(__file__)
+    sys.path.append(os.path.join(base_path, '../'))
+    sys.path.append(os.path.join(base_path, '../../gym/'))
 
-    sys.path.append(base_path)
-    sys.path.append(os.path.join(base_path, '../../games'))
-
-    tensorBoardFolder = "./stableBaselinesVanillaSelfPlayTestTensorboard/"
-    modelFolder = "./stableBaselinesVanillaSelfPlayTestModel/"
+    tensorBoardFolder = "./{}stableBaselinesSelfPlayTestTensorboard/".format(opt.gameId)
+    modelFolder = "./{}stableBaselinesSelfPlayTestModel/".format(opt.gameId)
 
     os.makedirs(modelFolder, exist_ok=True)
 
-    from diambraMameGym import diambraMame
-    from makeDiambraEnvSB import makeDiambraEnv
+    from makeStableBaselinesEnv import makeStableBaselinesEnv
 
     import tensorflow as tf
 
     from customPolicies.utils import linear_schedule, AutoSave, UpdateRLPolicyWeights
-    from customPolicies.customCnnPolicy import *
+    from customPolicies.customCnnPolicy import CustCnnPolicy, local_nature_cnn_small
     from policies import RLPolicy
 
     from stable_baselines import PPO2
 
-    model = PPO2.load(modelFolder + "0M")
-
-    deterministicFlag = False
-    rl_policy = RLPolicy(model, deterministicFlag, [9, 8], name="PPO-0M", actionSpace="discrete")
-
     # Diambra environment kwargs
     diambraKwargs = {}
-    diambraKwargs["romsPath"] = os.path.join(base_path, "../../roms/mame/")
+    diambraKwargs["romsPath"]   = os.path.join(base_path, "../../roms/mame/")
     diambraKwargs["binaryPath"] = os.path.join(base_path, "../../customMAME/")
     diambraKwargs["frameRatio"] = 6
-    diambraKwargs["render"]      = True
+    diambraKwargs["render"]     = False
 
     diambraKwargs["player"] = "P1P2" # 2P game
 
     # Game dependent kwawrgs
-    if opt.gameId == "doapp":
-        diambraKwargs["difficulty"]  = 3
-        diambraKwargs["characters"] =["Random", "Random"]
-    elif opt.gameId == "sfiii3n":
-        diambraKwargs["difficulty"]  = 6
-        diambraKwargs["characters"] =["Random", "Random"]
-    elif opt.gameId == "tektagt":
-        diambraKwargs["difficulty"]  = 6
-        diambraKwargs["characters"] =[["Random", "Random"], ["Random", "Random"]]
-    elif opt.gameId == "umk3":
-        diambraKwargs["difficulty"]  = 3
+    if opt.gameId != "tektagt":
         diambraKwargs["characters"] =["Random", "Random"]
     else:
-        raise Exception("Game not implemented: {}".format(opt.gameId))
+        diambraKwargs["characters"] =[["Random", "Random"], ["Random", "Random"]]
 
     diambraKwargs["charOutfits"] =[2, 2]
 
     # DIAMBRA gym kwargs
     diambraGymKwargs = {}
-    diambraGymKwargs["P2brain"] = rl_policy
-    diambraGymKwargs["continueGame"] = 0.0 # If < 0.0 means number of continues
-    diambraGymKwargs["showFinal"] = False
     diambraGymKwargs["actionSpace"] = ["discrete", "discrete"]
     diambraGymKwargs["attackButCombinations"] = [True, True]
+    diambraGymKwargs["actBufLen"] = 12
 
     # Gym Wrappers kwargs
     wrapperKwargs = {}
+    wrapperKwargs["noOpMax"] = 0
     wrapperKwargs["hwcObsResize"] = [128, 128, 1]
     wrapperKwargs["normalizeRewards"] = True
     wrapperKwargs["clipRewards"] = False
@@ -89,23 +70,35 @@ try:
         keyToAdd.append("ownHealth")   # 1
         keyToAdd.append("oppHealth")   # 1
     else:
-        keyToAdd.append("ownHealth_1") # 1
-        keyToAdd.append("ownHealth_2") # 1
-        keyToAdd.append("oppHealth_1") # 1
-        keyToAdd.append("oppHealth_2") # 1
+        keyToAdd.append("ownHealth1") # 1
+        keyToAdd.append("ownHealth2") # 1
+        keyToAdd.append("oppHealth1") # 1
+        keyToAdd.append("oppHealth2") # 1
+        keyToAdd.append("ownActiveChar") # 1
+        keyToAdd.append("oppActiveChar") # 1
 
     keyToAdd.append("ownPosition")     # 1
     keyToAdd.append("oppPosition")     # 1
-    keyToAdd.append("character")       # len(env.charNames)
+    keyToAdd.append("ownChar")       # len(env.charNames)
+    keyToAdd.append("oppChar")       # len(env.charNames)
+
+    if gameId == "doapp":
+        nActions = [9, 8] if algoOpt.attackButComb else [9, 4]
+    else:
+        raise ValueError("nActions not provided for selected gameId = {}".format(gameId))
+
+    model = PPO2.load(os.path.join(modelFolder, str("_".join(keyToAdd))+"_0M"))
+
+    deterministicFlag = False
+    rl_policy = RLPolicy(model, deterministicFlag, nActions, name="PPO-0M",
+                         actionSpace=diambraGymKwargs["actionSpace"])
 
     numEnv=2
 
     envId = opt.gameId + "_Train"
-    env = makeDiambraEnv(diambraMame, envPrefix=envId, numEnv=numEnv, seed=timeDepSeed,
-                         diambraKwargs=diambraKwargs, diambraGymKwargs=diambraGymKwargs,
-                         wrapperKwargs=wrapperKwargs, keyToAdd=keyToAdd, useSubprocess=False)
-
-
+    env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, diambraKwargs, diambraGymKwargs,
+                                 wrapperKwargs, keyToAdd=keyToAdd, p2Mode="selfPlayVsRL",
+                                 p2Policy=rl_policy, useSubprocess=False)
 
     print("Obs_space = ", env.observation_space)
     print("Obs_space type = ", env.observation_space.dtype)
@@ -125,7 +118,7 @@ try:
     nChar = env.get_attr("numberOfCharacters")[0]
 
     policyKwargs={}
-    policyKwargs["n_add_info"] = actBufLen*(nActions[0]+nActions[1]) + len(keyToAdd)-2 + nChar
+    policyKwargs["n_add_info"] = actBufLen*(nActions[0]+nActions[1]) + len(keyToAdd)-3 + 2*nChar
     policyKwargs["layers"] = [64, 64]
 
     policyKwargs["cnn_extractor"] = local_nature_cnn_small
@@ -149,11 +142,12 @@ try:
     print("Model discount factor = ", model.gamma)
 
     # Create the callback: autosave every USER DEF steps
-    autoSaveCallback = AutoSave(check_freq=256, numEnv=numEnv, save_path=os.path.join(modelFolder,"0M_"))
+    autoSaveCallback = AutoSave(check_freq=256, numEnv=numEnv,
+                                save_path=os.path.join(modelFolder, str("_".join(keyToAdd))+"_0M_"))
 
     prevAgentsSamplingDict = {"probability": 0.3,
-                              "list":[os.path.join(modelFolder,"0M_")]}
-    upRLPolWCallback = UpdateRLPolicyWeights(check_freq=10000, numEnv=numEnv, save_path=modelFolder,
+                              "list":[os.path.join(modelFolder, str("_".join(keyToAdd))+"_0M")]}
+    upRLPolWCallback = UpdateRLPolicyWeights(check_freq=128, numEnv=numEnv, save_path=modelFolder,
                                              prevAgentsSampling=prevAgentsSamplingDict)
 
     # Train the agent
@@ -161,7 +155,7 @@ try:
     model.learn(total_timesteps=timeSteps, callback=[autoSaveCallback, upRLPolWCallback])
 
     # Save the agent
-    model.save(os.path.join(modelFolder, "512"))
+    model.save(os.path.join(modelFolder, str("_".join(keyToAdd))+"_512"))
 
     print("ALL GOOD!")
 except Exception as e:
