@@ -20,9 +20,9 @@ if __name__ == '__main__':
         parser.add_argument('--character2',   type=str,   default="Random",   help='Character P2 (Random)')
         parser.add_argument('--character1_2', type=str,   default="Random",   help='Character P1_2 (Random)')
         parser.add_argument('--character2_2', type=str,   default="Random",   help='Character P2_2 (Random)')
-        parser.add_argument('--frameRatio',   type=int,   default=3,          help='Frame ratio')
+        parser.add_argument('--frameRatio',   type=int,   default=6,          help='Frame ratio')
         parser.add_argument('--nEpisodes',    type=int,   default=1,          help='Number of episodes')
-        parser.add_argument('--continueGame', type=float, default=-1.0,       help='ContinueGame flag (-inf,+1.0]')
+        parser.add_argument('--continueGame', type=float, default=0.0,       help='ContinueGame flag (-inf,+1.0]')
         parser.add_argument('--actionSpace',  type=str,   default="discrete", help='(discrete)/multidiscrete')
         parser.add_argument('--attButComb',   type=int,   default=0,          help='If to use attack button combinations (0=False)/1=True')
         parser.add_argument('--noAction',     type=int,   default=0,          help='If to use no action policy (0=False)')
@@ -77,7 +77,7 @@ if __name__ == '__main__':
         keyToAdd = []
         keyToAdd.append("actionsBuf")
 
-        if gameId != "tektagt":
+        if opt.gameId != "tektagt":
             keyToAdd.append("ownHealth")
             keyToAdd.append("oppHealth")
         else:
@@ -117,7 +117,7 @@ if __name__ == '__main__':
         observation = env.reset()
 
         showObs(observation, keyToAdd, env.keyToAddCount, env.actBufLen, nActions,
-                1, True, env.charNames, hardCore, idxList)
+                1, False, env.charNames, hardCore, idxList)
 
         cumulativeEpRew = 0.0
         cumulativeEpRewAll = []
@@ -177,7 +177,7 @@ if __name__ == '__main__':
             for k, v in info.items():
                 print("info[\"{}\"] = {}".format(k, v))
             showObs(observation, keyToAdd, env.keyToAddCount, env.actBufLen, nActions,
-                    1, True, env.charNames, hardCore, idxList)
+                    1, False, env.charNames, hardCore, idxList)
             print("--")
             print("Current Cumulative Reward =", cumulativeEpRew)
 
@@ -194,7 +194,7 @@ if __name__ == '__main__':
 
                 observation = env.reset()
                 showObs(observation, keyToAdd, env.keyToAddCount, env.actBufLen, nActions,
-                        1, True, env.charNames, hardCore, idxList)
+                        1, False, env.charNames, hardCore, idxList)
 
         print("Cumulative reward = ", cumulativeEpRewAll)
         print("Mean cumulative reward = ", np.mean(cumulativeEpRewAll))

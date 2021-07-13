@@ -13,8 +13,8 @@ try:
     sys.path.append(os.path.join(base_path, '../'))
     sys.path.append(os.path.join(base_path, '../../gym/'))
 
-    tensorBoardFolder = "./{}stableBaselinesTestTensorboard/".format(opt.gameId)
-    modelFolder = "./{}stableBaselinesTestModel/".format(opt.gameId)
+    tensorBoardFolder = "./{}StableBaselinesTestTensorboard/".format(opt.gameId)
+    modelFolder = "./{}StableBaselinesTestModel/".format(opt.gameId)
 
     os.makedirs(modelFolder, exist_ok=True)
 
