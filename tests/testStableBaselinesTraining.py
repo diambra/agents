@@ -1,5 +1,4 @@
-import sys, os
-import time
+import sys, os, time
 import argparse
 
 try:
@@ -11,8 +10,8 @@ try:
     timeDepSeed = int((time.time()-int(time.time()-0.5))*1000)
 
     base_path = os.path.dirname(__file__)
-
     sys.path.append(os.path.join(base_path, '../'))
+    sys.path.append(os.path.join(base_path, '../../gym/'))
 
     tensorBoardFolder = "./{}stableBaselinesTestTensorboard/".format(opt.gameId)
     modelFolder = "./{}stableBaselinesTestModel/".format(opt.gameId)
@@ -24,7 +23,7 @@ try:
     import tensorflow as tf
 
     from customPolicies.utils import linear_schedule, AutoSave
-    from customPolicies.customCnnPolicy import *
+    from customPolicies.customCnnPolicy import CustCnnPolicy, local_nature_cnn_small
 
     from stable_baselines import PPO2
 
@@ -41,7 +40,7 @@ try:
     if opt.gameId != "tektagt":
         diambraKwargs["characters"] =["Random", "Random"]
     else:
-        diambraKwargs["characters"] =[["Random", "Random"], ["Jin", "Yoshimitsu"]]
+        diambraKwargs["characters"] =[["Random", "Random"], ["Random", "Random"]]
 
     diambraKwargs["difficulty"]  = 3
     diambraKwargs["charOutfits"] =[2, 2]
@@ -107,13 +106,16 @@ try:
     # Policy param
     nActions = env.get_attr("nActions")[0]
     actBufLen = env.get_attr("actBufLen")[0]
+    nChar = env.get_attr("numberOfCharacters")[0]
 
     policyKwargs={}
-    policyKwargs["n_add_info"] = actBufLen*(nActions[0]+nActions[1]) + len(keyToAdd)-3 # No Char Info
+    policyKwargs["n_add_info"] = actBufLen*(nActions[0]+nActions[1]) + len(keyToAdd)-3 + 2*nChar
     policyKwargs["layers"] = [64, 64]
 
     policyKwargs["cnn_extractor"] = local_nature_cnn_small
 
+    print("nActions =", nActions)
+    print("nChar =", nChar)
     print("nAddInfo =", policyKwargs["n_add_info"])
 
     # PPO param
@@ -131,14 +133,15 @@ try:
     print("Model discount factor = ", model.gamma)
 
     # Create the callback: autosave every USER DEF steps
-    autoSaveCallback = AutoSave(check_freq=256, numEnv=numEnv, save_path=os.path.join(modelFolder,"0M_"))
+    autoSaveCallback = AutoSave(check_freq=256, numEnv=numEnv,
+                                save_path=os.path.join(modelFolder, str("_".join(keyToAdd))+"_0M"))
 
     # Train the agent
     timeSteps = 512
     model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
     # Save the agent
-    model.save(os.path.join(modelFolder, "512"))
+    model.save(os.path.join(modelFolder, str("_".join(keyToAdd))+"_512"))
 
     print("ALL GOOD!")
 except Exception as e:
