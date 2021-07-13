@@ -83,7 +83,7 @@ try:
     keyToAdd.append("oppChar")       # len(env.charNames)
 
     if opt.gameId == "doapp":
-        nActions = [9, 8] if algoOpt.attackButComb else [9, 4]
+        nActions = [9, 8]
     else:
         raise ValueError("nActions not provided for selected gameId = {}".format(gameId))
 
