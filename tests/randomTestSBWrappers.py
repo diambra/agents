@@ -1,12 +1,12 @@
-import cv2, sys, os, time
-from os.path import expanduser
+import sys, os, time
 import numpy as np
 import argparse
 base_path = os.path.dirname(__file__)
-sys.path.append(os.path.join(base_path, '../.'))
+sys.path.append(os.path.join(base_path, '../'))
 sys.path.append(os.path.join(base_path, '../../gym/'))
 
 from gymUtils import discreteToMultiDiscreteAction
+from sbUtils import showObs
 from makeStableBaselinesEnv import makeStableBaselinesEnv
 
 if __name__ == '__main__':
@@ -26,12 +26,10 @@ if __name__ == '__main__':
         parser.add_argument('--actionSpace',  type=str,   default="discrete", help='(discrete)/multidiscrete')
         parser.add_argument('--attButComb',   type=int,   default=0,          help='If to use attack button combinations (0=False)/1=True')
         parser.add_argument('--noAction',     type=int,   default=0,          help='If to use no action policy (0=False)')
-        parser.add_argument('--recordTraj',   type=int,   default=0,          help='If to record trajectories (0=False)')
         parser.add_argument('--hardCore',     type=int,   default=0,          help='Hard core mode (0=False)')
         opt = parser.parse_args()
         print(opt)
 
-        homeDir = expanduser("~")
 
         # Common settings
         diambraKwargs = {}
@@ -64,16 +62,6 @@ if __name__ == '__main__':
         if diambraKwargs["player"] != "P1P2":
             idxList = [0]
 
-        # Recording kwargs
-        trajRecKwargs = {}
-        trajRecKwargs["userName"] = "Alex"
-        trajRecKwargs["filePath"] = os.path.join( homeDir, "DIAMBRA/trajRecordings", opt.gameId)
-        trajRecKwargs["ignoreP2"] = 0
-        trajRecKwargs["commitHash"] = "0000000"
-
-        if opt.recordTraj == 0:
-            trajRecKwargs = None
-
         # Env wrappers kwargs
         wrapperKwargs = {}
         wrapperKwargs["noOpMax"] = 0
@@ -87,48 +75,49 @@ if __name__ == '__main__':
 
         # Additional obs key list
         keyToAdd = []
-        keyToAdd.append("actionsBuf") # env.actBufLen*(env.n_actions[0]+env.n_actions[1])
+        keyToAdd.append("actionsBuf")
 
         if gameId != "tektagt":
-            keyToAdd.append("ownHealth")   # 1
-            keyToAdd.append("oppHealth")   # 1
+            keyToAdd.append("ownHealth")
+            keyToAdd.append("oppHealth")
         else:
-            keyToAdd.append("ownHealth1") # 1
-            keyToAdd.append("ownHealth2") # 1
-            keyToAdd.append("oppHealth1") # 1
-            keyToAdd.append("oppHealth2") # 1
-            keyToAdd.append("ownActiveChar") # 1
-            keyToAdd.append("oppActiveChar") # 1
+            keyToAdd.append("ownHealth1")
+            keyToAdd.append("ownHealth2")
+            keyToAdd.append("oppHealth1")
+            keyToAdd.append("oppHealth2")
+            keyToAdd.append("ownActiveChar")
+            keyToAdd.append("oppActiveChar")
 
-        keyToAdd.append("ownPosition")     # 1
-        keyToAdd.append("oppPosition")     # 1
+        keyToAdd.append("ownPosition")
+        keyToAdd.append("oppPosition")
         if diambraKwargs["player"] != "P1P2":
-            keyToAdd.append("stage")           # 1
-        keyToAdd.append("ownChar")       # len(env.charNames)
-        keyToAdd.append("oppChar")       # len(env.charNames)
+            keyToAdd.append("stage")
+        keyToAdd.append("ownChar")
+        keyToAdd.append("oppChar")
 
         envId = opt.gameId + "_randomTestSBWrappers"
         hardCore = False if opt.hardCore == 0 else True
         numOfEnvs = 1
-        env = makeStableBaselinesEnv(envId, numOfEnvs, timeDepSeed, diambraKwargs, diambraGymKwargs,
-                                     wrapperKwargs, trajRecKwargs, keyToAdd=keyToAdd, noVec=True, hardCore=hardCore)
+        env = makeStableBaselinesEnv(envId, numOfEnvs, timeDepSeed, diambraKwargs,
+                                     diambraGymKwargs, wrapperKwargs,
+                                     keyToAdd=keyToAdd, noVec=True, hardCore=hardCore)
 
         print("Observation Space:", env.observation_space)
         print("Action Space:", env.action_space)
         if not hardCore:
-            print("Keys to Dict:", env.keysToDict)
+            print("Keys to Dict:")
+            for k,v in env.keysToDict.items():
+                print(k, v)
 
-        limAct = [None, None]
-        for idx in range(2):
-            if diambraKwargs["player"] != "P1P2":
-                limAct[idx] = [env.actBufLen * env.nActions[0],
-                               env.actBufLen * env.nActions[0] + env.actBufLen * env.nActions[1]]
-            else:
-                limAct[idx] = [env.actBufLen * env.nActions[idx][0],
-                               env.actBufLen * env.nActions[idx][0] + env.actBufLen * env.nActions[idx][1]]
+        nActions = env.nActions
+        if diambraKwargs["player"] != "P1P2":
+            nActions=[env.nActions]
 
         actionsPrintDict = env.printActionsDict()
         observation = env.reset()
+
+        showObs(observation, keyToAdd, env.keyToAddCount, env.actBufLen, nActions,
+                1, True, env.charNames, hardCore, idxList)
 
         cumulativeEpRew = 0.0
         cumulativeEpRewAll = []
@@ -187,7 +176,8 @@ if __name__ == '__main__':
             print("done =", done)
             for k, v in info.items():
                 print("info[\"{}\"] = {}".format(k, v))
-            showObs(observation, gameId, env.actBufLen, 1, False, env.charNames, limAct, hardCore, idxList)
+            showObs(observation, keyToAdd, env.keyToAddCount, env.actBufLen, nActions,
+                    1, True, env.charNames, hardCore, idxList)
             print("--")
             print("Current Cumulative Reward =", cumulativeEpRew)
 
@@ -203,7 +193,8 @@ if __name__ == '__main__':
                 cumulativeEpRew = 0.0
 
                 observation = env.reset()
-                showObs(observation, gameId, env.actBufLen, 1, False, env.charNames, limAct, hardCore, idxList)
+                showObs(observation, keyToAdd, env.keyToAddCount, env.actBufLen, nActions,
+                        1, True, env.charNames, hardCore, idxList)
 
         print("Cumulative reward = ", cumulativeEpRewAll)
         print("Mean cumulative reward = ", np.mean(cumulativeEpRewAll))
