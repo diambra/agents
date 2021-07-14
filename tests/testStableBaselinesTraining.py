@@ -22,7 +22,7 @@ try:
 
     import tensorflow as tf
 
-    from customPolicies.utils import linear_schedule, AutoSave
+    from sbUtils import linear_schedule, AutoSave
     from customPolicies.customCnnPolicy import CustCnnPolicy, local_nature_cnn_small
 
     from stable_baselines import PPO2
