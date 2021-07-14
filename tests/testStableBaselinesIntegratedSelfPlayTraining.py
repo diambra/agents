@@ -13,7 +13,6 @@ try:
     sys.path.append(os.path.join(base_path, '../'))
     sys.path.append(os.path.join(base_path, '../../gym/'))
 
-    tensorBoardFolder = "./{}StableBaselinesIntegratedSelfPlayTestTensorboard/".format(opt.gameId)
     modelFolder = "./{}StableBaselinesIntegratedSelfPlayTestModel/".format(opt.gameId)
 
     os.makedirs(modelFolder, exist_ok=True)
@@ -125,7 +124,7 @@ try:
     model = PPO2_SelfPlay(CustCnnPolicy, env, verbose=1,
                           gamma = setGamma, nminibatches=4, noptepochs=4, n_steps=128,
                           learning_rate=setLearningRate, cliprange=setClipRange, cliprange_vf=setClipRangeVf,
-                          tensorboard_log=tensorBoardFolder, policy_kwargs=policyKwargs)
+                          policy_kwargs=policyKwargs)
 
     print("Model discount factor = ", model.gamma)
 
