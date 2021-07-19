@@ -13,7 +13,7 @@ try:
     sys.path.append(os.path.join(base_path, '../'))
     sys.path.append(os.path.join(base_path, '../../gym/'))
 
-    modelFolder = "./{}StableBaselinesSelfPlayTestModel/".format(opt.gameId)
+    modelFolder = os.path.join(base_path, "{}StableBaselinesSelfPlayTestModel/".format(opt.gameId))
 
     os.makedirs(modelFolder, exist_ok=True)
 
