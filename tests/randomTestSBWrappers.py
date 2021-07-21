@@ -92,8 +92,15 @@ if __name__ == '__main__':
         keyToAdd.append("oppPosition")
         if diambraKwargs["player"] != "P1P2":
             keyToAdd.append("stage")
-        keyToAdd.append("ownChar")
-        keyToAdd.append("oppChar")
+
+        if opt.gameId != "tektagt":
+            keyToAdd.append("ownChar")
+            keyToAdd.append("oppChar")
+        else:
+            keyToAdd.append("ownChar1")
+            keyToAdd.append("ownChar2")
+            keyToAdd.append("oppChar1")
+            keyToAdd.append("oppChar2")
 
         envId = opt.gameId + "_randomTestSBWrappers"
         hardCore = False if opt.hardCore == 0 else True
