@@ -30,7 +30,7 @@ def showObs(observation, keyToAdd, keyToAddCount, actBufLen, nActions, waitKey, 
                     attackActions = np.reshape(attackActions, (actBufLen,-1))
                     print("Move actions P{} =\n".format(idx+1), moveActions)
                     print("Attack actions P{} =\n ".format(idx+1), attackActions)
-                elif "Char" in keyToAdd[idK]:
+                elif "ownChar" in keyToAdd[idK] or "oppChar" in keyToAdd[idK]:
                     print("{}P{} =".format(keyToAdd[idK], idx+1), charList[list(var).index(1.0)])
                 else:
                     print("{}P{} =".format(keyToAdd[idK], idx+1), var)

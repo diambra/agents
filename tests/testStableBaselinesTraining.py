@@ -81,8 +81,15 @@ try:
     keyToAdd.append("ownPosition")     # 1
     keyToAdd.append("oppPosition")     # 1
     keyToAdd.append("stage")           # 1
-    keyToAdd.append("ownChar")       # len(env.charNames)
-    keyToAdd.append("oppChar")       # len(env.charNames)
+
+    if opt.gameId != "tektagt":
+        keyToAdd.append("ownChar") # len(env.charNames)
+        keyToAdd.append("oppChar") # len(env.charNames)
+    else:
+        keyToAdd.append("ownChar1") # len(env.charNames)
+        keyToAdd.append("ownChar2") # len(env.charNames)
+        keyToAdd.append("oppChar1") # len(env.charNames)
+        keyToAdd.append("oppChar2") # len(env.charNames)
 
     numEnv=2
 
