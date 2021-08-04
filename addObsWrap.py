@@ -43,8 +43,8 @@ def addKeys(counter, keyToAdd, keysToDict, obs, newData, playerId):
 
                 for idx in range(len(tmpList)-1):
 
-                    if tmpList[idx+1] == "actionsBuf":
-                        val = np.concatenate((val["actionsBuf"]["move"], val["actionsBuf"]["attack"]))
+                    if tmpList[idx+1] == "actions":
+                        val = np.concatenate((val["actions"]["move"], val["actions"]["attack"]))
                     else:
                         val = val[tmpList[idx+1]]
 
