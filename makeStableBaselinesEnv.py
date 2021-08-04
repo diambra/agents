@@ -1,6 +1,6 @@
 import sys, os
 base_path = os.path.dirname(__file__)
-sys.path.append(os.path.join(base_path, '../gym/.'))
+sys.path.append(os.path.join(base_path, '../games_cpp/gym/.'))
 from makeEnv import makeEnv
 from addObsWrap import AdditionalObsToChannel
 from p2Wrap import selfPlayVsRL, vsHum, integratedSelfPlay
