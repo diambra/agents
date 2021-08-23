@@ -1,7 +1,7 @@
 import sys, os, time
 import numpy as np
 import argparse
-base_path = os.path.dirname(__file__)
+base_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_path, '../'))
 sys.path.append(os.path.join(base_path, '../../games_cpp/gym/'))
 
@@ -42,7 +42,7 @@ if __name__ == '__main__':
         diambraKwargs["romsPath"] = os.path.join(base_path, "../../roms/mame/")
 
         diambraKwargs["mamePath"] = os.path.join(base_path, "../../customMAME/")
-        diambraKwargs["libPath"] = os.path.join(base_path, "../../games_cpp/diambraEnvLib/libdiambraEnv.so")
+        diambraKwargs["libPath"] = os.path.join(base_path, "../../games_cpp/build/diambraEnvLib/libdiambraEnv.so")
 
         diambraKwargs["continueGame"] = opt.continueGame
 
