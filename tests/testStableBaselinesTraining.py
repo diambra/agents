@@ -111,11 +111,11 @@ if __name__ == '__main__':
 
         # Policy param
         nActions = env.get_attr("nActions")[0][0]
-        actionsStack = env.get_attr("actionsStack")[0]
+        nActionsStack = env.get_attr("nActionsStack")[0]
         nChar = env.get_attr("numberOfCharacters")[0]
 
         policyKwargs={}
-        policyKwargs["n_add_info"] = actionsStack*(nActions[0]+nActions[1]) + len(keyToAdd)-3 + 2*nChar
+        policyKwargs["n_add_info"] = nActionsStack*(nActions[0]+nActions[1]) + len(keyToAdd)-3 + 2*nChar
         policyKwargs["layers"] = [64, 64]
 
         policyKwargs["cnn_extractor"] = local_nature_cnn_small
@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
         # Create the callback: autosave every USER DEF steps
         autoSaveCallback = AutoSave(check_freq=256, numEnv=numEnv,
-                                    save_path=os.path.join(modelFolder, str("_".join(keyToAdd))+"_0M"))
+                                    save_path=os.path.join(modelFolder, str("_".join(keyToAdd))+"_0M_"))
 
         # Train the agent
         timeSteps = 512
@@ -148,6 +148,9 @@ if __name__ == '__main__':
 
         # Save the agent
         model.save(os.path.join(modelFolder, str("_".join(keyToAdd))+"_512"))
+
+        # Close the environment
+        env.close()
 
         print("ALL GOOD!")
     except Exception as e:
