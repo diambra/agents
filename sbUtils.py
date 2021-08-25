@@ -114,6 +114,8 @@ class UpdateRLPolicyWeights(BaseCallback):
         self.save_path = save_path + 'lastModel'
         self.samplingProbability = prevAgentsSampling["probability"]
         self.prevAgentsList = prevAgentsSampling["list"]
+        timeDepSeed = int((time.time()-int(time.time()-0.5))*1000)
+        np.random.seed(timeDepSeed)
 
     def _on_step(self) -> bool:
         if self.n_calls % self.check_freq == 0:
