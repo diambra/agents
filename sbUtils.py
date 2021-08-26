@@ -3,7 +3,7 @@ import cv2, sys, os, time
 import numpy as np
 
 # Visualize Obs content
-def showObs(observation, keyToAdd, keyToAddCount, actBufLen, nActions, waitKey, viz, charList, hardCore, idxList):
+def showObs(observation, keyToAdd, keyToAddCount, actionsStack, nActions, waitKey, viz, charList, hardCore, idxList):
 
     if not hardCore:
         shp = observation.shape
@@ -24,10 +24,10 @@ def showObs(observation, keyToAdd, keyToAddCount, actBufLen, nActions, waitKey, 
 
                 if "actions" in keyToAdd[idK]:
 
-                    moveActions   = var[0:actBufLen*nActions[idx][0]]
-                    attackActions = var[actBufLen*nActions[idx][0]:actBufLen*(nActions[idx][0]+nActions[idx][1])]
-                    moveActions   = np.reshape(moveActions, (actBufLen,-1))
-                    attackActions = np.reshape(attackActions, (actBufLen,-1))
+                    moveActions   = var[0:actionsStack*nActions[idx][0]]
+                    attackActions = var[actionsStack*nActions[idx][0]:actionsStack*(nActions[idx][0]+nActions[idx][1])]
+                    moveActions   = np.reshape(moveActions, (actionsStack,-1))
+                    attackActions = np.reshape(attackActions, (actionsStack,-1))
                     print("Move actions P{} =\n".format(idx+1), moveActions)
                     print("Attack actions P{} =\n ".format(idx+1), attackActions)
                 elif "ownChar" in keyToAdd[idK] or "oppChar" in keyToAdd[idK]:
@@ -114,6 +114,8 @@ class UpdateRLPolicyWeights(BaseCallback):
         self.save_path = save_path + 'lastModel'
         self.samplingProbability = prevAgentsSampling["probability"]
         self.prevAgentsList = prevAgentsSampling["list"]
+        timeDepSeed = int((time.time()-int(time.time()-0.5))*1000)
+        np.random.seed(timeDepSeed)
 
     def _on_step(self) -> bool:
         if self.n_calls % self.check_freq == 0:

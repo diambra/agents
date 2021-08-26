@@ -1,9 +1,9 @@
 import sys, os, time
 import numpy as np
 import argparse
-base_path = os.path.dirname(__file__)
+base_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_path, '../'))
-sys.path.append(os.path.join(base_path, '../../gym/'))
+sys.path.append(os.path.join(base_path, '../../games_cpp/gym/'))
 
 from gymUtils import discreteToMultiDiscreteAction
 from sbUtils import showObs
@@ -14,47 +14,51 @@ if __name__ == '__main__':
 
     try:
         parser = argparse.ArgumentParser()
-        parser.add_argument('--gameId',       type=str,   default="doapp",    help='Game ID [(doapp), sfiii3n, tektagt, umk3]')
-        parser.add_argument('--player',       type=str,   default="Random",   help='Player [(Random), P1, P2, P1P2]')
-        parser.add_argument('--character1',   type=str,   default="Random",   help='Character P1 (Random)')
-        parser.add_argument('--character2',   type=str,   default="Random",   help='Character P2 (Random)')
-        parser.add_argument('--character1_2', type=str,   default="Random",   help='Character P1_2 (Random)')
-        parser.add_argument('--character2_2', type=str,   default="Random",   help='Character P2_2 (Random)')
-        parser.add_argument('--frameRatio',   type=int,   default=6,          help='Frame ratio')
-        parser.add_argument('--nEpisodes',    type=int,   default=1,          help='Number of episodes')
-        parser.add_argument('--continueGame', type=float, default=0.0,       help='ContinueGame flag (-inf,+1.0]')
-        parser.add_argument('--actionSpace',  type=str,   default="discrete", help='(discrete)/multidiscrete')
-        parser.add_argument('--attButComb',   type=int,   default=0,          help='If to use attack button combinations (0=False)/1=True')
-        parser.add_argument('--noAction',     type=int,   default=0,          help='If to use no action policy (0=False)')
-        parser.add_argument('--hardCore',     type=int,   default=0,          help='Hard core mode (0=False)')
+        parser.add_argument('--gameId',         type=str,   default="doapp",    help='Game ID')
+        parser.add_argument('--player',         type=str,   default="Random",   help='Player [(Random), P1, P2, P1P2]')
+        parser.add_argument('--character1',     type=str,   default="Random",   help='Character P1 (Random)')
+        parser.add_argument('--character2',     type=str,   default="Random",   help='Character P2 (Random)')
+        parser.add_argument('--character1_2',   type=str,   default="Random",   help='Character P1_2 (Random)')
+        parser.add_argument('--character2_2',   type=str,   default="Random",   help='Character P2_2 (Random)')
+        parser.add_argument('--frameRatio',     type=int,   default=6,          help='Frame ratio')
+        parser.add_argument('--nEpisodes',      type=int,   default=1,          help='Number of episodes')
+        parser.add_argument('--continueGame',   type=float, default=0.0,       help='ContinueGame flag (-inf,+1.0]')
+        parser.add_argument('--actionSpace',    type=str,   default="discrete", help='(discrete)/multidiscrete')
+        parser.add_argument('--attButComb',     type=int,   default=0,          help='If to use attack button combinations (0=False)/1=True')
+        parser.add_argument('--noAction',       type=int,   default=0,          help='If to use no action policy (0=False)')
+        parser.add_argument('--hardCore',       type=int,   default=0,          help='Hard core mode (0=False)')
+        parser.add_argument('--interactiveViz', type=int,   default=0,          help='Interactive Visualization (0=False)')
         opt = parser.parse_args()
         print(opt)
 
+        vizFlag = bool(opt.interactiveViz)
+        waitKey = 1;
+        if vizFlag:
+            waitKey = 0
 
         # Common settings
         diambraKwargs = {}
+        diambraKwargs["gameId"]   = opt.gameId
         diambraKwargs["romsPath"] = os.path.join(base_path, "../../roms/mame/")
-        diambraKwargs["binaryPath"] = os.path.join(base_path, "../../customMAME/")
-        diambraKwargs["frameRatio"] = opt.frameRatio
-        diambraKwargs["throttle"] = False
-        diambraKwargs["sound"] = diambraKwargs["throttle"]
+
+        diambraKwargs["mamePath"] = os.path.join(base_path, "../../customMAME/")
+        diambraKwargs["libPath"] = os.path.join(base_path, "../../games_cpp/build/diambraEnvLib/libdiambraEnv.so")
+
+        diambraKwargs["continueGame"] = opt.continueGame
+
+        diambraKwargs["mameDiambraStepRatio"] = opt.frameRatio
+        diambraKwargs["lockFps"] = False
 
         diambraKwargs["player"] = opt.player
 
-        if opt.gameId != "tektagt":
-            diambraKwargs["characters"] = [opt.character1, opt.character2]
-        else:
-            diambraKwargs["characters"] = [[opt.character1, opt.character1_2], [opt.character2, opt.character2_2]]
+        diambraKwargs["characters"] = [[opt.character1, opt.character1_2], [opt.character2, opt.character2_2]]
         diambraKwargs["charOutfits"] = [2, 2]
 
         # DIAMBRA gym kwargs
         diambraGymKwargs = {}
         diambraGymKwargs["actionSpace"] = [opt.actionSpace, opt.actionSpace]
         diambraGymKwargs["attackButCombinations"] = [opt.attButComb, opt.attButComb]
-        diambraGymKwargs["actBufLen"] = 12
         if diambraKwargs["player"] != "P1P2":
-            diambraGymKwargs["showFinal"] = False
-            diambraGymKwargs["continueGame"] = opt.continueGame
             diambraGymKwargs["actionSpace"] = diambraGymKwargs["actionSpace"][0]
             diambraGymKwargs["attackButCombinations"] = diambraGymKwargs["attackButCombinations"][0]
 
@@ -70,12 +74,13 @@ if __name__ == '__main__':
         wrapperKwargs["clipRewards"] = False
         wrapperKwargs["frameStack"] = 4
         wrapperKwargs["dilation"] = 1
+        wrapperKwargs["actionsStack"] = 12
         wrapperKwargs["scale"] = True
         wrapperKwargs["scaleMod"] = 0
 
         # Additional obs key list
         keyToAdd = []
-        keyToAdd.append("actionsBuf")
+        keyToAdd.append("actions")
 
         if opt.gameId != "tektagt":
             keyToAdd.append("ownHealth")
@@ -117,14 +122,13 @@ if __name__ == '__main__':
                 print(k, v)
 
         nActions = env.nActions
-        if diambraKwargs["player"] != "P1P2":
-            nActions=[env.nActions]
 
-        actionsPrintDict = env.printActionsDict()
+        actionsPrintDict = env.printActionsDict
+
         observation = env.reset()
 
-        showObs(observation, keyToAdd, env.keyToAddCount, env.actBufLen, nActions,
-                1, False, env.charNames, hardCore, idxList)
+        showObs(observation, keyToAdd, env.keyToAddCount, wrapperKwargs["actionsStack"], nActions,
+                waitKey, vizFlag, env.charNames, hardCore, idxList)
 
         cumulativeEpRew = 0.0
         cumulativeEpRewAll = []
@@ -146,7 +150,7 @@ if __name__ == '__main__':
                         actions = 0
 
                 if diambraGymKwargs["actionSpace"] == "discrete":
-                    moveAction, attAction = discreteToMultiDiscreteAction(actions, env.nActions[0])
+                    moveAction, attAction = discreteToMultiDiscreteAction(actions, env.nActions[0][0])
                 else:
                     moveAction, attAction = actions[0], actions[1]
 
@@ -183,15 +187,14 @@ if __name__ == '__main__':
             print("done =", done)
             for k, v in info.items():
                 print("info[\"{}\"] = {}".format(k, v))
-            showObs(observation, keyToAdd, env.keyToAddCount, env.actBufLen, nActions,
-                    1, False, env.charNames, hardCore, idxList)
+            showObs(observation, keyToAdd, env.keyToAddCount, wrapperKwargs["actionsStack"], nActions,
+                    waitKey, vizFlag, env.charNames, hardCore, idxList)
             print("--")
             print("Current Cumulative Reward =", cumulativeEpRew)
 
             print("----------")
 
-
-            if np.any(done):
+            if done:
                 print("Resetting Env")
                 currNumEp += 1
                 print("Ep. # = ", currNumEp)
@@ -200,8 +203,8 @@ if __name__ == '__main__':
                 cumulativeEpRew = 0.0
 
                 observation = env.reset()
-                showObs(observation, keyToAdd, env.keyToAddCount, env.actBufLen, nActions,
-                        1, False, env.charNames, hardCore, idxList)
+                showObs(observation, keyToAdd, env.keyToAddCount, wrapperKwargs["actionsStack"], nActions,
+                        waitKey, vizFlag, env.charNames, hardCore, idxList)
 
         print("Cumulative reward = ", cumulativeEpRewAll)
         print("Mean cumulative reward = ", np.mean(cumulativeEpRewAll))
