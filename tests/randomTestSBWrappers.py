@@ -39,8 +39,6 @@ if __name__ == '__main__':
         diambraKwargs = {}
         diambraKwargs["gameId"]   = opt.gameId
         diambraKwargs["romsPath"] = os.path.join(base_path, "../../roms/mame/")
-
-        diambraKwargs["mamePath"] = os.path.join(base_path, "../../customMAME/")
         diambraKwargs["libPath"] = os.path.join(base_path, "../../games_cpp/build/diambraEnvLib/libdiambraEnv.so")
 
         diambraKwargs["continueGame"] = opt.continueGame
