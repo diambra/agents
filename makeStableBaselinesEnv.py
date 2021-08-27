@@ -1,5 +1,5 @@
 import sys, os
-from diambraArena.makeEnv import makeEnv
+import diambraArena
 from addObsWrap import AdditionalObsToChannel
 from p2Wrap import selfPlayVsRL, vsHum, integratedSelfPlay
 
@@ -33,8 +33,8 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwa
     def makeSbEnv(rank):
         def thunk():
             envId = envPrefix + str(rank)
-            env = makeEnv(envId, seed+rank, diambraKwargs, diambraGymKwargs,
-                          wrapperKwargs, trajRecKwargs, hardCore)
+            env = diambarArena.make(envId, diambraKwargs, diambraGymKwargs, wrapperKwargs,
+                                    trajRecKwargs, seed=seed+rank, hardCore=hardCore)
             if not hardCore:
                 env = AdditionalObsToChannel(env, keyToAdd)
             if p2Mode != None:

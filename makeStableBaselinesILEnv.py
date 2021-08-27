@@ -1,5 +1,5 @@
 import sys, os
-from diambraArena.diambraImitationLearning import diambraImitationLearningHardCore, diambraImitationLearning
+import diambraArena
 from addObsWrap import AdditionalObsToChannel
 
 from stable_baselines import logger
