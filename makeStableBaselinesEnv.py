@@ -1,7 +1,7 @@
 import sys, os
 import diambraArena
-from addObsWrap import AdditionalObsToChannel
-from p2Wrap import selfPlayVsRL, vsHum, integratedSelfPlay
+from wrappers.addObsWrap import AdditionalObsToChannel
+from wrappers.p2Wrap import selfPlayVsRL, vsHum, integratedSelfPlay
 
 from stable_baselines import logger
 from stable_baselines.bench import Monitor
