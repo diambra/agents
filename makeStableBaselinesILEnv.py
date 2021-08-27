@@ -1,6 +1,6 @@
 import sys, os
 import diambraArena
-from addObsWrap import AdditionalObsToChannel
+from wrappers.addObsWrap import AdditionalObsToChannel
 
 from stable_baselines import logger
 from stable_baselines.bench import Monitor
