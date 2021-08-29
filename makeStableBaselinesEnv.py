@@ -33,7 +33,7 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwa
     def makeSbEnv(rank):
         def thunk():
             envId = envPrefix + str(rank)
-            env = diambarArena.make(envId, diambraKwargs, diambraGymKwargs, wrapperKwargs,
+            env = diambraArena.make(envId, diambraKwargs, diambraGymKwargs, wrapperKwargs,
                                     trajRecKwargs, seed=seed+rank, hardCore=hardCore)
             if not hardCore:
                 env = AdditionalObsToChannel(env, keyToAdd)
