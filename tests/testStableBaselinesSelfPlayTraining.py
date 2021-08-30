@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
         from sbUtils import linear_schedule, AutoSave, UpdateRLPolicyWeights
         from customPolicies.customCnnPolicy import CustCnnPolicy, local_nature_cnn_small
-        from policies import RLPolicy
+        from diambraArena.utils.policies import RLPolicy
 
         from stable_baselines import PPO2
 
