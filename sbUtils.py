@@ -1,9 +1,10 @@
 from stable_baselines.common.callbacks import BaseCallback
-import cv2, sys, os, time
+import cv2, sys, os, time, json
 import numpy as np
 
 # Visualize Obs content
-def showObs(observation, keyToAdd, keyToAddCount, actionsStack, nActions, waitKey, viz, charList, hardCore, idxList):
+def showObs(observation, keyToAdd, keyToAddCount, actionsStack, nActions, waitKey,
+            viz, charList, hardCore, idxList):
 
     if not hardCore:
         shp = observation.shape
@@ -19,11 +20,11 @@ def showObs(observation, keyToAdd, keyToAddCount, actionsStack, nActions, waitKe
 
             for idK in range(len(keyToAdd)):
 
-                var = addPar[counter:counter+keyToAddCount[idK][idx]] if keyToAddCount[idK][idx] > 1 else addPar[counter]
+                var = addPar[counter:counter+keyToAddCount[idK][idx]]\
+                      if keyToAddCount[idK][idx] > 1 else addPar[counter]
                 counter += keyToAddCount[idK][idx]
 
                 if "actions" in keyToAdd[idK]:
-
                     moveActions   = var[0:actionsStack*nActions[idx][0]]
                     attackActions = var[actionsStack*nActions[idx][0]:actionsStack*(nActions[idx][0]+nActions[idx][1])]
                     moveActions   = np.reshape(moveActions, (actionsStack,-1))
@@ -146,6 +147,37 @@ class UpdateRLPolicyWeights(BaseCallback):
                 self.training_env.env_method("updateP2PolicyWeights", weightsPath=self.save_path)
 
         return True
+
+# Model CFG save
+def modelCfgSave(modelPath, name, nActions, charList,
+                 diambraKwargs, diambraGymKwargs, wrapperKwargs, keyToAdd):
+    data = {}
+    _, modelName = os.path.split(modelPath)
+    data["agentModel"] = modelName + ".zip"
+    data["name"] = name
+    data["nActions"] = nActions
+    data["charList"] = charList
+    data["diambraKwargs"] = diambraKwargs
+    data["diambraGymKwargs"] = diambraGymKwargs
+    data["wrapperKwargs"] = wrapperKwargs
+    data["keyToAdd"] = keyToAdd
+
+    with open(modelPath + ".json", 'w') as outfile:
+        json.dump(data, outfile, indent=4)
+
+def keyToAddCountCalc(keyToAdd, nActions, nActionsStack, charList):
+
+    keyToAddCount = []
+
+    for key in keyToAdd:
+        if "actions" in key:
+            keyToAddCount.append([nActionsStack*(nActions[0]+nActions[1])])
+        elif "Char" in key:
+            keyToAddCount.append([len(charList)])
+        else:
+            keyToAddCount.append([1])
+
+    return keyToAddCount
 
 # Abort training when run out of recorded trajectories for imitation learning
 class ImitationLearningExhaustedExamples(BaseCallback):
