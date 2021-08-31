@@ -13,7 +13,7 @@ if __name__ == '__main__':
         base_path = os.path.dirname(os.path.abspath(__file__))
         sys.path.append(os.path.join(base_path, '../'))
 
-        modelFolder = "./{}StableBaselinesTestModel/".format(opt.gameId)
+        modelFolder = os.path.join(base_path, "{}StableBaselinesTestModel/".format(opt.gameId))
 
         os.makedirs(modelFolder, exist_ok=True)
 
