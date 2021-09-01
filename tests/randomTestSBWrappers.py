@@ -3,9 +3,8 @@ import numpy as np
 import argparse
 base_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_path, '../'))
-sys.path.append(os.path.join(base_path, '../../games_cpp/gym/'))
 
-from gymUtils import discreteToMultiDiscreteAction
+from diambraArena.gymUtils import discreteToMultiDiscreteAction
 from sbUtils import showObs
 from makeStableBaselinesEnv import makeStableBaselinesEnv
 
@@ -40,9 +39,6 @@ if __name__ == '__main__':
         diambraKwargs = {}
         diambraKwargs["gameId"]   = opt.gameId
         diambraKwargs["romsPath"] = os.path.join(base_path, "../../roms/mame/")
-
-        diambraKwargs["mamePath"] = os.path.join(base_path, "../../customMAME/")
-        diambraKwargs["libPath"] = os.path.join(base_path, "../../games_cpp/build/diambraEnvLib/libdiambraEnv.so")
 
         diambraKwargs["continueGame"] = opt.continueGame
 
