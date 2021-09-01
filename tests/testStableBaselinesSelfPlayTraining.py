@@ -6,13 +6,12 @@ if __name__ == '__main__':
 
     try:
         parser = argparse.ArgumentParser()
-        parser.add_argument('--gameId', type=str, default="doapp", help='Game ID [(doapp), sfiii3n, tektagt, umk3, samsh5sp]')
+        parser.add_argument('--gameId', type=str, default="doapp", help='Game ID')
         opt = parser.parse_args()
         print(opt)
 
         base_path = os.path.dirname(os.path.abspath(__file__))
         sys.path.append(os.path.join(base_path, '../'))
-        sys.path.append(os.path.join(base_path, '../../games_cpp/gym/'))
 
         modelFolder = os.path.join(base_path, "{}StableBaselinesSelfPlayTestModel/".format(opt.gameId))
 
@@ -22,9 +21,9 @@ if __name__ == '__main__':
 
         import tensorflow as tf
 
-        from sbUtils import linear_schedule, AutoSave, UpdateRLPolicyWeights
+        from sbUtils import linear_schedule, AutoSave, modelCfgSave, UpdateRLPolicyWeights
         from customPolicies.customCnnPolicy import CustCnnPolicy, local_nature_cnn_small
-        from policies import RLPolicy
+        from diambraArena.utils.policies import RLPolicy
 
         from stable_baselines import PPO2
 
@@ -32,9 +31,6 @@ if __name__ == '__main__':
         diambraKwargs = {}
         diambraKwargs["gameId"]   = opt.gameId
         diambraKwargs["romsPath"] = os.path.join(base_path, "../../roms/mame/")
-
-        diambraKwargs["mamePath"] = os.path.join(base_path, "../../customMAME/")
-        diambraKwargs["libPath"] = os.path.join(base_path, "../../games_cpp/build/diambraEnvLib/libdiambraEnv.so")
 
         diambraKwargs["mameDiambraStepRatio"] = 6
         diambraKwargs["lockFps"] = False
@@ -64,37 +60,37 @@ if __name__ == '__main__':
 
         # Additional obs key list
         keyToAdd = []
-        keyToAdd.append("actions") # wrapperKwargs["actionsStack"]*(env.n_actions[0]+env.n_actions[1])
+        keyToAdd.append("actions")
 
         if opt.gameId != "tektagt":
-            keyToAdd.append("ownHealth")   # 1
-            keyToAdd.append("oppHealth")   # 1
+            keyToAdd.append("ownHealth")
+            keyToAdd.append("oppHealth")
         else:
-            keyToAdd.append("ownHealth1") # 1
-            keyToAdd.append("ownHealth2") # 1
-            keyToAdd.append("oppHealth1") # 1
-            keyToAdd.append("oppHealth2") # 1
-            keyToAdd.append("ownActiveChar") # 1
-            keyToAdd.append("oppActiveChar") # 1
+            keyToAdd.append("ownHealth1")
+            keyToAdd.append("ownHealth2")
+            keyToAdd.append("oppHealth1")
+            keyToAdd.append("oppHealth2")
+            keyToAdd.append("ownActiveChar")
+            keyToAdd.append("oppActiveChar")
 
-        keyToAdd.append("ownPosition")     # 1
-        keyToAdd.append("oppPosition")     # 1
+        keyToAdd.append("ownPosition")
+        keyToAdd.append("oppPosition")
 
         if opt.gameId != "tektagt":
-            keyToAdd.append("ownChar") # len(env.charNames)
-            keyToAdd.append("oppChar") # len(env.charNames)
+            keyToAdd.append("ownChar")
+            keyToAdd.append("oppChar")
         else:
-            keyToAdd.append("ownChar1") # len(env.charNames)
-            keyToAdd.append("ownChar2") # len(env.charNames)
-            keyToAdd.append("oppChar1") # len(env.charNames)
-            keyToAdd.append("oppChar2") # len(env.charNames)
+            keyToAdd.append("ownChar1")
+            keyToAdd.append("ownChar2")
+            keyToAdd.append("oppChar1")
+            keyToAdd.append("oppChar2")
 
         if opt.gameId == "doapp":
             nActions = [9, 8]
         else:
             raise ValueError("nActions not provided for selected gameId = {}".format(gameId))
 
-        model = PPO2.load(os.path.join(modelFolder, str("_".join(keyToAdd))+"_0M"))
+        model = PPO2.load(os.path.join(modelFolder, "0M"))
 
         deterministicFlag = False
         rl_policy = RLPolicy(model, deterministicFlag, nActions, name="PPO-0M",
@@ -120,9 +116,10 @@ if __name__ == '__main__':
             print("Act_space n = ", env.action_space.n)
 
         # Policy param
-        nActions = env.get_attr("nActions")[0][0]
+        nActions      = env.get_attr("nActions")[0][0]
         nActionsStack = env.get_attr("nActionsStack")[0]
-        nChar = env.get_attr("numberOfCharacters")[0]
+        nChar         = env.get_attr("numberOfCharacters")[0]
+        charNames     = env.get_attr("charNames")[0]
 
         policyKwargs={}
         policyKwargs["n_add_info"] = nActionsStack*(nActions[0]+nActions[1]) + len(keyToAdd)-3 + 2*nChar
@@ -150,10 +147,10 @@ if __name__ == '__main__':
 
         # Create the callback: autosave every USER DEF steps
         autoSaveCallback = AutoSave(check_freq=256, numEnv=numEnv,
-                                    save_path=os.path.join(modelFolder, str("_".join(keyToAdd))+"_0M_"))
+                                    save_path=os.path.join(modelFolder, "0M_"))
 
         prevAgentsSamplingDict = {"probability": 0.3,
-                                  "list":[os.path.join(modelFolder, str("_".join(keyToAdd))+"_0M")]}
+                                  "list":[os.path.join(modelFolder, "0M")]}
         upRLPolWCallback = UpdateRLPolicyWeights(check_freq=128, numEnv=numEnv, save_path=modelFolder,
                                                  prevAgentsSampling=prevAgentsSamplingDict)
 
@@ -162,7 +159,11 @@ if __name__ == '__main__':
         model.learn(total_timesteps=timeSteps, callback=[autoSaveCallback, upRLPolWCallback])
 
         # Save the agent
-        model.save(os.path.join(modelFolder, str("_".join(keyToAdd))+"_512"))
+        modelPath = os.path.join(modelFolder, "512")
+        model.save(modelPath)
+        # Save the correspondent CFG file
+        modelCfgSave(modelPath, "PPOSelfPlaySmall", nActions, charNames,
+                     diambraKwargs, diambraGymKwargs, wrapperKwargs, keyToAdd)
 
         # Close the environment
         env.close()

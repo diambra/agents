@@ -1,9 +1,7 @@
 import sys, os
-base_path = os.path.dirname(__file__)
-sys.path.append(os.path.join(base_path, '../games_cpp/gym/.'))
-from makeEnv import makeEnv
-from addObsWrap import AdditionalObsToChannel
-from p2Wrap import selfPlayVsRL, vsHum, integratedSelfPlay
+import diambraArena
+from wrappers.addObsWrap import AdditionalObsToChannel
+from wrappers.p2Wrap import selfPlayVsRL, vsHum, integratedSelfPlay
 
 from stable_baselines import logger
 from stable_baselines.bench import Monitor
@@ -35,8 +33,8 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwa
     def makeSbEnv(rank):
         def thunk():
             envId = envPrefix + str(rank)
-            env = makeEnv(envId, seed+rank, diambraKwargs, diambraGymKwargs,
-                          wrapperKwargs, trajRecKwargs, hardCore)
+            env = diambraArena.make(envId, diambraKwargs, diambraGymKwargs, wrapperKwargs,
+                                    trajRecKwargs, seed=seed+rank, hardCore=hardCore)
             if not hardCore:
                 env = AdditionalObsToChannel(env, keyToAdd)
             if p2Mode != None:

@@ -1,8 +1,6 @@
 import sys, os
-base_path = os.path.dirname(__file__)
-sys.path.append(os.path.join(base_path, '../games_cpp/gym/.'))
-from diambraImitationLearning import diambraImitationLearningHardCore, diambraImitationLearning
-from addObsWrap import AdditionalObsToChannel
+import diambraArena
+from wrappers.addObsWrap import AdditionalObsToChannel
 
 from stable_baselines import logger
 from stable_baselines.bench import Monitor
