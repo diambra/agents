@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     diambraKwargs["mameDiambraStepRatio"] = 6
     diambraKwargs["lockFps"] = False
-    diambraKwargs["render"]     = False
+    diambraKwargs["render"]  = True
 
     diambraKwargs["player"] = "Random" # P1 / P2
 
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     charNames     = env.get_attr("charNames")[0]
 
     policyKwargs={}
-    policyKwargs["n_add_info"] = nActionsStack*(nActions[0]+nActions[1]) + len(keyToAdd)-2
+    policyKwargs["n_add_info"] = nActionsStack*(nActions[0]+nActions[1]) + len(keyToAdd)-1
     policyKwargs["layers"] = [64, 64]
 
     policyKwargs["cnn_extractor"] = local_nature_cnn_small
