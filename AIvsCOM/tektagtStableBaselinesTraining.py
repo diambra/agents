@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     diambraKwargs["mameDiambraStepRatio"] = 6
     diambraKwargs["lockFps"] = False
-    diambraKwargs["render"]  = True
+    diambraKwargs["render"]  = False
 
     diambraKwargs["player"] = "Random" # P1 / P2
 
