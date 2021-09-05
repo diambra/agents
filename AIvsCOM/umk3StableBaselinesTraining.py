@@ -25,7 +25,7 @@ if __name__ == '__main__':
     diambraKwargs["gameId"]   = "umk3"
     diambraKwargs["romsPath"] = os.path.join(base_path, "../../roms/mame/")
 
-    diambraKwargs["mameDiambraStepRatio"] = 6
+    diambraKwargs["stepStepRatio"] = 6
     diambraKwargs["lockFps"] = False
     diambraKwargs["render"]  = False
 
