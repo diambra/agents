@@ -6,7 +6,10 @@ if __name__ == '__main__':
 
     try:
         parser = argparse.ArgumentParser()
-        parser.add_argument('--gameId', type=str, default="doapp", help='Game ID')
+        parser.add_argument('--gameId',    type=str,  default="doapp", help='Game ID')
+        parser.add_argument('--nEnvs',     type=int,  default=2,       help='Number of parallel envs')
+        parser.add_argument('--stepRatio', type=int,  default=6,       help='Step ratio')
+        parser.add_argument('--lockFps',   type=bool, default=False,   help='Lock Fps')
         opt = parser.parse_args()
         print(opt)
 
@@ -31,9 +34,9 @@ if __name__ == '__main__':
         diambraKwargs["gameId"]   = opt.gameId
         diambraKwargs["romsPath"] = os.path.join(base_path, "../../roms/mame/")
 
-        diambraKwargs["mameDiambraStepRatio"] = 6
-        diambraKwargs["lockFps"] = False
-        diambraKwargs["render"]     = False
+        diambraKwargs["stepRatio"] = opt.stepRatio
+        diambraKwargs["lockFps"] = opt.lockFps
+        diambraKwargs["render"]  = False
 
         diambraKwargs["player"] = "Random" # P1 / P2
 
@@ -87,7 +90,7 @@ if __name__ == '__main__':
             keyToAdd.append("oppChar1")
             keyToAdd.append("oppChar2")
 
-        numEnv=2
+        numEnv=opt.nEnvs
 
         envId = opt.gameId + "_Train"
         env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, diambraKwargs, diambraGymKwargs,
