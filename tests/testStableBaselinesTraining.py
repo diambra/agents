@@ -10,6 +10,7 @@ if __name__ == '__main__':
         parser.add_argument('--nEnvs',     type=int,  default=2,       help='Number of parallel envs')
         parser.add_argument('--stepRatio', type=int,  default=6,       help='Step ratio')
         parser.add_argument('--lockFps',   type=bool, default=False,   help='Lock Fps')
+        parser.add_argument('--render',    type=bool, default=False,   help='Rendering env')
         opt = parser.parse_args()
         print(opt)
 
@@ -35,8 +36,8 @@ if __name__ == '__main__':
         diambraKwargs["romsPath"] = os.path.join(base_path, "../../roms/mame/")
 
         diambraKwargs["stepRatio"] = opt.stepRatio
-        diambraKwargs["lockFps"] = opt.lockFps
-        diambraKwargs["render"]  = False
+        diambraKwargs["lockFps"]   = opt.lockFps
+        diambraKwargs["render"]    = opt.render
 
         diambraKwargs["player"] = "Random" # P1 / P2
 
@@ -129,25 +130,26 @@ if __name__ == '__main__':
         setLearningRate = linear_schedule(2.5e-4, 2.5e-6)
         setClipRange = linear_schedule(0.15, 0.025)
         setClipRangeVf = setClipRange
+        nSteps = 128
 
         # Initialize the model
         model = PPO2(CustCnnPolicy, env, verbose=1,
-                     gamma = setGamma, nminibatches=4, noptepochs=4, n_steps=128,
+                     gamma = setGamma, nminibatches=4, noptepochs=4, n_steps=nSteps,
                      learning_rate=setLearningRate, cliprange=setClipRange, cliprange_vf=setClipRangeVf,
                      policy_kwargs=policyKwargs)
 
         print("Model discount factor = ", model.gamma)
 
         # Create the callback: autosave every USER DEF steps
-        autoSaveCallback = AutoSave(check_freq=256, numEnv=numEnv,
+        autoSaveCallback = AutoSave(check_freq=nSteps*opt.nEnvs, numEnv=numEnv,
                                     save_path=os.path.join(modelFolder, "0M_"))
 
         # Train the agent
-        timeSteps = 512
+        timeSteps = nSteps*2*opt.nEnvs
         model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
         # Save the agent
-        modelPath = os.path.join(modelFolder, "512")
+        modelPath = os.path.join(modelFolder, str(timeSteps))
         model.save(modelPath)
         # Save the correspondent CFG file
         modelCfgSave(modelPath, "PPOSmall", nActions, charNames,
