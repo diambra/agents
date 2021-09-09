@@ -25,7 +25,7 @@ if __name__ == '__main__':
     diambraKwargs["gameId"]   = "umk3"
     diambraKwargs["romsPath"] = os.path.join(base_path, "../../roms/mame/")
 
-    diambraKwargs["stepStepRatio"] = 6
+    diambraKwargs["stepRatio"] = 6
     diambraKwargs["lockFps"] = False
     diambraKwargs["render"]  = False
 
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     #keyToAdd.append("oppChar1")
     #keyToAdd.append("oppChar2")
 
-    numEnv=8
+    numEnv=16
 
     envId = "umk3_Train"
     env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, diambraKwargs, diambraGymKwargs,
@@ -108,36 +108,36 @@ if __name__ == '__main__':
     setLearningRate = linear_schedule(2.5e-4, 2.5e-6)
     setClipRange = linear_schedule(0.15, 0.025)
     setClipRangeVf = setClipRange
+    '''
     # Initialize the model
     model = PPO2(CustCnnPolicy, env, verbose=1,
-                 gamma=setGamma, nminibatches=4, noptepochs=4, n_steps=128,
+                 gamma=setGamma, nminibatches=8, noptepochs=4, n_steps=128,
                  learning_rate=setLearningRate, cliprange=setClipRange,
                  cliprange_vf=setClipRangeVf, policy_kwargs=policyKwargs,
                  tensorboard_log=tensorBoardFolder)
     #OR
-    '''
     setLearningRate = linear_schedule(5.0e-5, 2.5e-6)
     setClipRange    = linear_schedule(0.075, 0.025)
     setClipRangeVf  = setClipRange
+    '''
     # Load the trained agent
-    model = PPO2.load(os.path.join(modelFolder, "0M"), env=env,
+    model = PPO2.load(os.path.join(modelFolder, "5M"), env=env,
                       policy_kwargs=policyKwargs, gamma=setGamma, learning_rate=setLearningRate,
                       cliprange=setClipRange, cliprange_vf=setClipRangeVf,
                       tensorboard_log=tensorBoardFolder)
-    '''
 
     print("Model discount factor = ", model.gamma)
 
     # Create the callback: autosave every USER DEF steps
     autoSaveCallback = AutoSave(check_freq=1000000, numEnv=numEnv,
-                                save_path=os.path.join(modelFolder, "0M_"))
+                                save_path=os.path.join(modelFolder, "5M_"))
 
     # Train the agent
     timeSteps = 20000000
     model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
     # Save the agent
-    modelPath = os.path.join(modelFolder, "20M")
+    modelPath = os.path.join(modelFolder, "25M")
     model.save(modelPath)
     # Save the correspondent CFG file
     modelCfgSave(modelPath, "PPOSmall", nActions, charNames,
