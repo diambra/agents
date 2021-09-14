@@ -73,8 +73,8 @@ if __name__ == '__main__':
             keyToAdd.append("ownActiveChar")
             keyToAdd.append("oppActiveChar")
 
-        keyToAdd.append("ownPosition")
-        keyToAdd.append("oppPosition")
+        keyToAdd.append("ownSide")
+        keyToAdd.append("oppSide")
 
         if opt.gameId != "tektagt":
             keyToAdd.append("ownChar")

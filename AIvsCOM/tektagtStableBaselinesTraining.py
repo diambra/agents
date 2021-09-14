@@ -64,8 +64,8 @@ if __name__ == '__main__':
     keyToAdd.append("ownActiveChar")
     keyToAdd.append("oppActiveChar")
 
-    keyToAdd.append("ownPosition")
-    keyToAdd.append("oppPosition")
+    keyToAdd.append("ownSide")
+    keyToAdd.append("oppSide")
     keyToAdd.append("stage")
 
     #keyToAdd.append("ownChar1")
