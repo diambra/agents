@@ -60,8 +60,8 @@ if __name__ == '__main__':
     keyToAdd.append("ownHealth")
     keyToAdd.append("oppHealth")
 
-    keyToAdd.append("ownPosition")
-    keyToAdd.append("oppPosition")
+    keyToAdd.append("ownSide")
+    keyToAdd.append("oppSide")
     keyToAdd.append("stage")
 
     #keyToAdd.append("ownChar1")
