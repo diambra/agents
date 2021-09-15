@@ -89,8 +89,8 @@ if __name__ == '__main__':
             keyToAdd.append("ownActiveChar")
             keyToAdd.append("oppActiveChar")
 
-        keyToAdd.append("ownPosition")
-        keyToAdd.append("oppPosition")
+        keyToAdd.append("ownSide")
+        keyToAdd.append("oppSide")
         if diambraKwargs["player"] != "P1P2":
             keyToAdd.append("stage")
 
