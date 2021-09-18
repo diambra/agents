@@ -122,9 +122,8 @@ if __name__ == '__main__':
                  learning_rate=setLearningRate, cliprange=setClipRange,
                  cliprange_vf=setClipRangeVf, policy_kwargs=policyKwargs,
                  tensorboard_log=tensorBoardFolder)
-    '''
     #OR
-
+    '''
     setLearningRate = linear_schedule(5.0e-5, 2.5e-6)
     setClipRange    = linear_schedule(0.075, 0.025)
     setClipRangeVf  = setClipRange

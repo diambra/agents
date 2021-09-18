@@ -36,6 +36,9 @@ if __name__ == '__main__':
     diambraKwargs["difficulty"]  = 4
     diambraKwargs["charOutfits"] =[2, 2]
 
+    diambraKwargs["continueGame"] = 0.0
+    diambraKwargs["showFinal"] = False
+
     # DIAMBRA gym kwargs
     diambraGymKwargs = {}
     diambraGymKwargs["actionSpace"] = "discrete"
@@ -105,10 +108,10 @@ if __name__ == '__main__':
 
     # PPO param
     setGamma = 0.94
+    '''
     setLearningRate = linear_schedule(2.5e-4, 2.5e-6)
     setClipRange = linear_schedule(0.15, 0.025)
     setClipRangeVf = setClipRange
-    '''
     # Initialize the model
     model = PPO2(CustCnnPolicy, env, verbose=1,
                  gamma=setGamma, nminibatches=8, noptepochs=4, n_steps=128,
@@ -116,12 +119,13 @@ if __name__ == '__main__':
                  cliprange_vf=setClipRangeVf, policy_kwargs=policyKwargs,
                  tensorboard_log=tensorBoardFolder)
     #OR
+    '''
     setLearningRate = linear_schedule(5.0e-5, 2.5e-6)
     setClipRange    = linear_schedule(0.075, 0.025)
     setClipRangeVf  = setClipRange
-    '''
     # Load the trained agent
-    model = PPO2.load(os.path.join(modelFolder, "5M"), env=env,
+    modelCheckpoint = "65M"
+    model = PPO2.load(os.path.join(modelFolder, modelCheckpoint), env=env,
                       policy_kwargs=policyKwargs, gamma=setGamma, learning_rate=setLearningRate,
                       cliprange=setClipRange, cliprange_vf=setClipRangeVf,
                       tensorboard_log=tensorBoardFolder)
@@ -130,14 +134,14 @@ if __name__ == '__main__':
 
     # Create the callback: autosave every USER DEF steps
     autoSaveCallback = AutoSave(check_freq=1000000, numEnv=numEnv,
-                                save_path=os.path.join(modelFolder, "5M_"))
+                                save_path=os.path.join(modelFolder, modelCheckpoint+"_"))
 
     # Train the agent
-    timeSteps = 20000000
+    timeSteps = 40000000
     model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
     # Save the agent
-    modelPath = os.path.join(modelFolder, "25M")
+    modelPath = os.path.join(modelFolder, "105M")
     model.save(modelPath)
     # Save the correspondent CFG file
     modelCfgSave(modelPath, "PPOSmall", nActions, charNames,
