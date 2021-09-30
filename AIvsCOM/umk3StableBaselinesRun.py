@@ -76,14 +76,18 @@ if __name__ == '__main__':
     model = PPO2.load(os.path.join(modelFolder, "65M"))
 
     obs = env.reset()
+    cumulativeRew = 0.0
 
     while True:
 
         action, _ = model.predict(obs, deterministic=True)
 
         obs, reward, done, info = env.step(action)
+        cumulativeRew += reward
 
         if done:
+            print("Cumulative Rew =", cumulativeRew)
+            cumulativeRew = 0.0
             obs = env.reset()
 
     # Close the environment
