@@ -27,10 +27,10 @@ if __name__ == '__main__':
 
     diambraKwargs["characters"] =[["Jin", "Yoshimitsu"], ["Jin", "Yoshimitsu"]]
 
-    diambraKwargs["difficulty"]  = 1
+    diambraKwargs["difficulty"]  = 6
     diambraKwargs["charOutfits"] =[2, 2]
 
-    diambraKwargs["continueGame"] = 1.0
+    diambraKwargs["continueGame"] = 0.0
     diambraKwargs["showFinal"] = False
 
     # DIAMBRA gym kwargs
@@ -77,17 +77,21 @@ if __name__ == '__main__':
                                  wrapperKwargs, keyToAdd=keyToAdd, noVec=True)
 
     # Load the trained agent
-    model = PPO2.load(os.path.join(modelFolder, "136M"))
+    model = PPO2.load(os.path.join(modelFolder, "156M"))
 
     obs = env.reset()
+    cumulativeRew = 0.0
 
     while True:
 
         action, _ = model.predict(obs, deterministic=True)
 
         obs, reward, done, info = env.step(action)
+        cumulativeRew += reward
 
         if done:
+            print("Cumulative Rew =", cumulativeRew)
+            cumulativeRew = 0.0
             obs = env.reset()
 
     # Close the environment
