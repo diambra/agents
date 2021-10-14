@@ -34,6 +34,7 @@ if __name__ == '__main__':
     diambraKwargs["characters"] =[["Sektor", "Random"], ["Sektor", "Random"]]
 
     diambraKwargs["difficulty"]  = 4
+    diambraKwargs["tower"]  = 3
     diambraKwargs["charOutfits"] =[2, 2]
 
     diambraKwargs["continueGame"] = 0.0
