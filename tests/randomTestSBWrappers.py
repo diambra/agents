@@ -7,6 +7,7 @@ sys.path.append(os.path.join(base_path, '../'))
 from diambraArena.gymUtils import discreteToMultiDiscreteAction
 from sbUtils import showObs
 from makeStableBaselinesEnv import makeStableBaselinesEnv
+from wrappers.tektagRewWrap import tektagRoundEndChar2Penalty, tektagHealthBarUnbalancePenalty
 
 if __name__ == '__main__':
     timeDepSeed = int((time.time()-int(time.time()-0.5))*1000)
@@ -74,6 +75,11 @@ if __name__ == '__main__':
         wrapperKwargs["scale"] = True
         wrapperKwargs["scaleMod"] = 0
 
+        # Additional custom wrappers
+        customWrappers = None
+        if opt.gameId == "tektagt" and diambraKwargs["player"] != "P1P2":
+            customWrappers = [tektagRoundEndChar2Penalty, tektagHealthBarUnbalancePenalty]
+
         # Additional obs key list
         keyToAdd = []
         keyToAdd.append("actions")
@@ -107,7 +113,7 @@ if __name__ == '__main__':
         hardCore = False if opt.hardCore == 0 else True
         numOfEnvs = 1
         env = makeStableBaselinesEnv(envId, numOfEnvs, timeDepSeed, diambraKwargs,
-                                     diambraGymKwargs, wrapperKwargs,
+                                     diambraGymKwargs, wrapperKwargs, customWrappers=customWrappers,
                                      keyToAdd=keyToAdd, noVec=True, hardCore=hardCore)
 
         print("Observation Space:", env.observation_space)

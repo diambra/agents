@@ -9,8 +9,8 @@ from stable_baselines.common.misc_util import set_global_seeds
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecFrameStack
 
 def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwargs,
-                           wrapperKwargs=None, trajRecKwargs=None, hardCore=False,
-                           keyToAdd=None, p2Mode=None, p2Policy=None,
+                           wrapperKwargs=None, trajRecKwargs=None, customWrappers=None,
+                           hardCore=False, keyToAdd=None, p2Mode=None, p2Policy=None,
                            startIndex=0, allowEarlyResets=True, startMethod=None,
                            noVec=False, useSubprocess=False):
     """
@@ -37,6 +37,12 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwa
             env = diambraArena.make(envId, diambraKwargs, diambraGymKwargs, wrapperKwargs,
                                     trajRecKwargs, seed=seed+rank, hardCore=hardCore)
             if not hardCore:
+
+                # Applying custom wrappers
+                if customWrappers != None:
+                    for wrap in customWrappers:
+                        env = wrap(env)
+
                 env = AdditionalObsToChannel(env, keyToAdd)
             if p2Mode != None:
                 if p2Mode == "integratedSelfPlay":
