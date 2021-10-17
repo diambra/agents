@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
         # Additional custom wrappers
         customWrappers = None
-        if opt.gameId == "tektagt":
+        if opt.gameId == "tektagt" and diambraKwargs["player"] != "P1P2":
             customWrappers = [tektagRoundEndChar2Penalty, tektagHealthBarUnbalancePenalty]
 
         # Additional obs key list
