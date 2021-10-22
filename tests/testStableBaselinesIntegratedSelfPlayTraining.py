@@ -26,36 +26,34 @@ if __name__ == '__main__':
 
         from customRlAlgo.ppo2_selfPlay import PPO2_SelfPlay
 
-        # Common settings
-        diambraKwargs = {}
-        diambraKwargs["gameId"]   = opt.gameId
-        diambraKwargs["romsPath"] = os.path.join(base_path, "../../roms/mame/")
+        # Settings
+        settings = {}
+        settings["gameId"]   = opt.gameId
+        settings["romsPath"] = os.path.join(base_path, "../../roms/mame/")
 
-        diambraKwargs["stepRatio"] = 6
-        diambraKwargs["lockFps"] = False
-        diambraKwargs["render"]     = False
+        settings["stepRatio"] = 6
+        settings["lockFps"] = False
+        settings["render"]     = False
 
-        diambraKwargs["player"] = "P1P2" # 2P game
+        settings["player"] = "P1P2" # 2P game
 
-        diambraKwargs["characters"] =[["Random", "Random"], ["Random", "Random"]]
-        diambraKwargs["charOutfits"] =[2, 2]
+        settings["characters"] =[["Random", "Random"], ["Random", "Random"]]
+        settings["charOutfits"] =[2, 2]
 
-        # DIAMBRA gym kwargs
-        diambraGymKwargs = {}
-        diambraGymKwargs["actionSpace"] = ["discrete", "discrete"]
-        diambraGymKwargs["attackButCombinations"] = [True, True]
+        settings["actionSpace"] = ["discrete", "discrete"]
+        settings["attackButCombinations"] = [True, True]
 
-        # Env wrappers kwargs
-        wrapperKwargs = {}
-        wrapperKwargs["noOpMax"] = 0
-        wrapperKwargs["hwcObsResize"] = [128, 128, 1]
-        wrapperKwargs["normalizeRewards"] = True
-        wrapperKwargs["clipRewards"] = False
-        wrapperKwargs["frameStack"] = 4
-        wrapperKwargs["dilation"] = 1
-        wrapperKwargs["actionsStack"] = 12
-        wrapperKwargs["scale"] = True
-        wrapperKwargs["scaleMod"] = 0
+        # Wrappers settings
+        wrappersSettings = {}
+        wrappersSettings["noOpMax"] = 0
+        wrappersSettings["hwcObsResize"] = [128, 128, 1]
+        wrappersSettings["normalizeRewards"] = True
+        wrappersSettings["clipRewards"] = False
+        wrappersSettings["frameStack"] = 4
+        wrappersSettings["dilation"] = 1
+        wrappersSettings["actionsStack"] = 12
+        wrappersSettings["scale"] = True
+        wrappersSettings["scaleMod"] = 0
 
         # Additional obs key list
         keyToAdd = []
@@ -87,8 +85,8 @@ if __name__ == '__main__':
         numEnv=2
 
         envId = opt.gameId + "_Train"
-        env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, diambraKwargs, diambraGymKwargs,
-                                     wrapperKwargs, keyToAdd=keyToAdd, p2Mode="integratedSelfPlay",
+        env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, settings, wrappersSettings,
+                                     keyToAdd=keyToAdd, p2Mode="integratedSelfPlay",
                                      useSubprocess=True)
 
         print("Obs_space = ", env.observation_space)
@@ -98,7 +96,7 @@ if __name__ == '__main__':
 
         print("Act_space = ", env.action_space)
         print("Act_space type = ", env.action_space.dtype)
-        if diambraGymKwargs["actionSpace"][0] == "multiDiscrete":
+        if settings["actionSpace"][0] == "multiDiscrete":
             print("Act_space n = ", env.action_space.nvec)
         else:
             print("Act_space n = ", env.action_space.n)
@@ -146,7 +144,7 @@ if __name__ == '__main__':
         model.save(modelPath)
         # Save the correspondent CFG file
         modelCfgSave(modelPath, "PPOIntegratedSelfPlaySmall", nActions, charNames,
-                     diambraKwargs, diambraGymKwargs, wrapperKwargs, keyToAdd)
+                     settings, wrappersSettings, keyToAdd)
 
         # Close the environment
         env.close()

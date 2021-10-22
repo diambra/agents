@@ -21,38 +21,36 @@ if __name__ == '__main__':
 
     from stable_baselines import PPO2
 
-    # Common settings
-    diambraKwargs = {}
-    diambraKwargs["gameId"]   = "doapp"
-    diambraKwargs["romsPath"] = opt.romsPath
+    # Settings settings
+    settings = {}
+    settings["gameId"]   = "doapp"
+    settings["romsPath"] = opt.romsPath
 
-    diambraKwargs["stepRatio"] = 6
-    diambraKwargs["lockFps"]   = False
-    diambraKwargs["render"]    = False
+    settings["stepRatio"] = 6
+    settings["lockFps"]   = False
+    settings["render"]    = False
 
-    diambraKwargs["player"] = "Random" # P1 / P2
+    settings["player"] = "Random" # P1 / P2
 
-    diambraKwargs["characters"] =[["Random", "Random"], ["Random", "Random"]]
+    settings["characters"] =[["Random", "Random"], ["Random", "Random"]]
 
-    diambraKwargs["difficulty"]  = 3
-    diambraKwargs["charOutfits"] =[2, 2]
+    settings["difficulty"]  = 3
+    settings["charOutfits"] =[2, 2]
 
-    # DIAMBRA gym kwargs
-    diambraGymKwargs = {}
-    diambraGymKwargs["actionSpace"] = "discrete"
-    diambraGymKwargs["attackButCombinations"] = False
+    settings["actionSpace"] = "discrete"
+    settings["attackButCombinations"] = False
 
-    # Env wrappers kwargs
-    wrapperKwargs = {}
-    wrapperKwargs["noOpMax"] = 0
-    wrapperKwargs["hwcObsResize"] = [128, 128, 1]
-    wrapperKwargs["normalizeRewards"] = True
-    wrapperKwargs["clipRewards"] = False
-    wrapperKwargs["frameStack"] = 4
-    wrapperKwargs["dilation"] = 1
-    wrapperKwargs["actionsStack"] = 12
-    wrapperKwargs["scale"] = True
-    wrapperKwargs["scaleMod"] = 0
+    # Wrappers settings
+    wrappersSettings = {}
+    wrappersSettings["noOpMax"] = 0
+    wrappersSettings["hwcObsResize"] = [128, 128, 1]
+    wrappersSettings["normalizeRewards"] = True
+    wrappersSettings["clipRewards"] = False
+    wrappersSettings["frameStack"] = 4
+    wrappersSettings["dilation"] = 1
+    wrappersSettings["actionsStack"] = 12
+    wrappersSettings["scale"] = True
+    wrappersSettings["scaleMod"] = 0
 
     # Additional obs key list
     keyToAdd = []
@@ -69,8 +67,8 @@ if __name__ == '__main__':
     numEnv=8
 
     envId = "doapp_Train"
-    env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, diambraKwargs, diambraGymKwargs,
-                                 wrapperKwargs, keyToAdd=keyToAdd, useSubprocess=True)
+    env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, settings, wrappersSettings,
+                                 keyToAdd=keyToAdd, useSubprocess=True)
 
     # Policy param
     nActions      = env.get_attr("nActions")[0][0]
