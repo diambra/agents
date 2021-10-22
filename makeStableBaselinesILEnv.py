@@ -7,12 +7,12 @@ from stable_baselines.bench import Monitor
 from stable_baselines.common.misc_util import set_global_seeds
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecFrameStack
 
-def makeStableBaselinesILEnv(envPrefix, diambraILKwargs, seed, hardCore=False, keyToAdd=None,
+def makeStableBaselinesILEnv(envPrefix, settings, seed, keyToAdd=None,
                              startIndex=0, allowEarlyResets=True, startMethod=None,
                              noVec=False, useSubprocess=False):
     """
     Create a wrapped, monitored VecEnv.
-    :param diambraKwargs: (dict) parameters for DIAMBRA IL environment
+    :param settings: (dict) settings for DIAMBRA IL environment
     :param seed: (int) initial seed for RNG
     :param keyToAdd: (list) ordered parameters for environment stable baselines converter wraping function
     :param startIndex: (int) start rank index
@@ -24,13 +24,17 @@ def makeStableBaselinesILEnv(envPrefix, diambraILKwargs, seed, hardCore=False, k
     :return: (VecEnv) The diambra environment
     """
 
+    hardCore=False,
+    if "hardCore" in settings:
+        hardCore = settings["hardCore"]
+
     def makeSbEnv(rank):
         def thunk():
             envId = envPrefix + str(rank)
             if hardCore:
-                env = diambraImitationLearningHardCore(**diambraILKwargs, rank=rank)
+                env = diambraImitationLearningHardCore(**settings, rank=rank)
             else:
-                env = diambraImitationLearning(**diambraILKwargs, rank=rank)
+                env = diambraImitationLearning(**settings, rank=rank)
                 env = AdditionalObsToChannel(env, keyToAdd, imitationLearning=True)
             env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                           allow_early_resets=allowEarlyResets)
@@ -39,12 +43,12 @@ def makeStableBaselinesILEnv(envPrefix, diambraILKwargs, seed, hardCore=False, k
     set_global_seeds(seed)
 
     # If not wanting vectorized envs
-    if noVec and diambraILKwargs["totalCpus"] == 1:
+    if noVec and settings["totalCpus"] == 1:
         return makeSbEnv(0)()
 
     # When using one environment, no need to start subprocesses
-    if diambraILKwargs["totalCpus"] == 1 or not useSubprocess:
-        return DummyVecEnv([makeSbEnv(i + startIndex) for i in range(diambraILKwargs["totalCpus"])])
+    if settings["totalCpus"] == 1 or not useSubprocess:
+        return DummyVecEnv([makeSbEnv(i + startIndex) for i in range(settings["totalCpus"])])
 
-    return SubprocVecEnv([makeSbEnv(i + startIndex) for i in range(diambraILKwargs["totalCpus"])],
+    return SubprocVecEnv([makeSbEnv(i + startIndex) for i in range(settings["totalCpus"])],
                          start_method=startMethod)
