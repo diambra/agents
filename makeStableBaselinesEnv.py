@@ -29,7 +29,7 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, envSettings, wrappersSetting
     :return: (VecEnv) The diambra environment
     """
 
-    hardCore=False,
+    hardCore = False
     if "hardCore" in envSettings:
         hardCore = envSettings["hardCore"]
 
@@ -38,8 +38,7 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, envSettings, wrappersSetting
             envId = envPrefix + str(rank)
             envSettings["rank"] = rank
             env = diambraArena.make(envId, envSettings, wrappersSettings,
-                                    trajRecSettings, seed=seed+rank,
-                                    hardCore=hardCore)
+                                    trajRecSettings, seed=seed+rank)
             if not hardCore:
 
                 # Applying custom wrappers
