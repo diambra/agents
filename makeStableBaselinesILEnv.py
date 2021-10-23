@@ -24,7 +24,7 @@ def makeStableBaselinesILEnv(envPrefix, settings, seed, keyToAdd=None,
     :return: (VecEnv) The diambra environment
     """
 
-    hardCore=False,
+    hardCore = False
     if "hardCore" in settings:
         hardCore = settings["hardCore"]
 
