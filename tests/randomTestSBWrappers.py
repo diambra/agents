@@ -107,15 +107,18 @@ if __name__ == '__main__':
             keyToAdd.append("oppChar1")
             keyToAdd.append("oppChar2")
 
-        envId = opt.gameId + "_randomTestSBWrappers"
         hardCore = False if opt.hardCore == 0 else True
+        settings["hardCore"] = hardCore
+
         numOfEnvs = 1
+        envId = opt.gameId + "_randomTestSBWrappers"
         env = makeStableBaselinesEnv(envId, numOfEnvs, timeDepSeed, settings,
                                      wrappersSettings, customWrappers=customWrappers,
-                                     keyToAdd=keyToAdd, noVec=True, hardCore=hardCore)
+                                     keyToAdd=keyToAdd, noVec=True)
 
         print("Observation Space:", env.observation_space)
         print("Action Space:", env.action_space)
+
         if not hardCore:
             print("Keys to Dict:")
             for k,v in env.keysToDict.items():
