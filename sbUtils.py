@@ -150,16 +150,15 @@ class UpdateRLPolicyWeights(BaseCallback):
 
 # Model CFG save
 def modelCfgSave(modelPath, name, nActions, charList,
-                 diambraKwargs, diambraGymKwargs, wrapperKwargs, keyToAdd):
+                 settings, wrappersSettings, keyToAdd):
     data = {}
     _, modelName = os.path.split(modelPath)
     data["agentModel"] = modelName + ".zip"
     data["name"] = name
     data["nActions"] = nActions
     data["charList"] = charList
-    data["diambraKwargs"] = diambraKwargs
-    data["diambraGymKwargs"] = diambraGymKwargs
-    data["wrapperKwargs"] = wrapperKwargs
+    data["settings"] = settings
+    data["wrappersSettings"] = wrappersSettings
     data["keyToAdd"] = keyToAdd
 
     with open(modelPath + ".json", 'w') as outfile:

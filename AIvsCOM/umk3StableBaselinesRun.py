@@ -15,42 +15,40 @@ if __name__ == '__main__':
 
     from stable_baselines import PPO2
 
-    # Common settings
-    diambraKwargs = {}
-    diambraKwargs["gameId"]   = "umk3"
-    diambraKwargs["romsPath"] = os.path.join(base_path, "../../roms/mame/")
+    # Settings
+    settings = {}
+    settings["gameId"]   = "umk3"
+    settings["romsPath"] = os.path.join(base_path, "../../roms/mame/")
 
-    diambraKwargs["stepRatio"] = 6
-    diambraKwargs["lockFps"] = False
-    diambraKwargs["render"]  = True
+    settings["stepRatio"] = 6
+    settings["lockFps"] = False
+    settings["render"]  = True
 
-    diambraKwargs["player"] = "P1" # P1 / P2
+    settings["player"] = "P1" # P1 / P2
 
-    diambraKwargs["characters"] =[["Sektor", "Random"], ["Sektor", "Random"]]
+    settings["characters"] =[["Sektor", "Random"], ["Sektor", "Random"]]
 
-    diambraKwargs["difficulty"]  = 1
-    diambraKwargs["tower"]  = 1
-    diambraKwargs["charOutfits"] =[2, 2]
+    settings["difficulty"]  = 1
+    settings["tower"]  = 1
+    settings["charOutfits"] =[2, 2]
 
-    diambraKwargs["continueGame"] = 1.0
-    diambraKwargs["showFinal"] = False
+    settings["continueGame"] = 1.0
+    settings["showFinal"] = False
 
-    # DIAMBRA gym kwargs
-    diambraGymKwargs = {}
-    diambraGymKwargs["actionSpace"] = "discrete"
-    diambraGymKwargs["attackButCombinations"] = False
+    settings["actionSpace"] = "discrete"
+    settings["attackButCombinations"] = False
 
-    # Env wrappers kwargs
-    wrapperKwargs = {}
-    wrapperKwargs["noOpMax"] = 0
-    wrapperKwargs["hwcObsResize"] = [128, 128, 1]
-    wrapperKwargs["normalizeRewards"] = True
-    wrapperKwargs["clipRewards"] = False
-    wrapperKwargs["frameStack"] = 4
-    wrapperKwargs["dilation"] = 1
-    wrapperKwargs["actionsStack"] = 12
-    wrapperKwargs["scale"] = True
-    wrapperKwargs["scaleMod"] = 0
+    # Wrappers Settings
+    wrappersSettings = {}
+    wrappersSettings["noOpMax"] = 0
+    wrappersSettings["hwcObsResize"] = [128, 128, 1]
+    wrappersSettings["normalizeRewards"] = True
+    wrappersSettings["clipRewards"] = False
+    wrappersSettings["frameStack"] = 4
+    wrappersSettings["dilation"] = 1
+    wrappersSettings["actionsStack"] = 12
+    wrappersSettings["scale"] = True
+    wrappersSettings["scaleMod"] = 0
 
     # Additional obs key list
     keyToAdd = []
@@ -71,8 +69,8 @@ if __name__ == '__main__':
     numEnv=1
 
     envId = "umk3_Train"
-    env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, diambraKwargs, diambraGymKwargs,
-                                 wrapperKwargs, keyToAdd=keyToAdd, noVec=True)
+    env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, settings,
+                                 wrappersSettings, keyToAdd=keyToAdd, noVec=True)
 
     # Load the trained agent
     model = PPO2.load(os.path.join(modelFolder, "217M"))
@@ -93,7 +91,7 @@ if __name__ == '__main__':
         waitKey = 1
         if stage > 7:# or info["roundDone"] == True:
             waitKey = 0
-        showObs(obs, keyToAdd, env.keyToAddCount, wrapperKwargs["actionsStack"], env.nActions,
+        showObs(obs, keyToAdd, env.keyToAddCount, wrappersSettings["actionsStack"], env.nActions,
                 waitKey, True, env.charNames, False, [0])
         cumulativeRew += reward
 
