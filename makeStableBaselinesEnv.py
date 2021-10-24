@@ -8,18 +8,17 @@ from stable_baselines.bench import Monitor
 from stable_baselines.common.misc_util import set_global_seeds
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecFrameStack
 
-def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwargs,
-                           wrapperKwargs=None, trajRecKwargs=None, customWrappers=None,
-                           hardCore=False, keyToAdd=None, p2Mode=None, p2Policy=None,
-                           startIndex=0, allowEarlyResets=True, startMethod=None,
-                           noVec=False, useSubprocess=False):
+def makeStableBaselinesEnv(envPrefix, numEnv, seed, envSettings, wrappersSettings=None,
+                           trajRecSettings=None, customWrappers=None, keyToAdd=None,
+                           p2Mode=None, p2Policy=None, startIndex=0, allowEarlyResets=True,
+                           startMethod=None, noVec=False, useSubprocess=False):
     """
     Create a wrapped, monitored VecEnv.
     :param numEnv: (int) number of environments you wish to have in subprocesses
     :param seed: (int) initial seed for RNG
-    :param diambraKwargs: (dict) parameters for DIAMBRA environment
-    :param wrapperKwargs: (dict) parameters for environment wraping function
-    :param trajRecKwargs: (dict) parameters for environment recording wraping function
+    :param envSettings: (dict) parameters for DIAMBRA environment
+    :param wrappersSettings: (dict) parameters for environment wraping function
+    :param trajRecSettings: (dict) parameters for environment recording wraping function
     :param keyToAdd: (list) ordered parameters for environment stable baselines converter wraping function
     :param startIndex: (int) start rank index
     :param allowEarlyResets: (bool) allows early reset of the environment
@@ -30,12 +29,16 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwa
     :return: (VecEnv) The diambra environment
     """
 
+    hardCore = False
+    if "hardCore" in envSettings:
+        hardCore = envSettings["hardCore"]
+
     def makeSbEnv(rank):
         def thunk():
             envId = envPrefix + str(rank)
-            diambraKwargs["rank"] = rank
-            env = diambraArena.make(envId, diambraKwargs, diambraGymKwargs, wrapperKwargs,
-                                    trajRecKwargs, seed=seed+rank, hardCore=hardCore)
+            envSettings["rank"] = rank
+            env = diambraArena.make(envId, envSettings, wrappersSettings,
+                                    trajRecSettings, seed=seed+rank)
             if not hardCore:
 
                 # Applying custom wrappers
