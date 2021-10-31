@@ -21,6 +21,8 @@ class tektagRoundEndChar2Penalty(gym.Wrapper):
                "Only single player environment are supported by" +\
                " tektagRoundEndChar2Penalty wrapper, {}".format(type(self.action_space))
 
+        print("Applying Background Char Health Penalty at Round End Wrapper")
+
     # Step the environment
     def step(self, action):
 
@@ -68,6 +70,8 @@ class tektagHealthBarUnbalancePenalty(gym.Wrapper):
                  isinstance(self.action_space, gym.spaces.Discrete) ),\
                "Only single player environment are supported by" +\
                " tektagRoundEndChar2Penalty wrapper, {}".format(type(self.action_space))
+
+        print("Applying Char Health Unbalance Penalty Wrapper")
 
         self.unbalanceThresh = unbalanceThresh
         self.penalty = 0.1*self.unbalanceThresh
