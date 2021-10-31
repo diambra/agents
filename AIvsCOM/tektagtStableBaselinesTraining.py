@@ -12,6 +12,7 @@ if __name__ == '__main__':
     os.makedirs(modelFolder, exist_ok=True)
 
     from makeStableBaselinesEnv import makeStableBaselinesEnv
+    from wrappers.tektagRewWrap import tektagRoundEndChar2Penalty, tektagHealthBarUnbalancePenalty
 
     import tensorflow as tf
 
@@ -36,11 +37,11 @@ if __name__ == '__main__':
     settings["difficulty"]  = 6
     settings["charOutfits"] =[2, 2]
 
-    settings["continueGame"] = 0.0
+    settings["continueGame"] = -2.0
     settings["showFinal"] = False
 
     settings["actionSpace"] = "discrete"
-    settings["attackButCombinations"] = False
+    settings["attackButCombination"] = False
 
     # Env wrappers kwargs
     wrappersSettings = {}
@@ -53,6 +54,9 @@ if __name__ == '__main__':
     wrappersSettings["actionsStack"] = 12
     wrappersSettings["scale"] = True
     wrappersSettings["scaleMod"] = 0
+
+    # Additional custom wrappers
+    customWrappers = [tektagRoundEndChar2Penalty, tektagHealthBarUnbalancePenalty]
 
     # Additional obs key list
     keyToAdd = []
@@ -74,11 +78,12 @@ if __name__ == '__main__':
     #keyToAdd.append("oppChar1")
     #keyToAdd.append("oppChar2")
 
-    numEnv=8
+    numEnv=16
 
     envId = "tektagt_Train"
     env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, settings,
-                                 wrappersSettings, keyToAdd=keyToAdd, useSubprocess=True)
+                                 wrappersSettings, customWrappers=customWrappers,
+                                 keyToAdd=keyToAdd, useSubprocess=True)
 
     print("Obs_space = ", env.observation_space)
     print("Obs_space type = ", env.observation_space.dtype)
@@ -116,17 +121,17 @@ if __name__ == '__main__':
     setClipRangeVf = setClipRange
     # Initialize the model
     model = PPO2(CustCnnPolicy, env, verbose=1,
-                 gamma=setGamma, nminibatches=4, noptepochs=4, n_steps=128,
+                 gamma=setGamma, nminibatches=8, noptepochs=4, n_steps=128,
                  learning_rate=setLearningRate, cliprange=setClipRange,
                  cliprange_vf=setClipRangeVf, policy_kwargs=policyKwargs,
                  tensorboard_log=tensorBoardFolder)
     #OR
     '''
-    setLearningRate = linear_schedule(5.0e-5, 2.5e-6)
-    setClipRange    = linear_schedule(0.075, 0.025)
+    setLearningRate = linear_schedule(8.0e-5, 2.5e-6)
+    setClipRange    = linear_schedule(0.095, 0.025)
     setClipRangeVf  = setClipRange
     # Load the trained agent
-    modelCheckpoint = "136M"
+    modelCheckpoint = "202M"
     model = PPO2.load(os.path.join(modelFolder, modelCheckpoint), env=env,
                       policy_kwargs=policyKwargs, gamma=setGamma, learning_rate=setLearningRate,
                       cliprange=setClipRange, cliprange_vf=setClipRangeVf,
@@ -136,14 +141,14 @@ if __name__ == '__main__':
 
     # Create the callback: autosave every USER DEF steps
     autoSaveCallback = AutoSave(check_freq=1000000, numEnv=numEnv,
-                                save_path=os.path.join(modelFolder, modelCheckpoint+"_"))
+                                save_path=os.path.join(modelFolder, modelCheckpoint+"_penalty_"))
 
     # Train the agent
-    timeSteps = 20000000
+    timeSteps = 30000000
     model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
     # Save the agent
-    modelPath = os.path.join(modelFolder, "156M")
+    modelPath = os.path.join(modelFolder, "232M_penalty")
     model.save(modelPath)
     # Save the correspondent CFG file
     modelCfgSave(modelPath, "PPOSmall", nActions, charNames,

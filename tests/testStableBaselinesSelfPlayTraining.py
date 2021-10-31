@@ -42,7 +42,7 @@ if __name__ == '__main__':
         settings["charOutfits"] =[2, 2]
 
         settings["actionSpace"] = ["discrete", "discrete"]
-        settings["attackButCombinations"] = [True, True]
+        settings["attackButCombination"] = [True, True]
 
         # Env wrappers kwargs
         wrappersSettings = {}

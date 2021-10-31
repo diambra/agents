@@ -41,7 +41,7 @@ if __name__ == '__main__':
     settings["showFinal"] = False
 
     settings["actionSpace"] = "discrete"
-    settings["attackButCombinations"] = False
+    settings["attackButCombination"] = False
 
     # Wrappers Settings
     wrappersSettings = {}

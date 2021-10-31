@@ -38,7 +38,7 @@ if __name__ == '__main__':
     settings["charOutfits"] =[2, 2]
 
     settings["actionSpace"] = "discrete"
-    settings["attackButCombinations"] = False
+    settings["attackButCombination"] = False
 
     # Wrappers settings
     wrappersSettings = {}

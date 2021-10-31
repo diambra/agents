@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
         # DIAMBRA gym kwargs
         settings["actionSpace"] = "discrete"
-        settings["attackButCombinations"] = False
+        settings["attackButCombination"] = False
 
         # Env wrappers kwargs
         wrappersSettings = {}

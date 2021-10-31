@@ -52,10 +52,10 @@ if __name__ == '__main__':
         settings["charOutfits"] = [2, 2]
 
         settings["actionSpace"] = [opt.actionSpace, opt.actionSpace]
-        settings["attackButCombinations"] = [opt.attButComb, opt.attButComb]
+        settings["attackButCombination"] = [opt.attButComb, opt.attButComb]
         if settings["player"] != "P1P2":
             settings["actionSpace"] = settings["actionSpace"][0]
-            settings["attackButCombinations"] = settings["attackButCombinations"][0]
+            settings["attackButCombination"] = settings["attackButCombination"][0]
 
         idxList = [0, 1]
         if settings["player"] != "P1P2":
