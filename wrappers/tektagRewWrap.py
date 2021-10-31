@@ -31,8 +31,8 @@ class tektagRoundEndChar2Penalty(gym.Wrapper):
             # If round lost
             if reward < 0.0:
                # Add penalty for background character health bar
-               print("Applying end round penalty: original reward = {},"\
-                     " reward with penalty = {}".format(round(reward, 2), round(- 2.0*self.oldHealths, 2)))
+               #print("Applying end round penalty: original reward = {},"\
+               #      " reward with penalty = {}".format(round(reward, 2), round(- 2.0*self.oldHealths, 2)))
                reward = - 2.0*self.oldHealths
 
         self.oldHealths = obs["P1"]["ownHealth1"] + obs["P1"]["ownHealth2"];
@@ -82,7 +82,7 @@ class tektagHealthBarUnbalancePenalty(gym.Wrapper):
         keys = self.charManagement[obs["P1"]["ownActiveChar"]]
         if ( ( obs["P1"][keys[1]] - obs["P1"][keys[0]] ) > (self.unbalanceThresh / 2.0) ):
            # Add penalty for background character health bar
-           print("Applying Health unbalance penalty: penalty = {}".format(-round(self.penalty, 2)))
+           #print("Applying Health unbalance penalty: penalty = {}".format(-round(self.penalty, 2)))
            reward = -self.penalty
 
         return obs, reward, done, info
