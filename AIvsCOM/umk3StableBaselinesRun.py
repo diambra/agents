@@ -26,13 +26,13 @@ if __name__ == '__main__':
 
     settings["player"] = "P1" # P1 / P2
 
-    settings["characters"] =[["Sektor", "Random"], ["Sektor", "Random"]]
+    settings["characters"] =[["Sektor"], ["Sektor"]]
 
-    settings["difficulty"]  = 1
-    settings["tower"]  = 1
+    settings["difficulty"]  = 4
+    settings["tower"]  = 3
     settings["charOutfits"] =[2, 2]
 
-    settings["continueGame"] = 1.0
+    settings["continueGame"] = 0.0
     settings["showFinal"] = False
 
     settings["actionSpace"] = "discrete"
@@ -73,26 +73,18 @@ if __name__ == '__main__':
                                  wrappersSettings, keyToAdd=keyToAdd, noVec=True)
 
     # Load the trained agent
-    model = PPO2.load(os.path.join(modelFolder, "217M"))
+    model = PPO2.load(os.path.join(modelFolder, "346M"))
 
     obs = env.reset()
     cumulativeRew = 0.0
-
-    stage = 1
 
     while True:
 
         action, _ = model.predict(obs, deterministic=True)
 
         obs, reward, done, info = env.step(action)
-        if (info["stageDone"] == True):
-            stage += 1
-        print("Info = ", info)
-        waitKey = 1
-        if stage > 7:# or info["roundDone"] == True:
-            waitKey = 0
-        showObs(obs, keyToAdd, env.keyToAddCount, wrappersSettings["actionsStack"], env.nActions,
-                waitKey, True, env.charNames, False, [0])
+        #showObs(obs, keyToAdd, env.keyToAddCount, wrapperKwargs["actionsStack"], env.nActions,
+        #        waitKey, True, env.charNames, False, [0])
         cumulativeRew += reward
 
         if done:

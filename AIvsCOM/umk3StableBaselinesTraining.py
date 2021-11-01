@@ -31,13 +31,13 @@ if __name__ == '__main__':
 
     settings["player"] = "Random" # P1 / P2
 
-    settings["characters"] =[["Sektor", "Random"], ["Sektor", "Random"]]
+    settings["characters"] =[["Sektor"], ["Sektor"]]
 
     settings["difficulty"]  = 4
     settings["tower"]  = 3
     settings["charOutfits"] =[2, 2]
 
-    settings["continueGame"] = 0.0
+    settings["continueGame"] = -4.0
     settings["showFinal"] = False
 
     settings["actionSpace"] = "discrete"
@@ -119,11 +119,11 @@ if __name__ == '__main__':
                  tensorboard_log=tensorBoardFolder)
     #OR
     '''
-    setLearningRate = linear_schedule(5.0e-5, 2.5e-6)
-    setClipRange    = linear_schedule(0.075, 0.025)
+    setLearningRate = linear_schedule(3.0e-5, 2.5e-6)
+    setClipRange    = linear_schedule(0.055, 0.025)
     setClipRangeVf  = setClipRange
     # Load the trained agent
-    modelCheckpoint = "65M"
+    modelCheckpoint = "346M"
     model = PPO2.load(os.path.join(modelFolder, modelCheckpoint), env=env,
                       policy_kwargs=policyKwargs, gamma=setGamma, learning_rate=setLearningRate,
                       cliprange=setClipRange, cliprange_vf=setClipRangeVf,
@@ -140,7 +140,7 @@ if __name__ == '__main__':
     model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
     # Save the agent
-    modelPath = os.path.join(modelFolder, "105M")
+    modelPath = os.path.join(modelFolder, "386M")
     model.save(modelPath)
     # Save the correspondent CFG file
     modelCfgSave(modelPath, "PPOSmall", nActions, charNames,
