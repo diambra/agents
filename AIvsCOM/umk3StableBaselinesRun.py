@@ -73,7 +73,7 @@ if __name__ == '__main__':
                                  wrappersSettings, keyToAdd=keyToAdd, noVec=True)
 
     # Load the trained agent
-    model = PPO2.load(os.path.join(modelFolder, "346M"))
+    model = PPO2.load(os.path.join(modelFolder, "386M"))
 
     obs = env.reset()
     cumulativeRew = 0.0
