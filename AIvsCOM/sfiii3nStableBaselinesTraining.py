@@ -25,7 +25,7 @@ if __name__ == '__main__':
     settings["gameId"]   = "sfiii3n"
     settings["romsPath"] = os.path.join(base_path, "../../roms/mame/")
 
-    settings["stepRatio"] = 1
+    settings["stepRatio"] = 2
     settings["lockFps"] = False
     settings["render"]  = False
 
@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     settings["characters"] =[["Ryu"], ["Ryu"]]
 
-    settings["difficulty"]  = 8
+    settings["difficulty"]  = 6
     settings["charOutfits"] =[2, 2]
 
     settings["continueGame"] = 0.0
@@ -49,8 +49,8 @@ if __name__ == '__main__':
     wrappersSettings["normalizeRewards"] = True
     wrappersSettings["clipRewards"] = False
     wrappersSettings["frameStack"] = 4
-    wrappersSettings["dilation"] = 6
-    wrappersSettings["actionsStack"] = 12
+    wrappersSettings["dilation"] = 3
+    wrappersSettings["actionsStack"] = 36
     wrappersSettings["scale"] = True
     wrappersSettings["scaleMod"] = 0
 
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     keyToAdd.append("oppSide")
     keyToAdd.append("stage")
 
-    numEnv=16
+    numEnv=12
 
     envId = "sfiii3n_Train"
     env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, settings,
@@ -100,24 +100,25 @@ if __name__ == '__main__':
     print("nAddInfo =", policyKwargs["n_add_info"])
 
     # PPO param
-    setGamma = 0.94
-    '''
+    setGamma = 0.9796
+    modelCheckpoint = "40M"
+
     setLearningRate = linear_schedule(2.5e-4, 2.5e-6)
     setClipRange = linear_schedule(0.15, 0.025)
     setClipRangeVf = setClipRange
+    '''
     # Initialize the model
     model = PPO2(CustCnnPolicy, env, verbose=1,
-                 gamma=setGamma, nminibatches=8, noptepochs=4, n_steps=128,
+                 gamma=setGamma, nminibatches=6, noptepochs=4, n_steps=384,
                  learning_rate=setLearningRate, cliprange=setClipRange,
                  cliprange_vf=setClipRangeVf, policy_kwargs=policyKwargs,
                  tensorboard_log=tensorBoardFolder)
     #OR
-    '''
     setLearningRate = linear_schedule(5.0e-5, 2.5e-6)
     setClipRange    = linear_schedule(0.075, 0.025)
     setClipRangeVf  = setClipRange
+    '''
     # Load the trained agent
-    modelCheckpoint = "346M"
     model = PPO2.load(os.path.join(modelFolder, modelCheckpoint), env=env,
                       policy_kwargs=policyKwargs, gamma=setGamma, learning_rate=setLearningRate,
                       cliprange=setClipRange, cliprange_vf=setClipRangeVf,
@@ -126,15 +127,15 @@ if __name__ == '__main__':
     print("Model discount factor = ", model.gamma)
 
     # Create the callback: autosave every USER DEF steps
-    autoSaveCallback = AutoSave(check_freq=1000000, numEnv=numEnv,
+    autoSaveCallback = AutoSave(check_freq=3000000, numEnv=numEnv,
                                 save_path=os.path.join(modelFolder, modelCheckpoint+"_"))
 
     # Train the agent
-    timeSteps = 30000000
+    timeSteps = 140000000
     model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
     # Save the agent
-    modelPath = os.path.join(modelFolder, "386M")
+    modelPath = os.path.join(modelFolder, "180M")
     model.save(modelPath)
     # Save the correspondent CFG file
     modelCfgSave(modelPath, "PPOSmall", nActions, charNames,
