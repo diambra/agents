@@ -20,10 +20,10 @@ if __name__ == '__main__':
     settings["romsPath"] = os.path.join(base_path, "../../roms/mame/")
 
     settings["stepRatio"] = 6
-    settings["lockFps"] = False
+    settings["lockFps"] = True
     settings["render"]  = True
 
-    settings["player"] = "P2" # P1 / P2
+    settings["player"] = "P1" # P1 / P2
 
     settings["characters"] =[["Jin", "Yoshimitsu"], ["Jin", "Yoshimitsu"]]
 
@@ -75,7 +75,7 @@ if __name__ == '__main__':
                                  wrappersSettings, keyToAdd=keyToAdd, noVec=True)
 
     # Load the trained agent
-    model = PPO2.load(os.path.join(modelFolder, "156M"))
+    model = PPO2.load(os.path.join(modelFolder, "235M_penalties"))
 
     obs = env.reset()
     cumulativeRew = 0.0

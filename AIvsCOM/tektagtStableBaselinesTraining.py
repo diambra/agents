@@ -43,7 +43,7 @@ if __name__ == '__main__':
     settings["actionSpace"] = "discrete"
     settings["attackButCombination"] = False
 
-    # Env wrappers kwargs
+    # Wrappers settings
     wrappersSettings = {}
     wrappersSettings["noOpMax"] = 0
     wrappersSettings["hwcObsResize"] = [128, 128, 1]
@@ -127,11 +127,13 @@ if __name__ == '__main__':
                  tensorboard_log=tensorBoardFolder)
     #OR
     '''
-    setLearningRate = linear_schedule(8.0e-5, 2.5e-6)
-    setClipRange    = linear_schedule(0.095, 0.025)
+    #setLearningRate = linear_schedule(8.0e-5, 2.5e-6)
+    #setClipRange    = linear_schedule(0.095, 0.025)
+    setLearningRate = linear_schedule(5.5e-5, 2.5e-6)
+    setClipRange    = linear_schedule(0.072, 0.025)
     setClipRangeVf  = setClipRange
     # Load the trained agent
-    modelCheckpoint = "202M"
+    modelCheckpoint = "215M_penalties"
     model = PPO2.load(os.path.join(modelFolder, modelCheckpoint), env=env,
                       policy_kwargs=policyKwargs, gamma=setGamma, learning_rate=setLearningRate,
                       cliprange=setClipRange, cliprange_vf=setClipRangeVf,
@@ -141,14 +143,14 @@ if __name__ == '__main__':
 
     # Create the callback: autosave every USER DEF steps
     autoSaveCallback = AutoSave(check_freq=1000000, numEnv=numEnv,
-                                save_path=os.path.join(modelFolder, modelCheckpoint+"_penalty_"))
+                                save_path=os.path.join(modelFolder, modelCheckpoint+"_"))
 
     # Train the agent
-    timeSteps = 30000000
+    timeSteps = 20000000
     model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
     # Save the agent
-    modelPath = os.path.join(modelFolder, "232M_penalty")
+    modelPath = os.path.join(modelFolder, "235M_penalties")
     model.save(modelPath)
     # Save the correspondent CFG file
     modelCfgSave(modelPath, "PPOSmall", nActions, charNames,
