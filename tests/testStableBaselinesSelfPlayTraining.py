@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
         settings["player"] = "P1P2" # 2P game
 
-        settings["characters"] =[["Random", "Random"], ["Random", "Random"]]
+        settings["characters"] =[["Random", "Random", "Random"], ["Random", "Random", "Random"]]
         settings["charOutfits"] =[2, 2]
 
         settings["actionSpace"] = ["discrete", "discrete"]
@@ -74,14 +74,8 @@ if __name__ == '__main__':
         keyToAdd.append("ownSide")
         keyToAdd.append("oppSide")
 
-        if opt.gameId != "tektagt":
-            keyToAdd.append("ownChar")
-            keyToAdd.append("oppChar")
-        else:
-            keyToAdd.append("ownChar1")
-            keyToAdd.append("ownChar2")
-            keyToAdd.append("oppChar1")
-            keyToAdd.append("oppChar2")
+        keyToAdd.append("ownChar")
+        keyToAdd.append("oppChar")
 
         if opt.gameId == "doapp":
             nActions = [9, 8]

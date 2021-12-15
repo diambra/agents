@@ -20,7 +20,9 @@ if __name__ == '__main__':
         parser.add_argument('--character2',     type=str,   default="Random",   help='Character P2 (Random)')
         parser.add_argument('--character1_2',   type=str,   default="Random",   help='Character P1_2 (Random)')
         parser.add_argument('--character2_2',   type=str,   default="Random",   help='Character P2_2 (Random)')
-        parser.add_argument('--stepRatio',     type=int,   default=6,          help='Frame ratio')
+        parser.add_argument('--character1_3',   type=str,   default="Random",   help='Character P1_3 (Random)')
+        parser.add_argument('--character2_3',   type=str,   default="Random",   help='Character P2_3 (Random)')
+        parser.add_argument('--stepRatio',      type=int,   default=6,          help='Frame ratio')
         parser.add_argument('--nEpisodes',      type=int,   default=1,          help='Number of episodes')
         parser.add_argument('--continueGame',   type=float, default=0.0,       help='ContinueGame flag (-inf,+1.0]')
         parser.add_argument('--actionSpace',    type=str,   default="discrete", help='(discrete)/multidiscrete')
@@ -48,7 +50,8 @@ if __name__ == '__main__':
 
         settings["player"] = opt.player
 
-        settings["characters"] = [[opt.character1, opt.character1_2], [opt.character2, opt.character2_2]]
+        settings["characters"] = [[opt.character1, opt.character1_2, opt.character1_3],
+                                  [opt.character2, opt.character2_2, opt.character2_3]]
         settings["charOutfits"] = [2, 2]
 
         settings["actionSpace"] = [opt.actionSpace, opt.actionSpace]
@@ -98,14 +101,12 @@ if __name__ == '__main__':
         if settings["player"] != "P1P2":
             keyToAdd.append("stage")
 
-        if opt.gameId != "tektagt":
-            keyToAdd.append("ownChar")
-            keyToAdd.append("oppChar")
-        else:
-            keyToAdd.append("ownChar1")
-            keyToAdd.append("ownChar2")
-            keyToAdd.append("oppChar1")
-            keyToAdd.append("oppChar2")
+        keyToAdd.append("ownChar")
+        keyToAdd.append("oppChar")
+
+        nRounds = 2
+        if opt.gameId == "kof98umh":
+            nRounds = 3
 
         hardCore = False if opt.hardCore == 0 else True
         settings["hardCore"] = hardCore
@@ -226,8 +227,8 @@ if __name__ == '__main__':
         if opt.gameId == "tektagt":
             maxContinue = (maxContinue + 1) * 0.7 - 1
 
-        if opt.noAction == 1 and np.mean(cumulativeEpRewAll) > -(maxContinue+1)*3.999:
-            raise RuntimeError("NoAction policy and average reward different than {} ({})".format(-(maxContinue+1)*4, np.mean(cumulativeEpRewAll)))
+        if opt.noAction == 1 and np.mean(cumulativeEpRewAll) > -(maxContinue+1)*2*nRounds+0.001:
+            raise RuntimeError("NoAction policy and average reward different than {} ({})".format(-(maxContinue+1)*2*nRounds, np.mean(cumulativeEpRewAll)))
 
         print("ALL GOOD!")
     except Exception as e:
