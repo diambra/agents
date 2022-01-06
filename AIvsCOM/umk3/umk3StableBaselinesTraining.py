@@ -4,10 +4,10 @@ if __name__ == '__main__':
     timeDepSeed = int((time.time()-int(time.time()-0.5))*1000)
 
     base_path = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(os.path.join(base_path, '../'))
+    sys.path.append(os.path.join(base_path, '../../'))
 
-    modelFolder = os.path.join(base_path, "umk3Model/")
-    tensorBoardFolder = os.path.join(base_path, "umk3TB/")
+    modelFolder = os.path.join(base_path, "model/")
+    tensorBoardFolder = os.path.join(base_path, "TB/")
 
     os.makedirs(modelFolder, exist_ok=True)
 
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     # Settings
     settings = {}
     settings["gameId"]   = "umk3"
-    settings["romsPath"] = os.path.join(base_path, "../../roms/mame/")
+    settings["romsPath"] = os.path.join(base_path, "../../../roms/mame/")
 
     settings["stepRatio"] = 6
     settings["lockFps"] = False

@@ -4,10 +4,10 @@ if __name__ == '__main__':
     timeDepSeed = int((time.time()-int(time.time()-0.5))*1000)
 
     base_path = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(os.path.join(base_path, '../'))
+    sys.path.append(os.path.join(base_path, '../../'))
 
-    modelFolder = os.path.join(base_path, "sfiii3nModel/")
-    tensorBoardFolder = os.path.join(base_path, "sfiii3nTB/")
+    modelFolder = os.path.join(base_path, "model_30Hz/")
+    tensorBoardFolder = os.path.join(base_path, "TB_30hz/")
 
     os.makedirs(modelFolder, exist_ok=True)
 
@@ -22,8 +22,8 @@ if __name__ == '__main__':
 
     # Settings
     settings = {}
-    settings["gameId"]   = "sfiii3n"
-    settings["romsPath"] = os.path.join(base_path, "../../roms/mame/")
+    settings["gameId"]   = "umk3"
+    settings["romsPath"] = os.path.join(base_path, "../../../roms/mame/")
 
     settings["stepRatio"] = 2
     settings["lockFps"] = False
@@ -31,9 +31,10 @@ if __name__ == '__main__':
 
     settings["player"] = "Random" # P1 / P2
 
-    settings["characters"] =[["Ryu"], ["Ryu"]]
+    settings["characters"] =[["Sektor"], ["Sektor"]]
 
-    settings["difficulty"]  = 6
+    settings["difficulty"]  = 4
+    settings["tower"]  = 3
     settings["charOutfits"] =[2, 2]
 
     settings["continueGame"] = 0.0
@@ -67,7 +68,7 @@ if __name__ == '__main__':
 
     numEnv=12
 
-    envId = "sfiii3n_Train"
+    envId = "umk3_Train"
     env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, settings,
                                  wrappersSettings, keyToAdd=keyToAdd, useSubprocess=True)
 
@@ -100,29 +101,31 @@ if __name__ == '__main__':
     print("nAddInfo =", policyKwargs["n_add_info"])
 
     # PPO param
-    setGamma = 0.9796
-    modelCheckpoint = "40M"
+    setGamma = 0.9933
+    modelCheckpoint = "0M"
 
-    setLearningRate = linear_schedule(2.5e-4, 2.5e-6)
-    setClipRange = linear_schedule(0.15, 0.025)
+    #setLearningRate = linear_schedule(2.5e-4, 2.5e-6)
+    #setClipRange = linear_schedule(0.15, 0.025)
+    setLearningRate = linear_schedule(0.4e-4, 0.6e-6)
+    setClipRange = linear_schedule(0.45, 0.075)
     setClipRangeVf = setClipRange
-    '''
     # Initialize the model
     model = PPO2(CustCnnPolicy, env, verbose=1,
-                 gamma=setGamma, nminibatches=6, noptepochs=4, n_steps=384,
+                 gamma=setGamma, nminibatches=6, noptepochs=3, n_steps=384,
                  learning_rate=setLearningRate, cliprange=setClipRange,
                  cliprange_vf=setClipRangeVf, policy_kwargs=policyKwargs,
                  tensorboard_log=tensorBoardFolder)
     #OR
-    setLearningRate = linear_schedule(5.0e-5, 2.5e-6)
-    setClipRange    = linear_schedule(0.075, 0.025)
-    setClipRangeVf  = setClipRange
     '''
+    setLearningRate = linear_schedule(3.0e-5, 2.5e-6)
+    setClipRange    = linear_schedule(0.055, 0.025)
+    setClipRangeVf  = setClipRange
     # Load the trained agent
     model = PPO2.load(os.path.join(modelFolder, modelCheckpoint), env=env,
                       policy_kwargs=policyKwargs, gamma=setGamma, learning_rate=setLearningRate,
                       cliprange=setClipRange, cliprange_vf=setClipRangeVf,
                       tensorboard_log=tensorBoardFolder)
+    '''
 
     print("Model discount factor = ", model.gamma)
 
@@ -131,11 +134,11 @@ if __name__ == '__main__':
                                 save_path=os.path.join(modelFolder, modelCheckpoint+"_"))
 
     # Train the agent
-    timeSteps = 140000000
+    timeSteps = 120000000
     model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
     # Save the agent
-    modelPath = os.path.join(modelFolder, "180M")
+    modelPath = os.path.join(modelFolder, "120M")
     model.save(modelPath)
     # Save the correspondent CFG file
     modelCfgSave(modelPath, "PPOSmall", nActions, charNames,

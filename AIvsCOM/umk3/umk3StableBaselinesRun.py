@@ -4,9 +4,9 @@ if __name__ == '__main__':
     timeDepSeed = int((time.time()-int(time.time()-0.5))*1000)
 
     base_path = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(os.path.join(base_path, '../'))
+    sys.path.append(os.path.join(base_path, '../../'))
 
-    modelFolder = os.path.join(base_path, "sfiii3nModel/")
+    modelFolder = os.path.join(base_path, "model/")
 
     from makeStableBaselinesEnv import makeStableBaselinesEnv
     from sbUtils import showObs
@@ -17,18 +17,19 @@ if __name__ == '__main__':
 
     # Settings
     settings = {}
-    settings["gameId"]   = "sfiii3n"
-    settings["romsPath"] = os.path.join(base_path, "../../roms/mame/")
+    settings["gameId"]   = "umk3"
+    settings["romsPath"] = os.path.join(base_path, "../../../roms/mame/")
 
-    settings["stepRatio"] = 2
-    settings["lockFps"] = True
+    settings["stepRatio"] = 6
+    settings["lockFps"] = False
     settings["render"]  = True
 
     settings["player"] = "P1" # P1 / P2
 
-    settings["characters"] =[["Ryu"], ["Ryu"]]
+    settings["characters"] =[["Sektor"], ["Sektor"]]
 
-    settings["difficulty"]  = 6
+    settings["difficulty"]  = 4
+    settings["tower"]  = 3
     settings["charOutfits"] =[2, 2]
 
     settings["continueGame"] = 0.0
@@ -37,15 +38,15 @@ if __name__ == '__main__':
     settings["actionSpace"] = "discrete"
     settings["attackButCombination"] = False
 
-    # Wrappers settings
+    # Wrappers Settings
     wrappersSettings = {}
     wrappersSettings["noOpMax"] = 0
     wrappersSettings["hwcObsResize"] = [128, 128, 1]
     wrappersSettings["normalizeRewards"] = True
     wrappersSettings["clipRewards"] = False
     wrappersSettings["frameStack"] = 4
-    wrappersSettings["dilation"] = 3
-    wrappersSettings["actionsStack"] = 36
+    wrappersSettings["dilation"] = 1
+    wrappersSettings["actionsStack"] = 12
     wrappersSettings["scale"] = True
     wrappersSettings["scaleMod"] = 0
 
@@ -60,14 +61,19 @@ if __name__ == '__main__':
     keyToAdd.append("oppSide")
     keyToAdd.append("stage")
 
+    #keyToAdd.append("ownChar1")
+    #keyToAdd.append("ownChar2")
+    #keyToAdd.append("oppChar1")
+    #keyToAdd.append("oppChar2")
+
     numEnv=1
 
-    envId = "sfiii3n_Train"
+    envId = "umk3_Train"
     env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, settings,
                                  wrappersSettings, keyToAdd=keyToAdd, noVec=True)
 
     # Load the trained agent
-    model = PPO2.load(os.path.join(modelFolder, "40M"))
+    model = PPO2.load(os.path.join(modelFolder, "386M"))
 
     obs = env.reset()
     cumulativeRew = 0.0
