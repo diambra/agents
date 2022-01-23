@@ -66,11 +66,6 @@ if __name__ == '__main__':
     keyToAdd.append("oppSide")
     keyToAdd.append("stage")
 
-    #keyToAdd.append("ownChar1")
-    #keyToAdd.append("ownChar2")
-    #keyToAdd.append("oppChar1")
-    #keyToAdd.append("oppChar2")
-
     numEnv=16
 
     envId = "umk3_Train"
