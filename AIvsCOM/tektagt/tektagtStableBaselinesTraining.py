@@ -115,6 +115,7 @@ if __name__ == '__main__':
 
     # PPO param
     setGamma = 0.94
+    modelCheckpoint = "235M_penalties"
     '''
     setLearningRate = linear_schedule(2.5e-4, 2.5e-6)
     setClipRange = linear_schedule(0.15, 0.025)
@@ -129,11 +130,10 @@ if __name__ == '__main__':
     '''
     #setLearningRate = linear_schedule(8.0e-5, 2.5e-6)
     #setClipRange    = linear_schedule(0.095, 0.025)
-    setLearningRate = linear_schedule(5.5e-5, 2.5e-6)
-    setClipRange    = linear_schedule(0.072, 0.025)
+    setLearningRate = linear_schedule(2.0e-5, 2.5e-6)
+    setClipRange    = linear_schedule(0.050, 0.025)
     setClipRangeVf  = setClipRange
     # Load the trained agent
-    modelCheckpoint = "215M_penalties"
     model = PPO2.load(os.path.join(modelFolder, modelCheckpoint), env=env,
                       policy_kwargs=policyKwargs, gamma=setGamma, learning_rate=setLearningRate,
                       cliprange=setClipRange, cliprange_vf=setClipRangeVf,
@@ -146,11 +146,11 @@ if __name__ == '__main__':
                                 save_path=os.path.join(modelFolder, modelCheckpoint+"_"))
 
     # Train the agent
-    timeSteps = 20000000
+    timeSteps = 10000000
     model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
     # Save the agent
-    modelPath = os.path.join(modelFolder, "235M_penalties")
+    modelPath = os.path.join(modelFolder, "245M_penalties")
     model.save(modelPath)
     # Save the correspondent CFG file
     modelCfgSave(modelPath, "PPOSmall", nActions, charNames,
