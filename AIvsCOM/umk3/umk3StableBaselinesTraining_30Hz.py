@@ -66,7 +66,7 @@ if __name__ == '__main__':
     keyToAdd.append("oppSide")
     keyToAdd.append("stage")
 
-    numEnv=12
+    numEnv=16
 
     envId = "umk3_Train"
     env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, settings,
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     setClipRangeVf = setClipRange
     # Initialize the model
     model = PPO2(CustCnnPolicy, env, verbose=1,
-                 gamma=setGamma, nminibatches=6, noptepochs=3, n_steps=384,
+                 gamma=setGamma, nminibatches=8, noptepochs=3, n_steps=384,
                  learning_rate=setLearningRate, cliprange=setClipRange,
                  cliprange_vf=setClipRangeVf, policy_kwargs=policyKwargs,
                  tensorboard_log=tensorBoardFolder)
