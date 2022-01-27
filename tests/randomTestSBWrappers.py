@@ -3,11 +3,11 @@ import numpy as np
 import argparse
 base_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_path, '../'))
-sys.path.append(os.path.join(base_path, '../../games_cpp/gym/'))
 
-from gymUtils import discreteToMultiDiscreteAction
+from diambraArena.gymUtils import discreteToMultiDiscreteAction
 from sbUtils import showObs
 from makeStableBaselinesEnv import makeStableBaselinesEnv
+from wrappers.tektagRewWrap import tektagRoundEndChar2Penalty, tektagHealthBarUnbalancePenalty
 
 if __name__ == '__main__':
     timeDepSeed = int((time.time()-int(time.time()-0.5))*1000)
@@ -20,7 +20,9 @@ if __name__ == '__main__':
         parser.add_argument('--character2',     type=str,   default="Random",   help='Character P2 (Random)')
         parser.add_argument('--character1_2',   type=str,   default="Random",   help='Character P1_2 (Random)')
         parser.add_argument('--character2_2',   type=str,   default="Random",   help='Character P2_2 (Random)')
-        parser.add_argument('--frameRatio',     type=int,   default=6,          help='Frame ratio')
+        parser.add_argument('--character1_3',   type=str,   default="Random",   help='Character P1_3 (Random)')
+        parser.add_argument('--character2_3',   type=str,   default="Random",   help='Character P2_3 (Random)')
+        parser.add_argument('--stepRatio',      type=int,   default=6,          help='Frame ratio')
         parser.add_argument('--nEpisodes',      type=int,   default=1,          help='Number of episodes')
         parser.add_argument('--continueGame',   type=float, default=0.0,       help='ContinueGame flag (-inf,+1.0]')
         parser.add_argument('--actionSpace',    type=str,   default="discrete", help='(discrete)/multidiscrete')
@@ -36,47 +38,48 @@ if __name__ == '__main__':
         if vizFlag:
             waitKey = 0
 
-        # Common settings
-        diambraKwargs = {}
-        diambraKwargs["gameId"]   = opt.gameId
-        diambraKwargs["romsPath"] = os.path.join(base_path, "../../roms/mame/")
+        # Environment settings
+        settings = {}
+        settings["gameId"]   = opt.gameId
+        settings["romsPath"] = os.path.join(base_path, "../../roms/mame/")
 
-        diambraKwargs["mamePath"] = os.path.join(base_path, "../../customMAME/")
-        diambraKwargs["libPath"] = os.path.join(base_path, "../../games_cpp/build/diambraEnvLib/libdiambraEnv.so")
+        settings["continueGame"] = opt.continueGame
 
-        diambraKwargs["continueGame"] = opt.continueGame
+        settings["stepRatio"] = opt.stepRatio
+        settings["lockFps"] = False
 
-        diambraKwargs["mameDiambraStepRatio"] = opt.frameRatio
-        diambraKwargs["lockFps"] = False
+        settings["player"] = opt.player
 
-        diambraKwargs["player"] = opt.player
+        settings["characters"] = [[opt.character1, opt.character1_2, opt.character1_3],
+                                  [opt.character2, opt.character2_2, opt.character2_3]]
+        settings["charOutfits"] = [2, 2]
 
-        diambraKwargs["characters"] = [[opt.character1, opt.character1_2], [opt.character2, opt.character2_2]]
-        diambraKwargs["charOutfits"] = [2, 2]
-
-        # DIAMBRA gym kwargs
-        diambraGymKwargs = {}
-        diambraGymKwargs["actionSpace"] = [opt.actionSpace, opt.actionSpace]
-        diambraGymKwargs["attackButCombinations"] = [opt.attButComb, opt.attButComb]
-        if diambraKwargs["player"] != "P1P2":
-            diambraGymKwargs["actionSpace"] = diambraGymKwargs["actionSpace"][0]
-            diambraGymKwargs["attackButCombinations"] = diambraGymKwargs["attackButCombinations"][0]
+        settings["actionSpace"] = [opt.actionSpace, opt.actionSpace]
+        settings["attackButCombination"] = [opt.attButComb, opt.attButComb]
+        if settings["player"] != "P1P2":
+            settings["actionSpace"] = settings["actionSpace"][0]
+            settings["attackButCombination"] = settings["attackButCombination"][0]
 
         idxList = [0, 1]
-        if diambraKwargs["player"] != "P1P2":
+        if settings["player"] != "P1P2":
             idxList = [0]
 
-        # Env wrappers kwargs
-        wrapperKwargs = {}
-        wrapperKwargs["noOpMax"] = 0
-        wrapperKwargs["hwcObsResize"] = [128, 128, 1]
-        wrapperKwargs["normalizeRewards"] = True
-        wrapperKwargs["clipRewards"] = False
-        wrapperKwargs["frameStack"] = 4
-        wrapperKwargs["dilation"] = 1
-        wrapperKwargs["actionsStack"] = 12
-        wrapperKwargs["scale"] = True
-        wrapperKwargs["scaleMod"] = 0
+        # Wrappers settings
+        wrappersSettings = {}
+        wrappersSettings["noOpMax"] = 0
+        wrappersSettings["hwcObsResize"] = [128, 128, 1]
+        wrappersSettings["normalizeRewards"] = True
+        wrappersSettings["clipRewards"] = False
+        wrappersSettings["frameStack"] = 4
+        wrappersSettings["dilation"] = 1
+        wrappersSettings["actionsStack"] = 12
+        wrappersSettings["scale"] = True
+        wrappersSettings["scaleMod"] = 0
+
+        # Additional custom wrappers
+        customWrappers = None
+        if opt.gameId == "tektagt" and settings["player"] != "P1P2":
+            customWrappers = [tektagRoundEndChar2Penalty, tektagHealthBarUnbalancePenalty]
 
         # Additional obs key list
         keyToAdd = []
@@ -93,29 +96,30 @@ if __name__ == '__main__':
             keyToAdd.append("ownActiveChar")
             keyToAdd.append("oppActiveChar")
 
-        keyToAdd.append("ownPosition")
-        keyToAdd.append("oppPosition")
-        if diambraKwargs["player"] != "P1P2":
+        keyToAdd.append("ownSide")
+        keyToAdd.append("oppSide")
+        if settings["player"] != "P1P2":
             keyToAdd.append("stage")
 
-        if opt.gameId != "tektagt":
-            keyToAdd.append("ownChar")
-            keyToAdd.append("oppChar")
-        else:
-            keyToAdd.append("ownChar1")
-            keyToAdd.append("ownChar2")
-            keyToAdd.append("oppChar1")
-            keyToAdd.append("oppChar2")
+        keyToAdd.append("ownChar")
+        keyToAdd.append("oppChar")
 
-        envId = opt.gameId + "_randomTestSBWrappers"
+        nRounds = 2
+        if opt.gameId == "kof98umh":
+            nRounds = 3
+
         hardCore = False if opt.hardCore == 0 else True
+        settings["hardCore"] = hardCore
+
         numOfEnvs = 1
-        env = makeStableBaselinesEnv(envId, numOfEnvs, timeDepSeed, diambraKwargs,
-                                     diambraGymKwargs, wrapperKwargs,
-                                     keyToAdd=keyToAdd, noVec=True, hardCore=hardCore)
+        envId = opt.gameId + "_randomTestSBWrappers"
+        env = makeStableBaselinesEnv(envId, numOfEnvs, timeDepSeed, settings,
+                                     wrappersSettings, customWrappers=customWrappers,
+                                     keyToAdd=keyToAdd, noVec=True)
 
         print("Observation Space:", env.observation_space)
         print("Action Space:", env.action_space)
+
         if not hardCore:
             print("Keys to Dict:")
             for k,v in env.keysToDict.items():
@@ -127,7 +131,7 @@ if __name__ == '__main__':
 
         observation = env.reset()
 
-        showObs(observation, keyToAdd, env.keyToAddCount, wrapperKwargs["actionsStack"], nActions,
+        showObs(observation, keyToAdd, env.keyToAddCount, wrappersSettings["actionsStack"], nActions,
                 waitKey, vizFlag, env.charNames, hardCore, idxList)
 
         cumulativeEpRew = 0.0
@@ -139,17 +143,17 @@ if __name__ == '__main__':
         while currNumEp < maxNumEp:
 
             actions = [None, None]
-            if diambraKwargs["player"] != "P1P2":
+            if settings["player"] != "P1P2":
                 actions = env.action_space.sample()
 
                 if opt.noAction == 1:
-                    if diambraGymKwargs["actionSpace"] == "multiDiscrete":
+                    if settings["actionSpace"] == "multiDiscrete":
                         for iEl, _ in enumerate(actions):
                             actions[iEl] = 0
                     else:
                         actions = 0
 
-                if diambraGymKwargs["actionSpace"] == "discrete":
+                if settings["actionSpace"] == "discrete":
                     moveAction, attAction = discreteToMultiDiscreteAction(actions, env.nActions[0][0])
                 else:
                     moveAction, attAction = actions[0], actions[1]
@@ -162,13 +166,13 @@ if __name__ == '__main__':
                     actions[idx] = env.action_space["P{}".format(idx+1)].sample()
 
                     if opt.noAction == 1 and idx == 0:
-                        if diambraGymKwargs["actionSpace"][idx] == "multiDiscrete":
+                        if settings["actionSpace"][idx] == "multiDiscrete":
                             for iEl, _ in enumerate(actions[idx]):
                                 actions[idx][iEl] = 0
                         else:
                             actions[idx] = 0
 
-                    if diambraGymKwargs["actionSpace"][idx] == "discrete":
+                    if settings["actionSpace"][idx] == "discrete":
                         moveAction, attAction = discreteToMultiDiscreteAction(actions[idx], env.nActions[idx][0])
                     else:
                         moveAction, attAction = actions[idx][0], actions[idx][1]
@@ -176,7 +180,7 @@ if __name__ == '__main__':
                     print("(P{}) {} {}".format(idx+1, actionsPrintDict[0][moveAction],
                                                       actionsPrintDict[1][attAction]))
 
-            if diambraKwargs["player"] == "P1P2" or diambraGymKwargs["actionSpace"] != "discrete":
+            if settings["player"] == "P1P2" or settings["actionSpace"] != "discrete":
                 actions = np.append(actions[0], actions[1])
 
             observation, reward, done, info = env.step(actions)
@@ -187,7 +191,7 @@ if __name__ == '__main__':
             print("done =", done)
             for k, v in info.items():
                 print("info[\"{}\"] = {}".format(k, v))
-            showObs(observation, keyToAdd, env.keyToAddCount, wrapperKwargs["actionsStack"], nActions,
+            showObs(observation, keyToAdd, env.keyToAddCount, wrappersSettings["actionsStack"], nActions,
                     waitKey, vizFlag, env.charNames, hardCore, idxList)
             print("--")
             print("Current Cumulative Reward =", cumulativeEpRew)
@@ -203,7 +207,7 @@ if __name__ == '__main__':
                 cumulativeEpRew = 0.0
 
                 observation = env.reset()
-                showObs(observation, keyToAdd, env.keyToAddCount, wrapperKwargs["actionsStack"], nActions,
+                showObs(observation, keyToAdd, env.keyToAddCount, wrappersSettings["actionsStack"], nActions,
                         waitKey, vizFlag, env.charNames, hardCore, idxList)
 
         print("Cumulative reward = ", cumulativeEpRewAll)
@@ -223,8 +227,8 @@ if __name__ == '__main__':
         if opt.gameId == "tektagt":
             maxContinue = (maxContinue + 1) * 0.7 - 1
 
-        if opt.noAction == 1 and np.mean(cumulativeEpRewAll) > -(maxContinue+1)*3.999:
-            raise RuntimeError("NoAction policy and average reward different than {} ({})".format(-(maxContinue+1)*4, np.mean(cumulativeEpRewAll)))
+        if opt.noAction == 1 and np.mean(cumulativeEpRewAll) > -(maxContinue+1)*2*nRounds+0.001:
+            raise RuntimeError("NoAction policy and average reward different than {} ({})".format(-(maxContinue+1)*2*nRounds, np.mean(cumulativeEpRewAll)))
 
         print("ALL GOOD!")
     except Exception as e:
