@@ -14,16 +14,6 @@ class integratedSelfPlay(gym.Wrapper):
                    .format(self.action_space["P1"], self.action_space["P2"])
         self.action_space = self.action_space["P1"]
 
-    # Step the environment
-    def step(self, action):
-
-        return self.env.step(action)
-
-    # Reset the environment
-    def reset(self):
-
-        return self.env.reset()
-
 # Gym Env wrapper for two players mode with RL algo on P2
 class selfPlayVsRL(gym.Wrapper):
     def __init__(self, env, p2Policy):
@@ -81,7 +71,7 @@ class vsHum(gym.Wrapper):
         self.p2Policy.initialize(self.env.actionList())
         if self.actionsSpace[1] != "multiDiscrete":
             raise Exception("Action Space for P2 must be \"multiDiscrete\" when using gamePad")
-        if not self.attackButCombinations[1]:
+        if not self.attackButCombination[1]:
             raise Exception("Use attack buttons combinations for P2 must be \"True\" when using gamePad")
 
     # Step the environment

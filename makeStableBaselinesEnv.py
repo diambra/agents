@@ -1,27 +1,24 @@
 import sys, os
-base_path = os.path.dirname(__file__)
-sys.path.append(os.path.join(base_path, '../games_cpp/gym/.'))
-from makeEnv import makeEnv
-from addObsWrap import AdditionalObsToChannel
-from p2Wrap import selfPlayVsRL, vsHum, integratedSelfPlay
+import diambraArena
+from wrappers.addObsWrap import AdditionalObsToChannel
+from wrappers.p2Wrap import selfPlayVsRL, vsHum, integratedSelfPlay
 
 from stable_baselines import logger
 from stable_baselines.bench import Monitor
 from stable_baselines.common.misc_util import set_global_seeds
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecFrameStack
 
-def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwargs,
-                           wrapperKwargs=None, trajRecKwargs=None, hardCore=False,
-                           keyToAdd=None, p2Mode=None, p2Policy=None,
-                           startIndex=0, allowEarlyResets=True, startMethod=None,
-                           noVec=False, useSubprocess=False):
+def makeStableBaselinesEnv(envPrefix, numEnv, seed, envSettings, wrappersSettings=None,
+                           trajRecSettings=None, customWrappers=None, keyToAdd=None,
+                           p2Mode=None, p2Policy=None, startIndex=0, allowEarlyResets=True,
+                           startMethod=None, noVec=False, useSubprocess=False):
     """
     Create a wrapped, monitored VecEnv.
     :param numEnv: (int) number of environments you wish to have in subprocesses
     :param seed: (int) initial seed for RNG
-    :param diambraKwargs: (dict) parameters for DIAMBRA environment
-    :param wrapperKwargs: (dict) parameters for environment wraping function
-    :param trajRecKwargs: (dict) parameters for environment recording wraping function
+    :param envSettings: (dict) parameters for DIAMBRA environment
+    :param wrappersSettings: (dict) parameters for environment wraping function
+    :param trajRecSettings: (dict) parameters for environment recording wraping function
     :param keyToAdd: (list) ordered parameters for environment stable baselines converter wraping function
     :param startIndex: (int) start rank index
     :param allowEarlyResets: (bool) allows early reset of the environment
@@ -32,12 +29,23 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, diambraKwargs, diambraGymKwa
     :return: (VecEnv) The diambra environment
     """
 
+    hardCore = False
+    if "hardCore" in envSettings:
+        hardCore = envSettings["hardCore"]
+
     def makeSbEnv(rank):
         def thunk():
             envId = envPrefix + str(rank)
-            env = makeEnv(envId, seed+rank, diambraKwargs, diambraGymKwargs,
-                          wrapperKwargs, trajRecKwargs, hardCore)
+            envSettings["rank"] = rank
+            env = diambraArena.make(envId, envSettings, wrappersSettings,
+                                    trajRecSettings, seed=seed+rank)
             if not hardCore:
+
+                # Applying custom wrappers
+                if customWrappers != None:
+                    for wrap in customWrappers:
+                        env = wrap(env)
+
                 env = AdditionalObsToChannel(env, keyToAdd)
             if p2Mode != None:
                 if p2Mode == "integratedSelfPlay":
