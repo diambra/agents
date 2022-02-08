@@ -102,7 +102,7 @@ if __name__ == '__main__':
 
     # PPO param
     setGamma = 0.9933
-    modelCheckpoint = "0M"
+    modelCheckpoint = "102M"
 
     #setLearningRate = linear_schedule(2.5e-4, 2.5e-6)
     #setClipRange = linear_schedule(0.15, 0.025)
@@ -138,7 +138,7 @@ if __name__ == '__main__':
     model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
     # Save the agent
-    modelPath = os.path.join(modelFolder, "120M")
+    modelPath = os.path.join(modelFolder, "222M")
     model.save(modelPath)
     # Save the correspondent CFG file
     modelCfgSave(modelPath, "PPOSmall", nActions, charNames,
