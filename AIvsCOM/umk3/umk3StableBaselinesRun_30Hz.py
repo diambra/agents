@@ -6,7 +6,7 @@ if __name__ == '__main__':
     base_path = os.path.dirname(os.path.abspath(__file__))
     sys.path.append(os.path.join(base_path, '../../'))
 
-    modelFolder = os.path.join(base_path, "model/")
+    modelFolder = os.path.join(base_path, "model_30Hz/")
 
     from makeStableBaselinesEnv import makeStableBaselinesEnv
     from sbUtils import showObs
@@ -20,8 +20,8 @@ if __name__ == '__main__':
     settings["gameId"]   = "umk3"
     settings["romsPath"] = os.path.join(base_path, "../../../roms/mame/")
 
-    settings["stepRatio"] = 6
-    settings["lockFps"] = False
+    settings["stepRatio"] = 2
+    settings["lockFps"] = True
     settings["render"]  = True
 
     settings["player"] = "P1" # P1 / P2
@@ -45,8 +45,8 @@ if __name__ == '__main__':
     wrappersSettings["normalizeRewards"] = True
     wrappersSettings["clipRewards"] = False
     wrappersSettings["frameStack"] = 4
-    wrappersSettings["dilation"] = 1
-    wrappersSettings["actionsStack"] = 12
+    wrappersSettings["dilation"] = 3
+    wrappersSettings["actionsStack"] = 36
     wrappersSettings["scale"] = True
     wrappersSettings["scaleMod"] = 0
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
                                  wrappersSettings, keyToAdd=keyToAdd, noVec=True)
 
     # Load the trained agent
-    model = PPO2.load(os.path.join(modelFolder, "386M"))
+    model = PPO2.load(os.path.join(modelFolder, "222M"))
 
     obs = env.reset()
     cumulativeRew = 0.0
