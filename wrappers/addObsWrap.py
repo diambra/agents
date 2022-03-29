@@ -3,14 +3,14 @@ from gym import spaces
 import numpy as np
 
 # KeysToDict from KeysToAdd
-def keysToDictCalc(keyToAdd, observation_space, playerToSkip="P2"):
+def keysToDictCalc(keyToAdd, observation_space):
     keysToDict = {}
     for key in keyToAdd:
         elemToAdd = []
         # Loop among all spaces
         for k in observation_space.spaces:
             # Skip frame and consider only a single player
-            if k == "frame" or k == playerToSkip:
+            if k == "frame" or k == "P2":
                 continue
             if isinstance(observation_space[k], gym.spaces.dict.Dict):
                 for l in observation_space.spaces[k].spaces:
@@ -80,10 +80,7 @@ def processObs(obs, dtype, boxHighBound, playerSide, keyToAdd, keysToDict, imita
 
     # Adding new info for 1P
     counter = 0
-    playerId = 0
-    if playerSide == "P2":
-        playerId = 1
-    addKeys(counter, keyToAdd, keysToDict, obs, newData, playerId)
+    addKeys(counter, keyToAdd, keysToDict, obs, newData, playerId=0)
 
     # Adding new info for P2 in 2P games
     if playerSide == "P1P2" and not imitationLearning:
