@@ -37,7 +37,8 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, envSettings, wrappersSetting
         def thunk():
             envId = envPrefix + str(rank)
             envSettings["rank"] = rank
-            env = diambraArena.make(envId, envSettings, wrappersSettings,
+            envSettings["envId"] = envId
+            env = diambraArena.make(envSettings["gameId"], envSettings, wrappersSettings,
                                     trajRecSettings, seed=seed+rank)
             if not hardCore:
 
