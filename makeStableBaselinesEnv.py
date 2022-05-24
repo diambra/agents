@@ -14,7 +14,6 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, envSettings, wrappersSetting
                            startMethod=None, noVec=False, useSubprocess=False):
     """
     Create a wrapped, monitored VecEnv.
-    :param numEnv: (int) number of environments you wish to have in subprocesses
     :param seed: (int) initial seed for RNG
     :param envSettings: (dict) parameters for DIAMBRA environment
     :param wrappersSettings: (dict) parameters for environment wraping function
@@ -29,15 +28,19 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, envSettings, wrappersSetting
     :return: (VecEnv) The diambra environment
     """
 
+    envs = os.getenv("DIAMBRA_ENVS", "").split()
+    if len(envs) == 0:
+        raise Exception("No environments found, use diambra to run your training scripts")
+
+    numEnv = len(envs)
+
     hardCore = False
     if "hardCore" in envSettings:
         hardCore = envSettings["hardCore"]
 
     def makeSbEnv(rank):
         def thunk():
-            envId = envPrefix + str(rank)
             envSettings["rank"] = rank
-            envSettings["envId"] = envId
             env = diambraArena.make(envSettings["gameId"], envSettings, wrappersSettings,
                                     trajRecSettings, seed=seed+rank)
             if not hardCore:
