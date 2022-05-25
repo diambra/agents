@@ -7,10 +7,7 @@ if __name__ == '__main__':
     try:
         parser = argparse.ArgumentParser()
         parser.add_argument('--gameId',    type=str,  default="doapp", help='Game ID')
-        parser.add_argument('--nEnvs',     type=int,  default=2,       help='Number of parallel envs')
         parser.add_argument('--stepRatio', type=int,  default=6,       help='Step ratio')
-        parser.add_argument('--lockFps',   type=bool, default=False,   help='Lock Fps')
-        parser.add_argument('--render',    type=bool, default=False,   help='Rendering env')
         opt = parser.parse_args()
         print(opt)
 
@@ -33,11 +30,7 @@ if __name__ == '__main__':
         # Common settings
         settings = {}
         settings["gameId"]   = opt.gameId
-        settings["romsPath"] = os.path.join(base_path, "../../roms/mame/")
-
         settings["stepRatio"] = opt.stepRatio
-        settings["lockFps"]   = opt.lockFps
-        settings["render"]    = opt.render
 
         settings["player"] = "Random" # P1 / P2
 
@@ -54,7 +47,7 @@ if __name__ == '__main__':
         wrappersSettings = {}
         wrappersSettings["noOpMax"] = 0
         wrappersSettings["hwcObsResize"] = [128, 128, 1]
-        wrappersSettings["normalizeRewards"] = True
+        wrappersSettings["rewardNormalizationFactor"] = True
         wrappersSettings["clipRewards"] = False
         wrappersSettings["frameStack"] = 4
         wrappersSettings["dilation"] = 1
@@ -84,11 +77,9 @@ if __name__ == '__main__':
         keyToAdd.append("ownChar")
         keyToAdd.append("oppChar")
 
-        numEnv=opt.nEnvs
-
         envId = opt.gameId + "_Train"
-        env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, settings,
-                                     wrappersSettings, keyToAdd=keyToAdd, useSubprocess=True)
+        env, numEnvs = makeStableBaselinesEnv(timeDepSeed, settings, wrappersSettings,
+                                              keyToAdd=keyToAdd, useSubprocess=True)
 
         print("Obs_space = ", env.observation_space)
         print("Obs_space type = ", env.observation_space.dtype)
@@ -134,11 +125,11 @@ if __name__ == '__main__':
         print("Model discount factor = ", model.gamma)
 
         # Create the callback: autosave every USER DEF steps
-        autoSaveCallback = AutoSave(check_freq=nSteps*opt.nEnvs, numEnv=numEnv,
+        autoSaveCallback = AutoSave(check_freq=nSteps*numEnvs, numEnv=numEnvs,
                                     save_path=os.path.join(modelFolder, "0M_"))
 
         # Train the agent
-        timeSteps = nSteps*2*opt.nEnvs
+        timeSteps = nSteps*2*numEnvs
         model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
         # Save the agent

@@ -8,7 +8,7 @@ from stable_baselines.bench import Monitor
 from stable_baselines.common.misc_util import set_global_seeds
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv, VecFrameStack
 
-def makeStableBaselinesEnv(envPrefix, numEnv, seed, envSettings, wrappersSettings=None,
+def makeStableBaselinesEnv(seed, envSettings, wrappersSettings=None,
                            trajRecSettings=None, customWrappers=None, keyToAdd=None,
                            p2Mode=None, p2Policy=None, startIndex=0, allowEarlyResets=True,
                            startMethod=None, noVec=False, useSubprocess=False):
@@ -28,11 +28,11 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, envSettings, wrappersSetting
     :return: (VecEnv) The diambra environment
     """
 
-    envs = os.getenv("DIAMBRA_ENVS", "").split()
-    if len(envs) == 0:
+    envAddresses = os.getenv("DIAMBRA_ENVS", "").split()
+    if len(envAddresses) == 0:
         raise Exception("No environments found, use diambra to run your training scripts")
 
-    numEnv = len(envs)
+    numEnvs = len(envAddresses)
 
     hardCore = False
     if "hardCore" in envSettings:
@@ -40,9 +40,8 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, envSettings, wrappersSetting
 
     def makeSbEnv(rank):
         def thunk():
-            envSettings["rank"] = rank
             env = diambraArena.make(envSettings["gameId"], envSettings, wrappersSettings,
-                                    trajRecSettings, seed=seed+rank)
+                                    trajRecSettings, seed=seed+rank, rank=rank)
             if not hardCore:
 
                 # Applying custom wrappers
@@ -66,12 +65,12 @@ def makeStableBaselinesEnv(envPrefix, numEnv, seed, envSettings, wrappersSetting
     set_global_seeds(seed)
 
     # If not wanting vectorized envs
-    if noVec and numEnv == 1:
-        return makeSbEnv(0)()
+    if noVec and numEnvs == 1:
+        return makeSbEnv(0)(), numEnvs
 
     # When using one environment, no need to start subprocesses
-    if numEnv == 1 or not useSubprocess:
-        return DummyVecEnv([makeSbEnv(i + startIndex) for i in range(numEnv)])
+    if numEnvs == 1 or not useSubprocess:
+        return DummyVecEnv([makeSbEnv(i + startIndex) for i in range(numEnvs)]), numEnvs
 
-    return SubprocVecEnv([makeSbEnv(i + startIndex) for i in range(numEnv)],
-                         start_method=startMethod)
+    return SubprocVecEnv([makeSbEnv(i + startIndex) for i in range(numEnvs)],
+                         start_method=startMethod), numEnvs
