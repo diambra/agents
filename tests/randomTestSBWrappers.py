@@ -41,13 +41,8 @@ if __name__ == '__main__':
         # Environment settings
         settings = {}
         settings["gameId"]   = opt.gameId
-        settings["romsPath"] = os.path.join(base_path, "../../roms/mame/")
-
         settings["continueGame"] = opt.continueGame
-
         settings["stepRatio"] = opt.stepRatio
-        settings["lockFps"] = False
-
         settings["player"] = opt.player
 
         settings["characters"] = [[opt.character1, opt.character1_2, opt.character1_3],
@@ -68,7 +63,7 @@ if __name__ == '__main__':
         wrappersSettings = {}
         wrappersSettings["noOpMax"] = 0
         wrappersSettings["hwcObsResize"] = [128, 128, 1]
-        wrappersSettings["normalizeRewards"] = True
+        wrappersSettings["rewardNormalizationFactor"] = 0.5
         wrappersSettings["clipRewards"] = False
         wrappersSettings["frameStack"] = 4
         wrappersSettings["dilation"] = 1
@@ -111,11 +106,8 @@ if __name__ == '__main__':
         hardCore = False if opt.hardCore == 0 else True
         settings["hardCore"] = hardCore
 
-        numOfEnvs = 1
-        envId = opt.gameId + "_randomTestSBWrappers"
-        env = makeStableBaselinesEnv(envId, numOfEnvs, timeDepSeed, settings,
-                                     wrappersSettings, customWrappers=customWrappers,
-                                     keyToAdd=keyToAdd, noVec=True)
+        env, _ = makeStableBaselinesEnv(timeDepSeed, settings, wrappersSettings,
+                                        customWrappers=customWrappers, keyToAdd=keyToAdd, noVec=True)
 
         print("Observation Space:", env.observation_space)
         print("Action Space:", env.action_space)
