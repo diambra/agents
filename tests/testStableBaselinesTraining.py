@@ -76,7 +76,6 @@ if __name__ == '__main__':
         keyToAdd.append("ownChar")
         keyToAdd.append("oppChar")
 
-        envId = opt.gameId + "_Train"
         env, numEnvs = makeStableBaselinesEnv(timeDepSeed, settings, wrappersSettings,
                                               keyToAdd=keyToAdd, useSubprocess=True)
 
