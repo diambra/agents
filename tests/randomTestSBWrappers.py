@@ -43,6 +43,7 @@ if __name__ == '__main__':
         settings["gameId"]   = opt.gameId
         settings["continueGame"] = opt.continueGame
         settings["stepRatio"] = opt.stepRatio
+        settings["frameShape"] = [128, 128, 1]
         settings["player"] = opt.player
 
         settings["characters"] = [[opt.character1, opt.character1_2, opt.character1_3],
@@ -62,7 +63,6 @@ if __name__ == '__main__':
         # Wrappers settings
         wrappersSettings = {}
         wrappersSettings["noOpMax"] = 0
-        wrappersSettings["hwcObsResize"] = [128, 128, 1]
         wrappersSettings["rewardNormalization"] = True
         wrappersSettings["clipRewards"] = False
         wrappersSettings["frameStack"] = 4
