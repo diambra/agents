@@ -19,6 +19,7 @@ if __name__ == '__main__':
     settings = {}
     settings["gameId"]   = "umk3"
     settings["stepRatio"] = 2
+    settings["frameShape"] = [128, 128, 1]
     settings["player"] = "P1" # P1 / P2
 
     settings["characters"] =[["Sektor"], ["Sektor"]]
@@ -36,7 +37,6 @@ if __name__ == '__main__':
     # Wrappers Settings
     wrappersSettings = {}
     wrappersSettings["noOpMax"] = 0
-    wrappersSettings["hwcObsResize"] = [128, 128, 1]
     wrappersSettings["rewardNormalization"] = True
     wrappersSettings["clipRewards"] = False
     wrappersSettings["frameStack"] = 4

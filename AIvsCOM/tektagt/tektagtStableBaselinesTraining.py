@@ -25,6 +25,7 @@ if __name__ == '__main__':
     settings = {}
     settings["gameId"]   = "tektagt"
     settings["stepRatio"] = 6
+    settings["frameShape"] = [128, 128, 1]
     settings["player"] = "Random" # P1 / P2
 
     settings["characters"] =[["Jin", "Yoshimitsu"], ["Jin", "Yoshimitsu"]]
@@ -41,7 +42,6 @@ if __name__ == '__main__':
     # Wrappers settings
     wrappersSettings = {}
     wrappersSettings["noOpMax"] = 0
-    wrappersSettings["hwcObsResize"] = [128, 128, 1]
     wrappersSettings["rewardNormalization"] = True
     wrappersSettings["clipRewards"] = False
     wrappersSettings["frameStack"] = 4
