@@ -4,7 +4,7 @@ if __name__ == '__main__':
     timeDepSeed = int((time.time()-int(time.time()-0.5))*1000)
 
     base_path = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(os.path.join(base_path, '../'))
+    sys.path.append(os.path.join(base_path, '../../'))
 
     modelFolder = os.path.join(base_path, "samsh5spModel/")
 
