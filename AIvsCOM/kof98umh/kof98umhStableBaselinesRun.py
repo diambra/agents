@@ -4,9 +4,9 @@ if __name__ == '__main__':
     timeDepSeed = int((time.time()-int(time.time()-0.5))*1000)
 
     base_path = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(os.path.join(base_path, '../'))
+    sys.path.append(os.path.join(base_path, '../../'))
 
-    modelFolder = os.path.join(base_path, "samsh5spModel/")
+    modelFolder = os.path.join(base_path, "kof98umhModel/")
 
     from makeStableBaselinesEnv import makeStableBaselinesEnv
     from sbUtils import showObs
@@ -17,12 +17,12 @@ if __name__ == '__main__':
 
     # Settings
     settings = {}
-    settings["gameId"]   = "samsh5sp"
+    settings["gameId"]   = "kof98umh"
     settings["stepRatio"] = 6
     settings["frameShape"] = [128, 128, 1]
     settings["player"] = "P1" # P1 / P2
 
-    settings["characters"] =[["Haohmaru"], ["Haohmaru"]]
+    settings["characters"] =[["Terry", "Terry", "Terry"], ["Terry", "Terry", "Terry"]]
 
     settings["difficulty"]  = 6
     settings["charOutfits"] =[2, 2]
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     settings["actionSpace"] = "discrete"
     settings["attackButCombination"] = False
 
-    # Wrappers settings
+    # Wrappers Settings
     wrappersSettings = {}
     wrappersSettings["noOpMax"] = 0
     wrappersSettings["rewardNormalization"] = True

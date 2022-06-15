@@ -6,8 +6,8 @@ if __name__ == '__main__':
     base_path = os.path.dirname(os.path.abspath(__file__))
     sys.path.append(os.path.join(base_path, '../'))
 
-    modelFolder = os.path.join(base_path, "samsh5spModel/")
-    tensorBoardFolder = os.path.join(base_path, "samsh5spTB/")
+    modelFolder = os.path.join(base_path, "kof98umhModel/")
+    tensorBoardFolder = os.path.join(base_path, "kof98umhTB/")
 
     os.makedirs(modelFolder, exist_ok=True)
 
@@ -22,23 +22,23 @@ if __name__ == '__main__':
 
     # Settings
     settings = {}
-    settings["gameId"]   = "samsh5sp"
+    settings["gameId"]   = "kof98umh"
     settings["stepRatio"] = 6
     settings["frameShape"] = [128, 128, 1]
     settings["player"] = "Random" # P1 / P2
 
-    settings["characters"] =[["Haohmaru"], ["Haohmaru"]]
+    settings["characters"] =[["Terry", "Terry", "Terry"], ["Terry", "Terry", "Terry"]]
 
     settings["difficulty"]  = 6
     settings["charOutfits"] =[2, 2]
 
-    settings["continueGame"] = -2.0
+    settings["continueGame"] = 0.0
     settings["showFinal"] = False
 
     settings["actionSpace"] = "discrete"
     settings["attackButCombination"] = False
 
-    # Wrappers settings
+    # Wrappers Settings
     wrappersSettings = {}
     wrappersSettings["noOpMax"] = 0
     wrappersSettings["rewardNormalization"] = True
@@ -93,8 +93,7 @@ if __name__ == '__main__':
 
     # PPO param
     setGamma = 0.94
-    modelCheckpoint = "253M"
-    '''
+    modelCheckpoint = "0M"
     setLearningRate = linear_schedule(2.5e-4, 2.5e-6)
     setClipRange = linear_schedule(0.15, 0.025)
     setClipRangeVf = setClipRange
@@ -114,7 +113,7 @@ if __name__ == '__main__':
                       policy_kwargs=policyKwargs, gamma=setGamma, learning_rate=setLearningRate,
                       cliprange=setClipRange, cliprange_vf=setClipRangeVf,
                       tensorboard_log=tensorBoardFolder)
-
+    '''
     print("Model discount factor = ", model.gamma)
 
     # Create the callback: autosave every USER DEF steps
@@ -126,7 +125,7 @@ if __name__ == '__main__':
     model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
     # Save the agent
-    modelPath = os.path.join(modelFolder, "293M")
+    modelPath = os.path.join(modelFolder, "40M")
     model.save(modelPath)
     # Save the correspondent CFG file
     modelCfgSave(modelPath, "PPOSmall", nActions, charNames,
