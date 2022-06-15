@@ -23,12 +23,8 @@ if __name__ == '__main__':
     # Settings
     settings = {}
     settings["gameId"]   = "samsh5sp"
-    settings["romsPath"] = os.path.join(base_path, "../../../roms/mame/")
-
     settings["stepRatio"] = 6
-    settings["lockFps"] = False
-    settings["render"]  = False
-
+    settings["frameShape"] = [128, 128, 1]
     settings["player"] = "Random" # P1 / P2
 
     settings["characters"] =[["Haohmaru"], ["Haohmaru"]]
@@ -45,8 +41,7 @@ if __name__ == '__main__':
     # Wrappers settings
     wrappersSettings = {}
     wrappersSettings["noOpMax"] = 0
-    wrappersSettings["hwcObsResize"] = [128, 128, 1]
-    wrappersSettings["normalizeRewards"] = True
+    wrappersSettings["rewardNormalization"] = True
     wrappersSettings["clipRewards"] = False
     wrappersSettings["frameStack"] = 4
     wrappersSettings["dilation"] = 1
@@ -65,11 +60,8 @@ if __name__ == '__main__':
     keyToAdd.append("oppSide")
     keyToAdd.append("stage")
 
-    numEnv=16
-
-    envId = "samsh5sp_Train"
-    env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, settings,
-                                 wrappersSettings, keyToAdd=keyToAdd, useSubprocess=True)
+    env, numEnv = makeStableBaselinesEnv(timeDepSeed, settings, wrappersSettings,
+                                         keyToAdd=keyToAdd, useSubprocess=True)
 
     print("Obs_space = ", env.observation_space)
     print("Obs_space type = ", env.observation_space.dtype)
@@ -101,7 +93,7 @@ if __name__ == '__main__':
 
     # PPO param
     setGamma = 0.94
-    modelCheckpoint = "0M"
+    modelCheckpoint = "40M"
     setLearningRate = linear_schedule(2.5e-4, 2.5e-6)
     setClipRange = linear_schedule(0.15, 0.025)
     setClipRangeVf = setClipRange
@@ -134,7 +126,7 @@ if __name__ == '__main__':
     model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
     # Save the agent
-    modelPath = os.path.join(modelFolder, "40M")
+    modelPath = os.path.join(modelFolder, "80M")
     model.save(modelPath)
     # Save the correspondent CFG file
     modelCfgSave(modelPath, "PPOSmall", nActions, charNames,
