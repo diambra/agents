@@ -4,10 +4,10 @@ if __name__ == '__main__':
     timeDepSeed = int((time.time()-int(time.time()-0.5))*1000)
 
     base_path = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(os.path.join(base_path, '../'))
+    sys.path.append(os.path.join(base_path, '../../'))
 
-    modelFolder = os.path.join(base_path, "samsh5spModel/")
-    tensorBoardFolder = os.path.join(base_path, "samsh5spTB/")
+    modelFolder = os.path.join(base_path, "samsh5spModel_extra/")
+    tensorBoardFolder = os.path.join(base_path, "samsh5spTB_extra/")
 
     os.makedirs(modelFolder, exist_ok=True)
 
@@ -23,8 +23,12 @@ if __name__ == '__main__':
     # Settings
     settings = {}
     settings["gameId"]   = "samsh5sp"
+    settings["romsPath"] = os.path.join(base_path, "../../../roms/mame/")
+
     settings["stepRatio"] = 6
-    settings["frameShape"] = [128, 128, 1]
+    settings["lockFps"] = False
+    settings["render"]  = False
+
     settings["player"] = "Random" # P1 / P2
 
     settings["characters"] =[["Haohmaru"], ["Haohmaru"]]
@@ -32,16 +36,17 @@ if __name__ == '__main__':
     settings["difficulty"]  = 6
     settings["charOutfits"] =[2, 2]
 
-    settings["continueGame"] = -2.0
+    settings["continueGame"] = 0.0
     settings["showFinal"] = False
 
     settings["actionSpace"] = "discrete"
-    settings["attackButCombination"] = False
+    settings["attackButCombination"] = True
 
     # Wrappers settings
     wrappersSettings = {}
     wrappersSettings["noOpMax"] = 0
-    wrappersSettings["rewardNormalization"] = True
+    wrappersSettings["hwcObsResize"] = [128, 128, 1]
+    wrappersSettings["normalizeRewards"] = True
     wrappersSettings["clipRewards"] = False
     wrappersSettings["frameStack"] = 4
     wrappersSettings["dilation"] = 1
@@ -60,8 +65,11 @@ if __name__ == '__main__':
     keyToAdd.append("oppSide")
     keyToAdd.append("stage")
 
-    env, numEnv = makeStableBaselinesEnv(timeDepSeed, settings, wrappersSettings,
-                                         keyToAdd=keyToAdd, useSubprocess=True)
+    numEnv=16
+
+    envId = "samsh5sp_Train"
+    env = makeStableBaselinesEnv(envId, numEnv, timeDepSeed, settings,
+                                 wrappersSettings, keyToAdd=keyToAdd, useSubprocess=True)
 
     print("Obs_space = ", env.observation_space)
     print("Obs_space type = ", env.observation_space.dtype)
@@ -93,8 +101,7 @@ if __name__ == '__main__':
 
     # PPO param
     setGamma = 0.94
-    modelCheckpoint = "253M"
-    '''
+    modelCheckpoint = "0M"
     setLearningRate = linear_schedule(2.5e-4, 2.5e-6)
     setClipRange = linear_schedule(0.15, 0.025)
     setClipRangeVf = setClipRange
@@ -114,6 +121,7 @@ if __name__ == '__main__':
                       policy_kwargs=policyKwargs, gamma=setGamma, learning_rate=setLearningRate,
                       cliprange=setClipRange, cliprange_vf=setClipRangeVf,
                       tensorboard_log=tensorBoardFolder)
+    '''
 
     print("Model discount factor = ", model.gamma)
 
@@ -126,7 +134,7 @@ if __name__ == '__main__':
     model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
     # Save the agent
-    modelPath = os.path.join(modelFolder, "293M")
+    modelPath = os.path.join(modelFolder, "40M")
     model.save(modelPath)
     # Save the correspondent CFG file
     modelCfgSave(modelPath, "PPOSmall", nActions, charNames,
