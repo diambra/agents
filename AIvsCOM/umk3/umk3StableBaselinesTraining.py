@@ -33,7 +33,7 @@ if __name__ == '__main__':
     settings["tower"]  = 3
     settings["charOutfits"] =[2, 2]
 
-    settings["continueGame"] = -4.0
+    settings["continueGame"] = -15.0
     settings["showFinal"] = False
 
     settings["actionSpace"] = "discrete"
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     setClipRange    = linear_schedule(0.055, 0.025)
     setClipRangeVf  = setClipRange
     # Load the trained agent
-    modelCheckpoint = "346M"
+    modelCheckpoint = "506M"
     model = PPO2.load(os.path.join(modelFolder, modelCheckpoint), env=env,
                       policy_kwargs=policyKwargs, gamma=setGamma, learning_rate=setLearningRate,
                       cliprange=setClipRange, cliprange_vf=setClipRangeVf,
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
     # Save the agent
-    modelPath = os.path.join(modelFolder, "386M")
+    modelPath = os.path.join(modelFolder, "546M")
     model.save(modelPath)
     # Save the correspondent CFG file
     modelCfgSave(modelPath, "PPOSmall", nActions, charNames,

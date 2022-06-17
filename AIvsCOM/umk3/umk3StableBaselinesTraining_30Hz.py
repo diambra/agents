@@ -94,8 +94,9 @@ if __name__ == '__main__':
 
     # PPO param
     setGamma = 0.9933
-    modelCheckpoint = "102M"
+    modelCheckpoint = "795M"
 
+    '''
     #setLearningRate = linear_schedule(2.5e-4, 2.5e-6)
     #setClipRange = linear_schedule(0.15, 0.025)
     setLearningRate = linear_schedule(0.4e-4, 0.6e-6)
@@ -109,15 +110,14 @@ if __name__ == '__main__':
                  tensorboard_log=tensorBoardFolder)
     #OR
     '''
-    setLearningRate = linear_schedule(3.0e-5, 2.5e-6)
-    setClipRange    = linear_schedule(0.055, 0.025)
+    setLearningRate = linear_schedule(0.4e-5, 0.6e-6)
+    setClipRange    = linear_schedule(0.15, 0.025)
     setClipRangeVf  = setClipRange
     # Load the trained agent
     model = PPO2.load(os.path.join(modelFolder, modelCheckpoint), env=env,
                       policy_kwargs=policyKwargs, gamma=setGamma, learning_rate=setLearningRate,
                       cliprange=setClipRange, cliprange_vf=setClipRangeVf,
                       tensorboard_log=tensorBoardFolder)
-    '''
 
     print("Model discount factor = ", model.gamma)
 
@@ -130,7 +130,7 @@ if __name__ == '__main__':
     model.learn(total_timesteps=timeSteps, callback=autoSaveCallback)
 
     # Save the agent
-    modelPath = os.path.join(modelFolder, "222M")
+    modelPath = os.path.join(modelFolder, "915M")
     model.save(modelPath)
     # Save the correspondent CFG file
     modelCfgSave(modelPath, "PPOSmall", nActions, charNames,
