@@ -30,7 +30,8 @@ def makeStableBaselinesEnv(seed, envSettings, wrappersSettings=None,
 
     envAddresses = os.getenv("DIAMBRA_ENVS", "").split()
     if len(envAddresses) == 0:
-        raise Exception("No environments found, use diambra to run your training scripts")
+        print("WARNING: running script without diambra CLI, this is a development option only.")
+        envAddresses=["0.0.0.0:50051"]
 
     numEnvs = len(envAddresses)
 
