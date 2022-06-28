@@ -1,16 +1,19 @@
-import sys, os, time
+from diambra.arena.utils.gym_utils import discrete_to_multi_discrete_action
+from sb_utils import show_obs
+from make_stable_baselines_env import make_stable_baselines_env
+from wrappers.tektagRewWrap import TektagRoundEndChar2Penalty,\
+                                   TektagHealthBarUnbalancePenalty
+import sys
+import os
+import time
 import numpy as np
 import argparse
 base_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_path, '../'))
 
-from diambraArena.gymUtils import discreteToMultiDiscreteAction
-from sbUtils import showObs
-from makeStableBaselinesEnv import makeStableBaselinesEnv
-from wrappers.tektagRewWrap import tektagRoundEndChar2Penalty, tektagHealthBarUnbalancePenalty
 
 if __name__ == '__main__':
-    timeDepSeed = int((time.time()-int(time.time()-0.5))*1000)
+    time_dep_seed = int((time.time()-int(time.time()-0.5))*1000)
 
     try:
         parser = argparse.ArgumentParser()
@@ -24,203 +27,205 @@ if __name__ == '__main__':
         parser.add_argument('--character2_3',   type=str,   default="Random",   help='Character P2_3 (Random)')
         parser.add_argument('--stepRatio',      type=int,   default=6,          help='Frame ratio')
         parser.add_argument('--nEpisodes',      type=int,   default=1,          help='Number of episodes')
-        parser.add_argument('--continueGame',   type=float, default=0.0,       help='ContinueGame flag (-inf,+1.0]')
+        parser.add_argument('--continueGame',   type=float, default=0.0,        help='ContinueGame flag (-inf,+1.0]')
         parser.add_argument('--actionSpace',    type=str,   default="discrete", help='(discrete)/multidiscrete')
         parser.add_argument('--attButComb',     type=int,   default=0,          help='If to use attack button combinations (0=False)/1=True')
         parser.add_argument('--noAction',       type=int,   default=0,          help='If to use no action policy (0=False)')
-        parser.add_argument('--hardCore',       type=int,   default=0,          help='Hard core mode (0=False)')
+        parser.add_argument('--hardcore',       type=int,   default=0,          help='Hard core mode (0=False)')
         parser.add_argument('--interactiveViz', type=int,   default=0,          help='Interactive Visualization (0=False)')
         opt = parser.parse_args()
         print(opt)
 
-        vizFlag = bool(opt.interactiveViz)
-        waitKey = 1;
-        if vizFlag:
-            waitKey = 0
+        viz_flag = bool(opt.interactiveViz)
+        wait_key = 1
+        if viz_flag:
+            wait_key = 0
 
         # Environment settings
         settings = {}
-        settings["gameId"]   = opt.gameId
-        settings["continueGame"] = opt.continueGame
-        settings["stepRatio"] = opt.stepRatio
-        settings["frameShape"] = [128, 128, 1]
+        settings["game_id"] = opt.gameId
+        settings["continue_game"] = opt.continueGame
+        settings["step_ratio"] = opt.stepRatio
+        settings["frame_shape"] = [128, 128, 1]
         settings["player"] = opt.player
 
         settings["characters"] = [[opt.character1, opt.character1_2, opt.character1_3],
                                   [opt.character2, opt.character2_2, opt.character2_3]]
-        settings["charOutfits"] = [2, 2]
+        settings["char_outfits"] = [2, 2]
 
-        settings["actionSpace"] = [opt.actionSpace, opt.actionSpace]
-        settings["attackButCombination"] = [opt.attButComb, opt.attButComb]
+        settings["action_space"] = [opt.actionSpace, opt.actionSpace]
+        settings["attack_but_combination"] = [opt.attButComb, opt.attButComb]
         if settings["player"] != "P1P2":
-            settings["actionSpace"] = settings["actionSpace"][0]
-            settings["attackButCombination"] = settings["attackButCombination"][0]
+            settings["action_space"] = settings["action_space"][0]
+            settings["attack_but_combination"] = settings["attack_but_combination"][0]
 
-        idxList = [0, 1]
+        idx_list = [0, 1]
         if settings["player"] != "P1P2":
-            idxList = [0]
+            idx_list = [0]
 
         # Wrappers settings
-        wrappersSettings = {}
-        wrappersSettings["noOpMax"] = 0
-        wrappersSettings["rewardNormalization"] = True
-        wrappersSettings["clipRewards"] = False
-        wrappersSettings["frameStack"] = 4
-        wrappersSettings["dilation"] = 1
-        wrappersSettings["actionsStack"] = 12
-        wrappersSettings["scale"] = True
-        wrappersSettings["scaleMod"] = 0
+        wrappers_settings = {}
+        wrappers_settings["noOpMax"] = 0
+        wrappers_settings["rewardNormalization"] = True
+        wrappers_settings["clipRewards"] = False
+        wrappers_settings["frameStack"] = 4
+        wrappers_settings["dilation"] = 1
+        wrappers_settings["actionsStack"] = 12
+        wrappers_settings["scale"] = True
+        wrappers_settings["scaleMod"] = 0
 
         # Additional custom wrappers
-        customWrappers = None
+        custom_wrappers = None
         if opt.gameId == "tektagt" and settings["player"] != "P1P2":
-            customWrappers = [tektagRoundEndChar2Penalty, tektagHealthBarUnbalancePenalty]
+            custom_wrappers = [TektagRoundEndChar2Penalty, TektagHealthBarUnbalancePenalty]
 
         # Additional obs key list
-        keyToAdd = []
-        keyToAdd.append("actions")
+        key_to_add = []
+        key_to_add.append("actions")
 
         if opt.gameId != "tektagt":
-            keyToAdd.append("ownHealth")
-            keyToAdd.append("oppHealth")
+            key_to_add.append("ownHealth")
+            key_to_add.append("oppHealth")
         else:
-            keyToAdd.append("ownHealth1")
-            keyToAdd.append("ownHealth2")
-            keyToAdd.append("oppHealth1")
-            keyToAdd.append("oppHealth2")
-            keyToAdd.append("ownActiveChar")
-            keyToAdd.append("oppActiveChar")
+            key_to_add.append("ownHealth1")
+            key_to_add.append("ownHealth2")
+            key_to_add.append("oppHealth1")
+            key_to_add.append("oppHealth2")
+            key_to_add.append("ownActiveChar")
+            key_to_add.append("oppActiveChar")
 
-        keyToAdd.append("ownSide")
-        keyToAdd.append("oppSide")
+        key_to_add.append("ownSide")
+        key_to_add.append("oppSide")
         if settings["player"] != "P1P2":
-            keyToAdd.append("stage")
+            key_to_add.append("stage")
 
-        keyToAdd.append("ownChar")
-        keyToAdd.append("oppChar")
+        key_to_add.append("ownChar")
+        key_to_add.append("oppChar")
 
-        nRounds = 2
+        n_rounds = 2
         if opt.gameId == "kof98umh":
-            nRounds = 3
+            n_rounds = 3
 
-        hardCore = False if opt.hardCore == 0 else True
-        settings["hardCore"] = hardCore
+        hardcore = False if opt.hardcore == 0 else True
+        settings["hardcore"] = hardcore
 
-        env, _ = makeStableBaselinesEnv(timeDepSeed, settings, wrappersSettings,
-                                        customWrappers=customWrappers, keyToAdd=keyToAdd, noVec=True)
+        env, _ = make_stable_baselines_env(time_dep_seed, settings, wrappers_settings,
+                                           custom_wrappers=custom_wrappers,
+                                           key_to_add=key_to_add, no_vec=True)
 
         print("Observation Space:", env.observation_space)
         print("Action Space:", env.action_space)
 
-        if not hardCore:
+        if not hardcore:
             print("Keys to Dict:")
-            for k,v in env.keysToDict.items():
+            for k, v in env.keysToDict.items():
                 print(k, v)
 
-        nActions = env.nActions
+        n_actions = env.n_actions
 
-        actionsPrintDict = env.printActionsDict
+        actions_print_dict = env.printActionsDict
 
         observation = env.reset()
 
-        showObs(observation, keyToAdd, env.keyToAddCount, wrappersSettings["actionsStack"], nActions,
-                waitKey, vizFlag, env.charNames, hardCore, idxList)
+        show_obs(observation, key_to_add, env.keyToAddCount, wrappers_settings["actionsStack"],
+                 n_actions, wait_key, viz_flag, env.charNames, hardcore, idx_list)
 
-        cumulativeEpRew = 0.0
-        cumulativeEpRewAll = []
+        cumulative_ep_rew = 0.0
+        cumulative_ep_rew_all = []
 
-        maxNumEp = opt.nEpisodes
-        currNumEp = 0
+        max_num_ep = opt.nEpisodes
+        curr_num_ep = 0
 
-        while currNumEp < maxNumEp:
+        while curr_num_ep < max_num_ep:
 
             actions = [None, None]
             if settings["player"] != "P1P2":
                 actions = env.action_space.sample()
 
                 if opt.noAction == 1:
-                    if settings["actionSpace"] == "multiDiscrete":
+                    if settings["action_space"] == "multiDiscrete":
                         for iEl, _ in enumerate(actions):
                             actions[iEl] = 0
                     else:
                         actions = 0
 
-                if settings["actionSpace"] == "discrete":
-                    moveAction, attAction = discreteToMultiDiscreteAction(actions, env.nActions[0][0])
+                if settings["action_space"] == "discrete":
+                    move_action, att_action = discrete_to_multi_discrete_action(actions, env.n_actions[0][0])
                 else:
-                    moveAction, attAction = actions[0], actions[1]
+                    move_action, att_action = actions[0], actions[1]
 
-                print("(P1) {} {}".format(actionsPrintDict[0][moveAction],
-                                          actionsPrintDict[1][attAction]))
+                print("(P1) {} {}".format(actions_print_dict[0][move_action],
+                                          actions_print_dict[1][att_action]))
 
             else:
                 for idx in range(2):
                     actions[idx] = env.action_space["P{}".format(idx+1)].sample()
 
                     if opt.noAction == 1 and idx == 0:
-                        if settings["actionSpace"][idx] == "multiDiscrete":
+                        if settings["action_space"][idx] == "multiDiscrete":
                             for iEl, _ in enumerate(actions[idx]):
                                 actions[idx][iEl] = 0
                         else:
                             actions[idx] = 0
 
-                    if settings["actionSpace"][idx] == "discrete":
-                        moveAction, attAction = discreteToMultiDiscreteAction(actions[idx], env.nActions[idx][0])
+                    if settings["action_space"][idx] == "discrete":
+                        move_action, att_action = discrete_to_multi_discrete_action(actions[idx], env.n_actions[idx][0])
                     else:
-                        moveAction, attAction = actions[idx][0], actions[idx][1]
+                        move_action, att_action = actions[idx][0], actions[idx][1]
 
-                    print("(P{}) {} {}".format(idx+1, actionsPrintDict[0][moveAction],
-                                                      actionsPrintDict[1][attAction]))
+                    print("(P{}) {} {}".format(idx+1, actions_print_dict[0][move_action],
+                                               actions_print_dict[1][att_action]))
 
-            if settings["player"] == "P1P2" or settings["actionSpace"] != "discrete":
+            if settings["player"] == "P1P2" or settings["action_space"] != "discrete":
                 actions = np.append(actions[0], actions[1])
 
             observation, reward, done, info = env.step(actions)
 
-            cumulativeEpRew += reward
+            cumulative_ep_rew += reward
             print("action =", actions)
             print("reward =", reward)
             print("done =", done)
             for k, v in info.items():
                 print("info[\"{}\"] = {}".format(k, v))
-            showObs(observation, keyToAdd, env.keyToAddCount, wrappersSettings["actionsStack"], nActions,
-                    waitKey, vizFlag, env.charNames, hardCore, idxList)
+            show_obs(observation, key_to_add, env.keyToAddCount, wrappers_settings["actionsStack"], n_actions,
+                     wait_key, viz_flag, env.charNames, hardcore, idx_list)
             print("--")
-            print("Current Cumulative Reward =", cumulativeEpRew)
+            print("Current Cumulative Reward =", cumulative_ep_rew)
 
             print("----------")
 
             if done:
                 print("Resetting Env")
-                currNumEp += 1
-                print("Ep. # = ", currNumEp)
-                print("Ep. Cumulative Rew # = ", cumulativeEpRew)
-                cumulativeEpRewAll.append(cumulativeEpRew)
-                cumulativeEpRew = 0.0
+                curr_num_ep += 1
+                print("Ep. # = ", curr_num_ep)
+                print("Ep. Cumulative Rew # = ", cumulative_ep_rew)
+                cumulative_ep_rew_all.append(cumulative_ep_rew)
+                cumulative_ep_rew = 0.0
 
                 observation = env.reset()
-                showObs(observation, keyToAdd, env.keyToAddCount, wrappersSettings["actionsStack"], nActions,
-                        waitKey, vizFlag, env.charNames, hardCore, idxList)
+                show_obs(observation, key_to_add, env.keyToAddCount,
+                         wrappers_settings["actionsStack"], n_actions,
+                         wait_key, viz_flag, env.charNames, hardcore, idx_list)
 
-        print("Cumulative reward = ", cumulativeEpRewAll)
-        print("Mean cumulative reward = ", np.mean(cumulativeEpRewAll))
-        print("Std cumulative reward = ", np.std(cumulativeEpRewAll))
+        print("Cumulative reward = ", cumulative_ep_rew_all)
+        print("Mean cumulative reward = ", np.mean(cumulative_ep_rew_all))
+        print("Std cumulative reward = ", np.std(cumulative_ep_rew_all))
 
         env.close()
 
-        if len(cumulativeEpRewAll) != maxNumEp:
+        if len(cumulative_ep_rew_all) != max_num_ep:
             raise RuntimeError("Not run all episodes")
 
         if opt.continueGame <= 0.0:
-            maxContinue = int(-opt.continueGame)
+            max_continue = int(-opt.continueGame)
         else:
-            maxContinue = 0
+            max_continue = 0
 
         if opt.gameId == "tektagt":
-            maxContinue = (maxContinue + 1) * 0.7 - 1
+            max_continue = (max_continue + 1) * 0.7 - 1
 
-        if opt.noAction == 1 and np.mean(cumulativeEpRewAll) > -(maxContinue+1)*2*nRounds+0.001:
-            raise RuntimeError("NoAction policy and average reward different than {} ({})".format(-(maxContinue+1)*2*nRounds, np.mean(cumulativeEpRewAll)))
+        if opt.noAction == 1 and np.mean(cumulative_ep_rew_all) > -(max_continue+1)*2*n_rounds+0.001:
+            raise RuntimeError("NoAction policy and average reward different than {} ({})".format(-(max_continue+1)*2*n_rounds, np.mean(cumulative_ep_rew_all)))
 
         print("ALL GOOD!")
     except Exception as e:

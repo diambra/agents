@@ -3,7 +3,9 @@ import gym
 import numpy as np
 
 # Gym Env wrapper for two players mode to be used in integrated Self Play
-class integratedSelfPlay(gym.Wrapper):
+
+
+class IntegratedSelfPlay(gym.Wrapper):
     def __init__(self, env):
 
         gym.Wrapper.__init__(self, env)
@@ -15,8 +17,10 @@ class integratedSelfPlay(gym.Wrapper):
         self.action_space = self.action_space["P1"]
 
 # Gym Env wrapper for two players mode with RL algo on P2
-class selfPlayVsRL(gym.Wrapper):
-    def __init__(self, env, p2Policy):
+
+
+class SelfPlayVsRL(gym.Wrapper):
+    def __init__(self, env, p2_policy):
 
         gym.Wrapper.__init__(self, env)
 
@@ -24,25 +28,25 @@ class selfPlayVsRL(gym.Wrapper):
         self.action_space = self.action_space["P1"]
 
         # P2 action logic
-        self.p2Policy = p2Policy
+        self.p2_policy = p2_policy
 
     # Save last Observation
-    def updateLastObs(self, obs):
+    def update_last_obs(self, obs):
         self.lastObs = obs
 
-    # Update p2Policy RL policy weights
-    def updateP2PolicyWeights(self, weightsPath):
-        self.p2Policy.updateWeights(weightsPath)
+    # Update p2_policy RL policy weights
+    def update_p2_policy_weights(self, weights_path):
+        self.p2_policy.updateWeights(weights_path)
 
     # Step the environment
     def step(self, action):
 
         # Observation modification and P2 actions selected by the model
-        self.lastObs[:,:,-1] = P2ToP1AddObsMove(self.lastObs[:,:,-1])
-        p2PolicyActions, _ = self.p2Policy.act(self.lastObs)
+        self.lastObs[:, :, -1] = P2ToP1AddObsMove(self.lastObs[:, :, -1])
+        p2_policy_actions, _ = self.p2_policy.act(self.lastObs)
 
-        obs, reward, done, info = self.env.step(np.hstack((action, p2PolicyActions)))
-        self.updateLastObs(obs)
+        obs, reward, done, info = self.env.step(np.hstack((action, p2_policy_actions)))
+        self.update_last_obs(obs)
 
         return obs, reward, done, info
 
@@ -50,13 +54,15 @@ class selfPlayVsRL(gym.Wrapper):
     def reset(self):
 
         obs = self.env.reset()
-        self.updateLastObs(obs)
+        self.update_last_obs(obs)
 
         return obs
 
 # Gym Env wrapper for two players mode with HUM+Gamepad on P2
-class vsHum(gym.Wrapper):
-    def __init__(self, env, p2Policy):
+
+
+class VsHum(gym.Wrapper):
+    def __init__(self, env, p2_policy):
 
         gym.Wrapper.__init__(self, env)
 
@@ -64,11 +70,11 @@ class vsHum(gym.Wrapper):
         self.action_space = self.action_space["P1"]
 
         # P2 action logic
-        self.p2Policy = p2Policy
+        self.p2_policy = p2_policy
 
         # If p2 action logic is gamepad, add it to self.gamepads (for char selection)
         # Check action space is prescribed as "multiDiscrete"
-        self.p2Policy.initialize(self.env.actionList())
+        self.p2_policy.initialize(self.env.actionList())
         if self.actionsSpace[1] != "multiDiscrete":
             raise Exception("Action Space for P2 must be \"multiDiscrete\" when using gamePad")
         if not self.attackButCombination[1]:
@@ -78,6 +84,6 @@ class vsHum(gym.Wrapper):
     def step(self, action):
 
         # P2 actions selected by the Gamepad
-        p2PolicyActions, _ = self.p2Policy.act()
+        p2_policy_actions, _ = self.p2_policy.act()
 
-        return self.env.step(np.hstack((action, p2PolicyActions)))
+        return self.env.step(np.hstack((action, p2_policy_actions)))

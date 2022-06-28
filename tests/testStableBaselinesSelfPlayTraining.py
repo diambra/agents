@@ -1,8 +1,10 @@
-import sys, os, time
+import sys
+import os
+import time
 import argparse
 
 if __name__ == '__main__':
-    timeDepSeed = int((time.time()-int(time.time()-0.5))*1000)
+    time_dep_seed = int((time.time()-int(time.time()-0.5))*1000)
 
     try:
         parser = argparse.ArgumentParser()
@@ -13,79 +15,77 @@ if __name__ == '__main__':
         base_path = os.path.dirname(os.path.abspath(__file__))
         sys.path.append(os.path.join(base_path, '../'))
 
-        modelFolder = os.path.join(base_path, "{}StableBaselinesSelfPlayTestModel/".format(opt.gameId))
+        model_folder = os.path.join(base_path, "{}StableBaselinesSelfPlayTestModel/".format(opt.gameId))
 
-        os.makedirs(modelFolder, exist_ok=True)
+        os.makedirs(model_folder, exist_ok=True)
 
         from makeStableBaselinesEnv import makeStableBaselinesEnv
 
-        import tensorflow as tf
-
-        from sbUtils import linear_schedule, AutoSave, modelCfgSave, UpdateRLPolicyWeights
-        from customPolicies.customCnnPolicy import CustCnnPolicy, local_nature_cnn_small
+        from sbUtils import linear_schedule, AutoSave, ModelCfgSave, UpdateRLPolicyWeights
+        from customPolicies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
         from diambraArena.utils.policies import RLPolicy
 
         from stable_baselines import PPO2
 
         # Settings
         settings = {}
-        settings["gameId"]   = opt.gameId
-        settings["stepRatio"] = 6
-        settings["frameShape"] = [128, 128, 1]
-        settings["player"] = "P1P2" # 2P game
+        settings["game_id"] = opt.gameId
+        settings["step_ratio"] = 6
+        settings["frame_shape"] = [128, 128, 1]
+        settings["player"] = "P1P2"  # 2P game
 
-        settings["characters"] =[["Random", "Random", "Random"], ["Random", "Random", "Random"]]
-        settings["charOutfits"] =[2, 2]
+        settings["characters"] = [["Random", "Random", "Random"], ["Random", "Random", "Random"]]
+        settings["char_outfits"] = [2, 2]
 
-        settings["actionSpace"] = ["discrete", "discrete"]
-        settings["attackButCombination"] = [True, True]
+        settings["action_space"] = ["discrete", "discrete"]
+        settings["attack_but_combination"] = [True, True]
 
         # Env wrappers kwargs
-        wrappersSettings = {}
-        wrappersSettings["noOpMax"] = 0
-        wrappersSettings["rewardNormalization"] = True
-        wrappersSettings["clipRewards"] = False
-        wrappersSettings["frameStack"] = 4
-        wrappersSettings["dilation"] = 1
-        wrappersSettings["actionsStack"] = 12
-        wrappersSettings["scale"] = True
-        wrappersSettings["scaleMod"] = 0
+        wrappers_settings = {}
+        wrappers_settings["no_op_max"] = 0
+        wrappers_settings["reward_normalization"] = True
+        wrappers_settings["clip_rewards"] = False
+        wrappers_settings["frame_stack"] = 4
+        wrappers_settings["dilation"] = 1
+        wrappers_settings["actions_stack"] = 12
+        wrappers_settings["scale"] = True
+        wrappers_settings["scale_mod"] = 0
 
         # Additional obs key list
-        keyToAdd = []
-        keyToAdd.append("actions")
+        key_to_add = []
+        key_to_add.append("actions")
 
         if opt.gameId != "tektagt":
-            keyToAdd.append("ownHealth")
-            keyToAdd.append("oppHealth")
+            key_to_add.append("ownHealth")
+            key_to_add.append("oppHealth")
         else:
-            keyToAdd.append("ownHealth1")
-            keyToAdd.append("ownHealth2")
-            keyToAdd.append("oppHealth1")
-            keyToAdd.append("oppHealth2")
-            keyToAdd.append("ownActiveChar")
-            keyToAdd.append("oppActiveChar")
+            key_to_add.append("ownHealth1")
+            key_to_add.append("ownHealth2")
+            key_to_add.append("oppHealth1")
+            key_to_add.append("oppHealth2")
+            key_to_add.append("ownActiveChar")
+            key_to_add.append("oppActiveChar")
 
-        keyToAdd.append("ownSide")
-        keyToAdd.append("oppSide")
+        key_to_add.append("ownSide")
+        key_to_add.append("oppSide")
 
-        keyToAdd.append("ownChar")
-        keyToAdd.append("oppChar")
+        key_to_add.append("ownChar")
+        key_to_add.append("oppChar")
 
         if opt.gameId == "doapp":
-            nActions = [9, 8]
+            n_actions = [9, 8]
         else:
-            raise ValueError("nActions not provided for selected gameId = {}".format(gameId))
+            raise ValueError("n_actions not provided for selected gameId = {}".format(opt.gameId))
 
-        model = PPO2.load(os.path.join(modelFolder, "0M"))
+        model = PPO2.load(os.path.join(model_folder, "0M"))
 
-        deterministicFlag = False
-        rl_policy = RLPolicy(model, deterministicFlag, nActions, name="PPO-0M",
-                             actionSpace=settings["actionSpace"])
+        deterministic_flag = False
+        rl_policy = RLPolicy(model, deterministic_flag, n_actions, name="PPO-0M",
+                             action_space=settings["action_space"])
 
-        env, numEnv = makeStableBaselinesEnv(timeDepSeed, settings, wrappersSettings,
-                                             keyToAdd=keyToAdd, p2Mode="selfPlayVsRL",
-                                             p2Policy=rl_policy, useSubprocess=False)
+        env, num_env = makeStableBaselinesEnv(time_dep_seed, settings, wrappers_settings,
+                                              key_to_add=key_to_add, p2_mode="selfPlayVsRL",
+                                              p2_policy=rl_policy, use_subprocess=False)
 
         print("Obs_space = ", env.observation_space)
         print("Obs_space type = ", env.observation_space.dtype)
@@ -94,60 +94,62 @@ if __name__ == '__main__':
 
         print("Act_space = ", env.action_space)
         print("Act_space type = ", env.action_space.dtype)
-        if settings["actionSpace"][0] == "multiDiscrete":
+        if settings["action_space"][0] == "multiDiscrete":
             print("Act_space n = ", env.action_space.nvec)
         else:
             print("Act_space n = ", env.action_space.n)
 
         # Policy param
-        nActions      = env.get_attr("nActions")[0][0]
-        nActionsStack = env.get_attr("nActionsStack")[0]
-        nChar         = env.get_attr("numberOfCharacters")[0]
-        charNames     = env.get_attr("charNames")[0]
+        n_actions = env.get_attr("n_actions")[0][0]
+        n_actions_stack = env.get_attr("n_actions_stack")[0]
+        n_char = env.get_attr("number_of_characters")[0]
+        char_names = env.get_attr("char_names")[0]
 
-        policyKwargs={}
-        policyKwargs["n_add_info"] = nActionsStack*(nActions[0]+nActions[1]) + len(keyToAdd)-3 + 2*nChar
-        policyKwargs["layers"] = [64, 64]
+        policy_kwargs = {}
+        policy_kwargs["n_add_info"] = n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-3 + 2*n_char
+        policy_kwargs["layers"] = [64, 64]
 
-        policyKwargs["cnn_extractor"] = local_nature_cnn_small
+        policy_kwargs["cnn_extractor"] = local_nature_cnn_small
 
-        print("nActions =", nActions)
-        print("nChar =", nChar)
-        print("nAddInfo =", policyKwargs["n_add_info"])
+        print("n_actions =", n_actions)
+        print("n_char =", n_char)
+        print("n_add_info =", policy_kwargs["n_add_info"])
 
         # PPO param
-        setGamma = 0.94
-        setLearningRate = linear_schedule(2.5e-4, 2.5e-6)
-        setClipRange = linear_schedule(0.15, 0.025)
-        setClipRangeVf = setClipRange
+        gamma = 0.94
+        learning_rate = linear_schedule(2.5e-4, 2.5e-6)
+        cliprange = linear_schedule(0.15, 0.025)
+        cliprange_vf = cliprange
 
         # Initialize the model
         model = PPO2(CustCnnPolicy, env, verbose=1,
-                     gamma = setGamma, nminibatches=4, noptepochs=4, n_steps=128,
-                     learning_rate=setLearningRate, cliprange=setClipRange, cliprange_vf=setClipRangeVf,
-                     policy_kwargs=policyKwargs)
+                     gamma=gamma, nminibatches=4, noptepochs=4, n_steps=128,
+                     learning_rate=learning_rate, cliprange=cliprange,
+                     cliprange_vf=cliprange_vf, policy_kwargs=policy_kwargs)
 
         print("Model discount factor = ", model.gamma)
 
         # Create the callback: autosave every USER DEF steps
-        autoSaveCallback = AutoSave(check_freq=256, numEnv=numEnv,
-                                    save_path=os.path.join(modelFolder, "0M_"))
+        auto_save_callback = AutoSave(check_freq=256, num_env=num_env,
+                                      save_path=os.path.join(model_folder, "0M_"))
 
-        prevAgentsSamplingDict = {"probability": 0.3,
-                                  "list":[os.path.join(modelFolder, "0M")]}
-        upRLPolWCallback = UpdateRLPolicyWeights(check_freq=128, numEnv=numEnv, save_path=modelFolder,
-                                                 prevAgentsSampling=prevAgentsSamplingDict)
+        prev_agents_sampling_dict = {"probability": 0.3,
+                                     "list": [os.path.join(model_folder, "0M")]}
+        up_rl_pol_weights_callback = UpdateRLPolicyWeights(check_freq=128, num_env=num_env,
+                                                           save_path=model_folder,
+                                                           prevAgentsSampling=prev_agents_sampling_dict)
 
         # Train the agent
-        timeSteps = 512
-        model.learn(total_timesteps=timeSteps, callback=[autoSaveCallback, upRLPolWCallback])
+        time_steps = 512
+        model.learn(total_timesteps=time_steps, callback=[auto_save_callback,
+                                                          up_rl_pol_weights_callback])
 
         # Save the agent
-        modelPath = os.path.join(modelFolder, "512")
-        model.save(modelPath)
+        model_path = os.path.join(model_folder, "512")
+        model.save(model_path)
         # Save the correspondent CFG file
-        modelCfgSave(modelPath, "PPOSelfPlaySmall", nActions, charNames,
-                     settings, wrappersSettings, keyToAdd)
+        ModelCfgSave(model_path, "PPOSelfPlaySmall", n_actions, char_names,
+                     settings, wrappers_settings, key_to_add)
 
         # Close the environment
         env.close()
