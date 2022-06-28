@@ -1,5 +1,6 @@
 from stable_baselines.common.policies import *
 
+
 def local_nature_cnn_small(scaled_images, **kwargs):
     """
     CNN from Nature paper.
@@ -14,6 +15,7 @@ def local_nature_cnn_small(scaled_images, **kwargs):
     layer_3 = activ(conv(layer_2, 'c3', n_filters=64, filter_size=3, stride=1, init_scale=np.sqrt(2), **kwargs))
     layer_3 = conv_to_fc(layer_3)
     return activ(linear(layer_3, 'fc1', n_hidden=256, init_scale=np.sqrt(2)))
+
 
 class CustCnnPolicy(ActorCriticPolicy):
     """
@@ -41,10 +43,10 @@ class CustCnnPolicy(ActorCriticPolicy):
 
         self._kwargs_check(feature_extraction, kwargs)
 
-        frames = self.processed_obs[:,:,:,0:self.processed_obs.shape[3]-1]
-        additional_input = self.processed_obs[:,:,:,self.processed_obs.shape[3]-1]
+        frames = self.processed_obs[:, :, :, 0:self.processed_obs.shape[3]-1]
+        additional_input = self.processed_obs[:, :, :, self.processed_obs.shape[3]-1]
         additional_input = tf.layers.flatten(additional_input)
-        additional_input = additional_input[:,1:n_add_info+1]
+        additional_input = additional_input[:, 1:n_add_info+1]
 
         with tf.variable_scope("model", reuse=reuse):
             # Frames (CNN)
@@ -53,7 +55,7 @@ class CustCnnPolicy(ActorCriticPolicy):
             # Additional (Additional Info)
             for i, layer_size in enumerate(layers):
                 additional_input = act_fun(linear(additional_input, 'pi_fc' + str(i),
-                                            n_hidden=layer_size, init_scale=np.sqrt(2)))
+                                           n_hidden=layer_size, init_scale=np.sqrt(2)))
 
             pi_latent = vf_latent = tf.concat([extracted_features_frames, additional_input], 1)
 
@@ -78,4 +80,3 @@ class CustCnnPolicy(ActorCriticPolicy):
 
     def value(self, obs, state=None, mask=None):
         return self.sess.run(self.value_flat, {self.obs_ph: obs})
-
