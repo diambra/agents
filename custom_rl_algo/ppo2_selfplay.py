@@ -12,9 +12,10 @@ from stable_baselines.common.schedules import get_schedule_fn
 from stable_baselines.common.tf_util import total_episode_reward_logger
 from stable_baselines.common.math_util import safe_mean
 
-from sbUtils import P2ToP1AddObsMove
+from sb_utils import p2_to_p1_add_obs_mMove
 
-class PPO2_SelfPlay(ActorCriticRLModel):
+
+class PPO2Selfplay(ActorCriticRLModel):
     """
     Proximal Policy Optimization algorithm (GPU version).
     Paper: https://arxiv.org/abs/1707.06347
@@ -480,7 +481,7 @@ class Runner(AbstractEnvRunner):
             # Modify Additional Observation for P2, overwriting P1 ones
             self.lastObs = self.obs.copy()
             for envIdx in range(self.n_envs):
-                self.lastObs[envIdx,:,:,-1] = P2ToP1AddObsMove(self.lastObs[envIdx,:,:,-1])
+                self.lastObs[envIdx,:,:,-1] = p2_to_p1_add_obs_mMove(self.lastObs[envIdx,:,:,-1])
             actionsP2, valuesP2, self.states, neglogpacsP2 = self.model.step(self.lastObs, self.states, self.dones)
 
             # Minibatches P1
@@ -528,7 +529,7 @@ class Runner(AbstractEnvRunner):
         # Modify Additional Observation for P2, overwriting P1 ones
         self.lastObs = self.obs.copy()
         for envIdx in range(self.n_envs):
-            self.lastObs[envIdx,:,:,-1] = P2ToP1AddObsMove(self.lastObs[envIdx,:,:,-1])
+            self.lastObs[envIdx,:,:,-1] = p2_to_p1_add_obs_mMove(self.lastObs[envIdx,:,:,-1])
 
         last_values   = self.model.value(self.obs, self.states, self.dones)
         last_valuesP2 = self.model.value(self.lastObs, self.states, self.dones)
