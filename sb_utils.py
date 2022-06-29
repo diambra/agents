@@ -127,25 +127,25 @@ class UpdateRLPolicyWeights(BaseCallback):
         self.check_freq = int(check_freq/num_env)
         self.num_env = num_env
         self.save_path = save_path + 'lastModel'
-        self.samplingProbability = prev_agents_sampling["probability"]
-        self.prevAgentsList = prev_agents_sampling["list"]
+        self.sampling_probability = prev_agents_sampling["probability"]
+        self.prev_agents_list = prev_agents_sampling["list"]
         time_dep_seed = int((time.time()-int(time.time()-0.5))*1000)
         np.random.seed(time_dep_seed)
 
     def _on_step(self) -> bool:
         if self.n_calls % self.check_freq == 0:
             # Selects if using previous agent or the last saved one
-            if np.random.rand() < self.samplingProbability:
+            if np.random.rand() < self.sampling_probability:
                 # Sample an old model from the list
                 if self.verbose > 0:
                     print("Using an older model")
 
                 # Sample one of the older models
-                idx = int(np.random.rand() * len(self.prevAgentsList))
-                weights_paths_sampled = self.prevAgentsList[idx]
+                idx = int(np.random.rand() * len(self.prev_agents_list))
+                weights_paths_sampled = self.prev_agents_list[idx]
 
                 # Load new weights
-                self.training_env.env_method("updateP2PolicyWeights",
+                self.training_env.env_method("update_p2_policy_weights",
                                              weights_path=weights_paths_sampled)
             else:
                 # Use the last saved model
@@ -159,7 +159,7 @@ class UpdateRLPolicyWeights(BaseCallback):
                 self.model.save(self.save_path)
 
                 # Load new weights
-                self.training_env.env_method("updateP2PolicyWeights",
+                self.training_env.env_method("update_p2_policy_weights",
                                              weights_path=self.save_path)
 
         return True
