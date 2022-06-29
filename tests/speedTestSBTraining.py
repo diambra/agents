@@ -1,45 +1,41 @@
 import sys
 import os
 import time
+base_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(base_path, '../'))
+from make_stable_baselines_env import make_stable_baselines_env
+from sb_utils import linear_schedule
+from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
+from stable_baselines import PPO2
 
 if __name__ == '__main__':
     time_dep_seed = int((time.time()-int(time.time()-0.5))*1000)
 
-    base_path = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(os.path.join(base_path, '../'))
-
-    from makeStableBaselinesEnv import makeStableBaselinesEnv
-
-    from sb_utils import linear_schedule
-    from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
-
-    from stable_baselines import PPO2
-
     # Settings settings
     settings = {}
-    settings["gameId"] = "doapp"
-    settings["stepRatio"] = 6
-    settings["frameShape"] = [128, 128, 1]
+    settings["game_id"] = "doapp"
+    settings["step_satio"] = 6
+    settings["frame_shape"] = [128, 128, 1]
     settings["player"] = "Random"  # P1 / P2
 
     settings["characters"] = [["Random", "Random", "Random"], ["Random", "Random", "Random"]]
 
     settings["difficulty"] = 3
-    settings["charOutfits"] = [2, 2]
+    settings["char_outfits"] = [2, 2]
 
-    settings["actionSpace"] = "discrete"
-    settings["attackButCombination"] = False
+    settings["action_space"] = "discrete"
+    settings["attack_but_combination"] = False
 
     # Wrappers settings
     wrappers_settings = {}
-    wrappers_settings["noOpMax"] = 0
-    wrappers_settings["rewardNormalization"] = True
-    wrappers_settings["clipRewards"] = False
-    wrappers_settings["frameStack"] = 4
+    wrappers_settings["no_op_max"] = 0
+    wrappers_settings["reward_normalization"] = True
+    wrappers_settings["clip_rewards"] = False
+    wrappers_settings["frame_stack"] = 4
     wrappers_settings["dilation"] = 1
-    wrappers_settings["actionsStack"] = 12
+    wrappers_settings["actions_stack"] = 12
     wrappers_settings["scale"] = True
-    wrappers_settings["scaleMod"] = 0
+    wrappers_settings["scale_mod"] = 0
 
     # Additional obs key list
     key_to_add = []
@@ -53,7 +49,7 @@ if __name__ == '__main__':
     key_to_add.append("ownChar")
     key_to_add.append("oppChar")
 
-    env, num_env = makeStableBaselinesEnv(time_dep_seed, settings, wrappers_settings,
+    env, num_env = make_stable_baselines_env(time_dep_seed, settings, wrappers_settings,
                                           key_to_add=key_to_add, use_subprocess=True)
 
     # Policy param
@@ -71,7 +67,7 @@ if __name__ == '__main__':
 
     print("n_actions =", n_actions)
     print("n_char =", n_char)
-    print("nAddInfo =", policy_kwargs["n_add_info"])
+    print("n_add_info =", policy_kwargs["n_add_info"])
 
     # PPO param
     gamma = 0.94

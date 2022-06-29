@@ -6,9 +6,9 @@ import numpy as np
 
 
 def keys_to_dict_calc(key_to_add, observation_space):
-    keysToDict = {}
+    keys_to_dict = {}
     for key in key_to_add:
-        elemToAdd = []
+        elem_to_add = []
         # Loop among all spaces
         for k in observation_space.spaces:
             # Skip frame and consider only a single player
@@ -18,94 +18,94 @@ def keys_to_dict_calc(key_to_add, observation_space):
                 for l in observation_space.spaces[k].spaces:
                     if isinstance(observation_space[k][l], gym.spaces.dict.Dict):
                         if key == l:
-                            elemToAdd.append("Px")
-                            elemToAdd.append(l)
-                            keysToDict[key] = elemToAdd
+                            elem_to_add.append("Px")
+                            elem_to_add.append(l)
+                            keys_to_dict[key] = elem_to_add
                     else:
                         if key == l:
-                            elemToAdd.append("Px")
-                            elemToAdd.append(l)
-                            keysToDict[key] = elemToAdd
+                            elem_to_add.append("Px")
+                            elem_to_add.append(l)
+                            keys_to_dict[key] = elem_to_add
             else:
                 if key == k:
-                    elemToAdd.append(k)
-                    keysToDict[key] = elemToAdd
+                    elem_to_add.append(k)
+                    keys_to_dict[key] = elem_to_add
 
-    return keysToDict
+    return keys_to_dict
 
 # Positioning element on last frame channel
 
 
-def add_keys(counter, key_to_add, keysToDict, obs, newData, playerId):
+def add_keys(counter, key_to_add, keys_to_dict, obs, new_data, player_id):
 
     data_pos = counter
 
     for key in key_to_add:
-        tmpList = keysToDict[key]
-        if tmpList[0] == "Px":
-            val = obs["P{}".format(playerId+1)]
+        tmp_list = keys_to_dict[key]
+        if tmp_list[0] == "Px":
+            val = obs["P{}".format(player_id+1)]
 
-            for idx in range(len(tmpList)-1):
+            for idx in range(len(tmp_list)-1):
 
-                if tmpList[idx+1] == "actions":
+                if tmp_list[idx+1] == "actions":
                     val = np.concatenate((val["actions"]["move"], val["actions"]["attack"]))
                 else:
-                    val = val[tmpList[idx+1]]
+                    val = val[tmp_list[idx+1]]
 
                 if isinstance(val, (float, int)) or val.size == 1:
                     val = [val]
         else:
-            val = [obs[tmpList[0]]]
+            val = [obs[tmp_list[0]]]
 
         for elem in val:
             counter = counter + 1
-            newData[counter] = elem
+            new_data[counter] = elem
 
-    newData[data_pos] = counter - data_pos
+    new_data[data_pos] = counter - data_pos
 
     return counter
 
 # Observation modification (adding one channel to store additional info)
 
 
-def processObs(obs, dtype, boxHighBound, playerSide, key_to_add,
-               keysToDict, imitationLearning=False):
+def process_obs(obs, dtype, box_high_bound, player_side, key_to_add,
+                keys_to_dict, imitation_learning=False):
 
     # Adding a channel to the standard image, it will be in last position and
     # it will store additional obs
     shp = obs["frame"].shape
-    obsNew = np.zeros((shp[0], shp[1], shp[2]+1), dtype=dtype)
+    obs_new = np.zeros((shp[0], shp[1], shp[2]+1), dtype=dtype)
 
     # Storing standard image in the first channel leaving the last one for
     # additional obs
-    obsNew[:, :, 0:shp[2]] = obs["frame"]
+    obs_new[:, :, 0:shp[2]] = obs["frame"]
 
     # Adding new info to the additional channel, on a very
     # long line and then reshaping into the obs dim
-    newData = np.zeros((shp[0] * shp[1]))
+    new_data = np.zeros((shp[0] * shp[1]))
 
     # Adding new info for 1P
     counter = 0
-    add_keys(counter, key_to_add, keysToDict, obs, newData, playerId=0)
+    add_keys(counter, key_to_add, keys_to_dict, obs, new_data, player_id=0)
 
     # Adding new info for P2 in 2P games
-    if playerSide == "P1P2" and not imitationLearning:
+    if player_side == "P1P2" and not imitation_learning:
         counter = int((shp[0] * shp[1]) / 2)
-        add_keys(counter, key_to_add, keysToDict, obs, newData, playerId=1)
+        add_keys(counter, key_to_add, keys_to_dict, obs, new_data, player_id=1)
 
-    newData = np.reshape(newData, (shp[0], -1))
+    new_data = np.reshape(new_data, (shp[0], -1))
 
-    newData = newData * boxHighBound
+    new_data = new_data * box_high_bound
 
-    obsNew[:, :, shp[2]] = newData
+    obs_new[:, :, shp[2]] = new_data
 
-    return obsNew
+    return obs_new
 
 # Convert additional obs to fifth observation channel for stable baselines
 
 
 class AdditionalObsToChannel(gym.ObservationWrapper):
-    def __init__(self, env, key_to_add, imitationLearning=False):
+    def __init__(self, env, key_to_add, imitation_learning=False):
         """
         Add to observations additional info
         :param env: (Gym Environment) the environment to wrap
@@ -114,20 +114,20 @@ class AdditionalObsToChannel(gym.ObservationWrapper):
         gym.ObservationWrapper.__init__(self, env)
         shp = self.env.observation_space["frame"].shape
         self.key_to_add = key_to_add
-        self.imitationLearning = imitationLearning
+        self.imitation_learning = imitation_learning
 
-        self.boxHighBound = self.env.observation_space["frame"].high.max()
-        self.boxLowBound = self.env.observation_space["frame"].low.min()
-        assert (self.boxHighBound == 1.0 or self.boxHighBound == 255),\
+        self.box_high_bound = self.env.observation_space["frame"].high.max()
+        self.box_low_bound = self.env.observation_space["frame"].low.min()
+        assert (self.box_high_bound == 1.0 or self.box_high_bound == 255),\
                "Observation space max bound must be either 1.0 or 255 to use Additional Obs"
-        assert (self.boxLowBound == 0.0 or self.boxLowBound == -1.0),\
+        assert (self.box_low_bound == 0.0 or self.box_low_bound == -1.0),\
                "Observation space min bound must be either 0.0 or -1.0 to use Additional Obs"
 
         # Build key_to_add - Observation Space dict connectivity
-        self.keysToDict = keys_to_dict_calc(self.key_to_add, self.env.observation_space)
+        self.keys_to_dict = keys_to_dict_calc(self.key_to_add, self.env.observation_space)
 
-        self.oldObsSpace = self.observation_space
-        self.observation_space = spaces.Box(low=self.boxLowBound, high=self.boxHighBound,
+        self.old_obs_space = self.observation_space
+        self.observation_space = spaces.Box(low=self.box_low_bound, high=self.box_high_bound,
                                             shape=(shp[0], shp[1], shp[2] + 1),
                                             dtype=np.float32)
         self.shp = self.observation_space.shape
@@ -135,10 +135,10 @@ class AdditionalObsToChannel(gym.ObservationWrapper):
         # Return key_to_add count
         self.key_to_add_count = []
         for key in self.key_to_add:
-            p1Val = add_keys(0, [key], self.keysToDict, self.oldObsSpace.sample(),
+            p1Val = add_keys(0, [key], self.keys_to_dict, self.old_obs_space.sample(),
                              np.zeros((shp[0] * shp[1])), 0)
-            if self.env.playerSide == "P1P2":
-                p2Val = add_keys(0, [key], self.keysToDict, self.oldObsSpace.sample(),
+            if self.env.player_side == "P1P2":
+                p2Val = add_keys(0, [key], self.keys_to_dict, self.old_obs_space.sample(),
                                  np.zeros((shp[0] * shp[1])), 1)
                 self.key_to_add_count.append([p1Val, p2Val])
             else:
@@ -147,5 +147,7 @@ class AdditionalObsToChannel(gym.ObservationWrapper):
     # Process observation
     def observation(self, obs):
 
-        return processObs(obs, self.observation_space.dtype, self.boxHighBound,
-                          self.env.playerSide, self.key_to_add, self.keysToDict, self.imitationLearning)
+        return process_obs(obs, self.observation_space.dtype,
+                           self.box_high_bound, self.env.player_side,
+                           self.key_to_add, self.keys_to_dict,
+                           self.imitation_learning)
