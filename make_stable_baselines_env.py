@@ -1,7 +1,7 @@
 import os
 import diambra.arena
-from wrappers.addObsWrap import AdditionalObsToChannel
-from wrappers.p2Wrap import selfPlayVsRL, vsHum, integratedSelfPlay
+from wrappers.add_obs_wrap import AdditionalObsToChannel
+from wrappers.p2_wrap import SelfPlayVsRL, VsHum, IntegratedSelfPlay
 
 from stable_baselines import logger
 from stable_baselines.bench import Monitor
@@ -62,11 +62,11 @@ def make_stable_baselines_env(seed, env_settings, wrappers_settings=None,
                 env = AdditionalObsToChannel(env, key_to_add)
             if p2_mode is not None:
                 if p2_mode == "integratedSelfPlay":
-                    env = integratedSelfPlay(env)
+                    env = IntegratedSelfPlay(env)
                 elif p2_mode == "selfPlayVsRL":
-                    env = selfPlayVsRL(env, p2_policy)
+                    env = SelfPlayVsRL(env, p2_policy)
                 elif p2_mode == "vsHum":
-                    env = vsHum(env, p2_policy)
+                    env = VsHum(env, p2_policy)
 
             env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                           allow_early_resets=allow_early_resets)

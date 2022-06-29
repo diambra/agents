@@ -1,8 +1,3 @@
-from diambra.arena.utils.gym_utils import discrete_to_multi_discrete_action
-from sb_utils import show_obs
-from make_stable_baselines_env import make_stable_baselines_env
-from wrappers.tektagRewWrap import TektagRoundEndChar2Penalty,\
-                                   TektagHealthBarUnbalancePenalty
 import sys
 import os
 import time
@@ -10,6 +5,11 @@ import numpy as np
 import argparse
 base_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_path, '../'))
+from diambra.arena.utils.gym_utils import discrete_to_multi_discrete_action
+from sb_utils import show_obs
+from make_stable_baselines_env import make_stable_baselines_env
+from wrappers.tektag_rew_wrap import TektagRoundEndChar2Penalty,\
+                                     TektagHealthBarUnbalancePenalty
 
 
 if __name__ == '__main__':
@@ -65,14 +65,14 @@ if __name__ == '__main__':
 
         # Wrappers settings
         wrappers_settings = {}
-        wrappers_settings["noOpMax"] = 0
-        wrappers_settings["rewardNormalization"] = True
-        wrappers_settings["clipRewards"] = False
-        wrappers_settings["frameStack"] = 4
+        wrappers_settings["no_op_max"] = 0
+        wrappers_settings["reward_normalization"] = True
+        wrappers_settings["clip_rewards"] = False
+        wrappers_settings["frame_stack"] = 4
         wrappers_settings["dilation"] = 1
-        wrappers_settings["actionsStack"] = 12
+        wrappers_settings["actions_stack"] = 12
         wrappers_settings["scale"] = True
-        wrappers_settings["scaleMod"] = 0
+        wrappers_settings["scale_mod"] = 0
 
         # Additional custom wrappers
         custom_wrappers = None
@@ -118,17 +118,17 @@ if __name__ == '__main__':
 
         if not hardcore:
             print("Keys to Dict:")
-            for k, v in env.keysToDict.items():
+            for k, v in env.keys_to_dict.items():
                 print(k, v)
 
         n_actions = env.n_actions
 
-        actions_print_dict = env.printActionsDict
+        actions_print_dict = env.print_actions_dict
 
         observation = env.reset()
 
-        show_obs(observation, key_to_add, env.keyToAddCount, wrappers_settings["actionsStack"],
-                 n_actions, wait_key, viz_flag, env.charNames, hardcore, idx_list)
+        show_obs(observation, key_to_add, env.key_to_add_count, wrappers_settings["actions_stack"],
+                 n_actions, wait_key, viz_flag, env.char_names, hardcore, idx_list)
 
         cumulative_ep_rew = 0.0
         cumulative_ep_rew_all = []
@@ -187,8 +187,8 @@ if __name__ == '__main__':
             print("done =", done)
             for k, v in info.items():
                 print("info[\"{}\"] = {}".format(k, v))
-            show_obs(observation, key_to_add, env.keyToAddCount, wrappers_settings["actionsStack"], n_actions,
-                     wait_key, viz_flag, env.charNames, hardcore, idx_list)
+            show_obs(observation, key_to_add, env.key_to_add_count, wrappers_settings["actions_stack"], n_actions,
+                     wait_key, viz_flag, env.char_names, hardcore, idx_list)
             print("--")
             print("Current Cumulative Reward =", cumulative_ep_rew)
 
@@ -203,9 +203,9 @@ if __name__ == '__main__':
                 cumulative_ep_rew = 0.0
 
                 observation = env.reset()
-                show_obs(observation, key_to_add, env.keyToAddCount,
-                         wrappers_settings["actionsStack"], n_actions,
-                         wait_key, viz_flag, env.charNames, hardcore, idx_list)
+                show_obs(observation, key_to_add, env.key_to_add_count,
+                         wrappers_settings["actions_stack"], n_actions,
+                         wait_key, viz_flag, env.char_names, hardcore, idx_list)
 
         print("Cumulative reward = ", cumulative_ep_rew_all)
         print("Mean cumulative reward = ", np.mean(cumulative_ep_rew_all))

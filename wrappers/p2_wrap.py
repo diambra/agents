@@ -1,4 +1,4 @@
-from sbUtils import P2ToP1AddObsMove
+from sb_utils import p2_to_p1_add_obs_move
 import gym
 import numpy as np
 
@@ -42,7 +42,7 @@ class SelfPlayVsRL(gym.Wrapper):
     def step(self, action):
 
         # Observation modification and P2 actions selected by the model
-        self.lastObs[:, :, -1] = P2ToP1AddObsMove(self.lastObs[:, :, -1])
+        self.lastObs[:, :, -1] = p2_to_p1_add_obs_move(self.lastObs[:, :, -1])
         p2_policy_actions, _ = self.p2_policy.act(self.lastObs)
 
         obs, reward, done, info = self.env.step(np.hstack((action, p2_policy_actions)))
