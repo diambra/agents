@@ -36,7 +36,7 @@ class SelfPlayVsRL(gym.Wrapper):
 
     # Update p2_policy RL policy weights
     def update_p2_policy_weights(self, weights_path):
-        self.p2_policy.updateWeights(weights_path)
+        self.p2_policy.update_weights(weights_path)
 
     # Step the environment
     def step(self, action):

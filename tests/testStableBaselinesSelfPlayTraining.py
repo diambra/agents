@@ -2,6 +2,13 @@ import sys
 import os
 import time
 import argparse
+base_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(base_path, '../'))
+from make_stable_baselines_env import make_stable_baselines_env
+from sb_utils import linear_schedule, AutoSave, model_cfg_save, UpdateRLPolicyWeights
+from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
+from diambra.arena.utils.policies import RLPolicy
+from stable_baselines import PPO2
 
 if __name__ == '__main__':
     time_dep_seed = int((time.time()-int(time.time()-0.5))*1000)
@@ -12,20 +19,9 @@ if __name__ == '__main__':
         opt = parser.parse_args()
         print(opt)
 
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        sys.path.append(os.path.join(base_path, '../'))
-
         model_folder = os.path.join(base_path, "{}StableBaselinesSelfPlayTestModel/".format(opt.gameId))
 
         os.makedirs(model_folder, exist_ok=True)
-
-        from makeStableBaselinesEnv import makeStableBaselinesEnv
-
-        from sbUtils import linear_schedule, AutoSave, ModelCfgSave, UpdateRLPolicyWeights
-        from customPolicies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
-        from diambraArena.utils.policies import RLPolicy
-
-        from stable_baselines import PPO2
 
         # Settings
         settings = {}
@@ -83,9 +79,9 @@ if __name__ == '__main__':
         rl_policy = RLPolicy(model, deterministic_flag, n_actions, name="PPO-0M",
                              action_space=settings["action_space"])
 
-        env, num_env = makeStableBaselinesEnv(time_dep_seed, settings, wrappers_settings,
-                                              key_to_add=key_to_add, p2_mode="selfPlayVsRL",
-                                              p2_policy=rl_policy, use_subprocess=False)
+        env, num_env = make_stable_baselines_env(time_dep_seed, settings, wrappers_settings,
+                                                 key_to_add=key_to_add, p2_mode="selfPlayVsRL",
+                                                 p2_policy=rl_policy, use_subprocess=False)
 
         print("Obs_space = ", env.observation_space)
         print("Obs_space type = ", env.observation_space.dtype)
@@ -94,7 +90,7 @@ if __name__ == '__main__':
 
         print("Act_space = ", env.action_space)
         print("Act_space type = ", env.action_space.dtype)
-        if settings["action_space"][0] == "multiDiscrete":
+        if settings["action_space"][0] == "multi_discrete":
             print("Act_space n = ", env.action_space.nvec)
         else:
             print("Act_space n = ", env.action_space.n)
@@ -137,7 +133,7 @@ if __name__ == '__main__':
                                      "list": [os.path.join(model_folder, "0M")]}
         up_rl_pol_weights_callback = UpdateRLPolicyWeights(check_freq=128, num_env=num_env,
                                                            save_path=model_folder,
-                                                           prevAgentsSampling=prev_agents_sampling_dict)
+                                                           prev_agents_sampling=prev_agents_sampling_dict)
 
         # Train the agent
         time_steps = 512
@@ -148,8 +144,8 @@ if __name__ == '__main__':
         model_path = os.path.join(model_folder, "512")
         model.save(model_path)
         # Save the correspondent CFG file
-        ModelCfgSave(model_path, "PPOSelfPlaySmall", n_actions, char_names,
-                     settings, wrappers_settings, key_to_add)
+        model_cfg_save(model_path, "PPOSelfPlaySmall", n_actions, char_names,
+                       settings, wrappers_settings, key_to_add)
 
         # Close the environment
         env.close()
