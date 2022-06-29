@@ -70,7 +70,7 @@ if __name__ == '__main__':
 
     print("Act_space = ", env.action_space)
     print("Act_space type = ", env.action_space.dtype)
-    if settings["actionSpace"] == "multiDiscrete":
+    if settings["actionSpace"] == "multi_discrete":
         print("Act_space n = ", env.action_space.nvec)
     else:
         print("Act_space n = ", env.action_space.n)

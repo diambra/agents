@@ -28,7 +28,7 @@ if __name__ == '__main__':
         parser.add_argument('--stepRatio',      type=int,   default=6,          help='Frame ratio')
         parser.add_argument('--nEpisodes',      type=int,   default=1,          help='Number of episodes')
         parser.add_argument('--continueGame',   type=float, default=0.0,        help='ContinueGame flag (-inf,+1.0]')
-        parser.add_argument('--actionSpace',    type=str,   default="discrete", help='(discrete)/multidiscrete')
+        parser.add_argument('--actionSpace',    type=str,   default="discrete", help='(discrete)/multi_discrete')
         parser.add_argument('--attButComb',     type=int,   default=0,          help='If to use attack button combinations (0=False)/1=True')
         parser.add_argument('--noAction',       type=int,   default=0,          help='If to use no action policy (0=False)')
         parser.add_argument('--hardcore',       type=int,   default=0,          help='Hard core mode (0=False)')
@@ -143,7 +143,7 @@ if __name__ == '__main__':
                 actions = env.action_space.sample()
 
                 if opt.noAction == 1:
-                    if settings["action_space"] == "multiDiscrete":
+                    if settings["action_space"] == "multi_discrete":
                         for iEl, _ in enumerate(actions):
                             actions[iEl] = 0
                     else:
@@ -162,7 +162,7 @@ if __name__ == '__main__':
                     actions[idx] = env.action_space["P{}".format(idx+1)].sample()
 
                     if opt.noAction == 1 and idx == 0:
-                        if settings["action_space"][idx] == "multiDiscrete":
+                        if settings["action_space"][idx] == "multi_discrete":
                             for iEl, _ in enumerate(actions[idx]):
                                 actions[idx][iEl] = 0
                         else:
