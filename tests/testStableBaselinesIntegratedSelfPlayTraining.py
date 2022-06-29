@@ -2,6 +2,12 @@ import sys
 import os
 import time
 import argparse
+base_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(base_path, '../'))
+from make_stable_baselines_env import make_stable_baselines_env
+from sb_utils import linear_schedule, AutoSave, model_cfg_save
+from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
+from custom_rl_algo.ppo2_selfplay import PPO2Selfplay
 
 if __name__ == '__main__':
     time_dep_seed = int((time.time()-int(time.time()-0.5))*1000)
@@ -12,23 +18,13 @@ if __name__ == '__main__':
         opt = parser.parse_args()
         print(opt)
 
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        sys.path.append(os.path.join(base_path, '../'))
-
         model_folder = os.path.join(base_path, "{}StableBaselinesIntegratedSelfPlayTestModel/".format(opt.gameId))
 
         os.makedirs(model_folder, exist_ok=True)
 
-        from make_stable_baselines_env import make_stable_baselines_env
-
-        from sb_utils import linear_schedule, AutoSave, ModelCfgSave
-        from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
-
-        from custom_rl_algo.ppo2_selfplay import PPO2Selfplay
-
         # Settings
         settings = {}
-        settings["gameId"] = opt.gameId
+        settings["game_id"] = opt.gameId
         settings["step_ratio"] = 6
         settings["frame_shape"] = [128, 128, 1]
         settings["player"] = "P1P2"  # 2P game
@@ -82,7 +78,7 @@ if __name__ == '__main__':
 
         print("Act_space = ", env.action_space)
         print("Act_space type = ", env.action_space.dtype)
-        if settings["actionSpace"][0] == "multiDiscrete":
+        if settings["action_space"][0] == "multi_discrete":
             print("Act_space n = ", env.action_space.nvec)
         else:
             print("Act_space n = ", env.action_space.n)
@@ -130,7 +126,7 @@ if __name__ == '__main__':
         model_path = os.path.join(model_folder, "512")
         model.save(model_path)
         # Save the correspondent CFG file
-        ModelCfgSave(model_path, "PPOIntegratedSelfPlaySmall", n_actions, char_names,
+        model_cfg_save(model_path, "PPOIntegratedSelfPlaySmall", n_actions, char_names,
                      settings, wrappers_settings, key_to_add)
 
         # Close the environment

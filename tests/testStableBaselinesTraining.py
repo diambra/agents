@@ -2,6 +2,12 @@ import sys
 import os
 import time
 import argparse
+base_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(base_path, '../'))
+from make_stable_baselines_env import make_stable_baselines_env
+from sb_utils import linear_schedule, AutoSave, model_cfg_save
+from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
+from stable_baselines import PPO2
 
 if __name__ == '__main__':
     time_dep_seed = int((time.time()-int(time.time()-0.5))*1000)
@@ -13,19 +19,9 @@ if __name__ == '__main__':
         opt = parser.parse_args()
         print(opt)
 
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        sys.path.append(os.path.join(base_path, '../'))
-
         model_folder = os.path.join(base_path, "{}StableBaselinesTestModel/".format(opt.gameId))
 
         os.makedirs(model_folder, exist_ok=True)
-
-        from make_stable_baselines_env import make_stable_baselines_env
-
-        from sb_utils import linear_schedule, AutoSave, ModelCfgSave
-        from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
-
-        from stable_baselines import PPO2
 
         # Common settings
         settings = {}
@@ -41,7 +37,7 @@ if __name__ == '__main__':
 
         # DIAMBRA gym kwargs
         settings["action_space"] = "discrete"
-        settings["attack_but_combination"] = False
+        settings["attack_but_combination"] = True
 
         # Env wrappers kwargs
         wrappers_settings = {}
@@ -86,7 +82,7 @@ if __name__ == '__main__':
 
         print("Act_space = ", env.action_space)
         print("Act_space type = ", env.action_space.dtype)
-        if settings["action_space"] == "multiDiscrete":
+        if settings["action_space"] == "multi_discrete":
             print("Act_space n = ", env.action_space.nvec)
         else:
             print("Act_space n = ", env.action_space.n)
@@ -105,7 +101,7 @@ if __name__ == '__main__':
 
         print("n_actions =", n_actions)
         print("n_char =", n_char)
-        print("nAddInfo =", policy_kwargs["n_add_info"])
+        print("n_add_info =", policy_kwargs["n_add_info"])
 
         # PPO param
         gamma = 0.94
@@ -135,8 +131,8 @@ if __name__ == '__main__':
         model_path = os.path.join(model_folder, str(time_steps))
         model.save(model_path)
         # Save the correspondent CFG file
-        ModelCfgSave(model_path, "PPOSmall", n_actions, char_names,
-                     settings, wrappers_settings, key_to_add)
+        model_cfg_save(model_path, "PPOSmall", n_actions, char_names,
+                       settings, wrappers_settings, key_to_add)
 
         # Close the environment
         env.close()
