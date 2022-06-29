@@ -73,10 +73,10 @@ class VsHum(gym.Wrapper):
         self.p2_policy = p2_policy
 
         # If p2 action logic is gamepad, add it to self.gamepads (for char selection)
-        # Check action space is prescribed as "multiDiscrete"
+        # Check action space is prescribed as "multi_discrete"
         self.p2_policy.initialize(self.env.actionList())
-        if self.actionsSpace[1] != "multiDiscrete":
-            raise Exception("Action Space for P2 must be \"multiDiscrete\" when using gamePad")
+        if self.actionsSpace[1] != "multi_discrete":
+            raise Exception("Action Space for P2 must be \"multi_discrete\" when using gamePad")
         if not self.attackButCombination[1]:
             raise Exception("Use attack buttons combinations for P2 must be \"True\" when using gamePad")
 

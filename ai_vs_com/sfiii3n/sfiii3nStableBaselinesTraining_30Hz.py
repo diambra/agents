@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     from make_stable_baselines_env import make_stable_baselines_env
 
-    from sbUtils import linear_schedule, AutoSave, ModelCfgSave
+    from sb_utils import linear_schedule, AutoSave, ModelCfgSave
     from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
 
     from stable_baselines import PPO2
@@ -70,7 +70,7 @@ if __name__ == '__main__':
 
     print("Act_space = ", env.action_space)
     print("Act_space type = ", env.action_space.dtype)
-    if settings["action_space"] == "multiDiscrete":
+    if settings["action_space"] == "multi_discrete":
         print("Act_space n = ", env.action_space.nvec)
     else:
         print("Act_space n = ", env.action_space.n)
