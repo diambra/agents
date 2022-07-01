@@ -5,14 +5,14 @@ import numpy as np
 # KeysToDict from KeysToAdd
 
 
-def keys_to_dict_calc(key_to_add, observation_space):
+def keys_to_dict_calc(key_to_add, observation_space, player_to_skip="P2"):
     keys_to_dict = {}
     for key in key_to_add:
         elem_to_add = []
         # Loop among all spaces
         for k in observation_space.spaces:
             # Skip frame and consider only a single player
-            if k == "frame" or k == "P2":
+            if k == "frame" or k == player_to_skip:
                 continue
             if isinstance(observation_space[k], gym.spaces.dict.Dict):
                 for l in observation_space.spaces[k].spaces:
