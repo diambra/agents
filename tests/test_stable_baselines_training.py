@@ -8,6 +8,8 @@ from make_stable_baselines_env import make_stable_baselines_env
 from sb_utils import linear_schedule, AutoSave, model_cfg_save
 from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
 from stable_baselines import PPO2
+from wrappers.tektag_rew_wrap import TektagRoundEndChar2Penalty,\
+                                     TektagHealthBarUnbalancePenalty
 
 if __name__ == '__main__':
     time_dep_seed = int((time.time()-int(time.time()-0.5))*1000)
@@ -50,6 +52,11 @@ if __name__ == '__main__':
         wrappers_settings["scale"] = True
         wrappers_settings["scale_mod"] = 0
 
+        # Additional custom wrappers
+        custom_wrappers = None
+        if opt.gameId == "tektagt" and settings["player"] != "P1P2":
+            custom_wrappers = [TektagRoundEndChar2Penalty, TektagHealthBarUnbalancePenalty]
+
         # Additional obs key list
         key_to_add = []
         key_to_add.append("actions")
@@ -73,6 +80,7 @@ if __name__ == '__main__':
         key_to_add.append("oppChar")
 
         env, num_envs = make_stable_baselines_env(time_dep_seed, settings, wrappers_settings,
+                                                  custom_wrappers=custom_wrappers,
                                                   key_to_add=key_to_add, use_subprocess=True)
 
         print("Obs_space = ", env.observation_space)
