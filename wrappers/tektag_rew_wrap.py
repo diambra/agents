@@ -9,12 +9,12 @@ class TektagRoundEndChar2Penalty(gym.Wrapper):
         gym.Wrapper.__init__(self, env)
 
         # Check ownHealth2 is available
-        assert (("Health1P1" in self.addObs.keys()) and
-                ("Health1P2" in self.addObs.keys()) and
-                ("Health2P1" in self.addObs.keys()) and
-                ("Health2P2" in self.addObs.keys())),\
-               "Both first and second char healths, for both P1 and P2, must be present in addObs" +\
-               " to use tektagRoundEndChar2Penalty wrapper {}".format(self.addObs.keys())
+        assert (("Health1P1" in self.add_obs.keys()) and
+                ("Health1P2" in self.add_obs.keys()) and
+                ("Health2P1" in self.add_obs.keys()) and
+                ("Health2P2" in self.add_obs.keys())),\
+               "Both first and second char healths, for both P1 and P2, must be present in add_obs" +\
+               " to use tektagRoundEndChar2Penalty wrapper {}".format(self.add_obs.keys())
 
         # Check single player mode is on
         assert (isinstance(self.action_space, gym.spaces.MultiDiscrete) or
@@ -30,7 +30,7 @@ class TektagRoundEndChar2Penalty(gym.Wrapper):
         obs, reward, done, info = self.env.step(action)
 
         # When round ends
-        if info["roundDone"] is True:
+        if info["round_done"] is True:
             # If round lost
             if reward < 0.0:
                 # Add penalty for background character health bar
@@ -62,12 +62,12 @@ class TektagHealthBarUnbalancePenalty(gym.Wrapper):
         gym.Wrapper.__init__(self, env)
 
         # Check ownHealth2 is available
-        assert (("Health1P1" in self.addObs.keys()) and
-                ("Health1P2" in self.addObs.keys()) and
-                ("Health2P1" in self.addObs.keys()) and
-                ("Health2P2" in self.addObs.keys())),\
-               "Both first and second char healths, for both P1 and P2, must be present in addObs" +\
-               " to use tektagRoundEndChar2Penalty wrapper {}".format(self.addObs.keys())
+        assert (("Health1P1" in self.add_obs.keys()) and
+                ("Health1P2" in self.add_obs.keys()) and
+                ("Health2P1" in self.add_obs.keys()) and
+                ("Health2P2" in self.add_obs.keys())),\
+               "Both first and second char healths, for both P1 and P2, must be present in add_obs" +\
+               " to use tektagRoundEndChar2Penalty wrapper {}".format(self.add_obs.keys())
 
         # Check single player mode is on
         assert (isinstance(self.action_space, gym.spaces.MultiDiscrete) or
