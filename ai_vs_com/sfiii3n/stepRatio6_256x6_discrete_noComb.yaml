@@ -1,11 +1,11 @@
 model_folder: "/Model/"
 tensor_board_folder: "/TB/"
 
-settings_game_id: "doapp"
+settings_game_id: "sfiii3n"
 settings_step_ratio: 6
 settings_frame_shape: [256, 256, 1]
-settings_characters: [["Kasumi"], ["Kasumi"]]
-settings_difficulty: 3
+settings_characters: [["Ryu"], ["Ryu"]]
+settings_difficulty: 6
 settings_continue_game: 0.0
 settings_action_space: "discrete"
 settings_attack_but_combination: false
@@ -18,7 +18,7 @@ custom_wrappers: false
 
 key_to_add: ["actions", "ownHealth", "oppHealth", "ownSide", "oppSide", "stage"]
 
-policy_kwargs_n_add_info: 161 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-1
+policy_kwargs_n_add_info: 197 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-1
 policy_kwargs_layers: [64, 64]
 policy_kwargs_use_small_cnn: false
 

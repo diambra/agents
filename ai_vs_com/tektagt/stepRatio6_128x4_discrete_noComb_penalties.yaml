@@ -1,11 +1,11 @@
-model_folder: "/ModelSmall/"
-tensor_board_folder: "/TBSmall/"
+model_folder: "/ModelPenalties/"
+tensor_board_folder: "/TBPenalties/"
 
-settings_game_id: "doapp"
+settings_game_id: "tektagt"
 settings_step_ratio: 6
 settings_frame_shape: [128, 128, 1]
-settings_characters: [["Kasumi"], ["Kasumi"]]
-settings_difficulty: 3
+settings_characters: [["Jin", "Yoshimitsu"], ["Jin", "Yoshimitsu"]]
+settings_difficulty: 6
 settings_continue_game: 0.0
 settings_action_space: "discrete"
 settings_attack_but_combination: false
@@ -14,11 +14,23 @@ wrappers_settings_frame_stack: 4
 wrappers_settings_dilation: 1
 wrappers_settings_actions_stack: 12
 
-custom_wrappers: false
+custom_wrappers: true
 
-key_to_add: ["actions", "ownHealth", "oppHealth", "ownSide", "oppSide", "stage"]
+key_to_add:
+  [
+    "actions",
+    "ownHealth1",
+    "ownHealth2",
+    "oppHealth1",
+    "oppHealth2",
+    "ownSide",
+    "oppSide",
+    "ownActiveChar",
+    "oppActiveChar",
+    "stage",
+  ]
 
-policy_kwargs_n_add_info: 161 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-1
+policy_kwargs_n_add_info: 189 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-1
 policy_kwargs_layers: [64, 64]
 policy_kwargs_use_small_cnn: true
 
