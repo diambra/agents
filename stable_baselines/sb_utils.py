@@ -14,42 +14,42 @@ def show_obs(observation, key_to_add, key_to_add_count, actions_stack,
     if not hardcore:
         shp = observation.shape
         for idx in idx_list:
-            add_par = observation[:, :, shp[2]-1]
+            add_par = observation[:, :, shp[2] - 1]
             add_par = np.reshape(add_par, (-1))
 
-            counter = 0 + idx*int((shp[0]*shp[1])/2)
+            counter = 0 + idx * int((shp[0] * shp[1]) / 2)
 
-            print("Additional Par P{} =".format(idx+1), add_par[counter])
+            print("Additional Par P{} =".format(idx + 1), add_par[counter])
 
             counter += 1
 
             for idk in range(len(key_to_add)):
 
-                var = add_par[counter:counter+key_to_add_count[idk][idx]]\
-                      if key_to_add_count[idk][idx] > 1 else add_par[counter]
+                var = add_par[counter:counter + key_to_add_count[idk][idx]]\
+                    if key_to_add_count[idk][idx] > 1 else add_par[counter]
                 counter += key_to_add_count[idk][idx]
 
                 if "actions" in key_to_add[idk]:
-                    move_actions = var[0:actions_stack*n_actions[idx][0]]
-                    attack_actions = var[actions_stack*n_actions[idx][0]:actions_stack*(n_actions[idx][0]+n_actions[idx][1])]
+                    move_actions = var[0:actions_stack * n_actions[idx][0]]
+                    attack_actions = var[actions_stack * n_actions[idx][0]:actions_stack * (n_actions[idx][0] + n_actions[idx][1])]
                     move_actions = np.reshape(move_actions, (actions_stack, -1))
                     attack_actions = np.reshape(attack_actions, (actions_stack, -1))
-                    print("Move actions P{} =\n".format(idx+1), move_actions)
-                    print("Attack actions P{} =\n ".format(idx+1), attack_actions)
+                    print("Move actions P{} =\n".format(idx + 1), move_actions)
+                    print("Attack actions P{} =\n ".format(idx + 1), attack_actions)
                 elif "ownChar" in key_to_add[idk] or "oppChar" in key_to_add[idk]:
-                    print("{}P{} =".format(key_to_add[idk], idx+1), char_list[list(var).index(1.0)])
+                    print("{}P{} =".format(key_to_add[idk], idx + 1), char_list[list(var).index(1.0)])
                 else:
-                    print("{}P{} =".format(key_to_add[idk], idx+1), var)
+                    print("{}P{} =".format(key_to_add[idk], idx + 1), var)
 
         if viz:
-            obs = np.array(observation[:, :, 0:shp[2]-1]).astype(np.float32)
+            obs = np.array(observation[:, :, 0:shp[2] - 1]).astype(np.float32)
     else:
         if viz:
             obs = np.array(observation).astype(np.float32)
 
     if viz:
         for idx in range(obs.shape[2]):
-            cv2.imshow("image"+str(idx), obs[:, :, idx])
+            cv2.imshow("image" + str(idx), obs[:, :, idx])
 
         cv2.wait_key(wait_key)
 
@@ -59,10 +59,10 @@ def show_obs(observation, key_to_add, key_to_add_count, actions_stack,
 
 def p2_to_p1_add_obs_move(observation):
     shp = observation.shape
-    start_idx = int((shp[0]*shp[1])/2)
+    start_idx = int((shp[0] * shp[1]) / 2)
     observation = np.reshape(observation, (-1))
     num_add_par_p2 = int(observation[start_idx])
-    add_par_p2 = observation[start_idx:start_idx+num_add_par_p2 + 1]
+    add_par_p2 = observation[start_idx:start_idx + num_add_par_p2 + 1]
     observation[0:num_add_par_p2 + 1] = add_par_p2
     observation = np.reshape(observation, (shp[0], -1))
     return observation
@@ -104,7 +104,7 @@ class AutoSave(BaseCallback):
     """
     def __init__(self, check_freq: int, num_env: int, save_path: str, verbose=1):
         super(AutoSave, self).__init__(verbose)
-        self.check_freq = int(check_freq/num_env)
+        self.check_freq = int(check_freq / num_env)
         self.num_env = num_env
         self.save_path_base = save_path + 'autoSave_'
 
@@ -113,7 +113,7 @@ class AutoSave(BaseCallback):
             if self.verbose > 0:
                 print("Saving latest model to {}".format(self.save_path_base))
             # Save the agent
-            self.model.save(self.save_path_base+str(self.n_calls*self.num_env))
+            self.model.save(self.save_path_base + str(self.n_calls * self.num_env))
 
         return True
 
@@ -124,12 +124,12 @@ class UpdateRLPolicyWeights(BaseCallback):
     def __init__(self, check_freq: int, num_env: int, save_path: str,
                  prev_agents_sampling={"probability": 0.0, "list": []}, verbose=1):
         super(UpdateRLPolicyWeights, self).__init__(verbose)
-        self.check_freq = int(check_freq/num_env)
+        self.check_freq = int(check_freq / num_env)
         self.num_env = num_env
         self.save_path = save_path + 'lastModel'
         self.sampling_probability = prev_agents_sampling["probability"]
         self.prev_agents_list = prev_agents_sampling["list"]
-        time_dep_seed = int((time.time()-int(time.time()-0.5))*1000)
+        time_dep_seed = int((time.time() - int(time.time() - 0.5)) * 1000)
         np.random.seed(time_dep_seed)
 
     def _on_step(self) -> bool:
@@ -168,7 +168,7 @@ class UpdateRLPolicyWeights(BaseCallback):
 
 
 def model_cfg_save(model_path, name, n_actions, char_list,
-                   settings, wrappers_settings, key_to_add):
+                   settings, wrappers_settings, key_to_add, params):
     data = {}
     _, model_name = os.path.split(model_path)
     data["agentModel"] = model_name + ".zip"
@@ -178,6 +178,7 @@ def model_cfg_save(model_path, name, n_actions, char_list,
     data["settings"] = settings
     data["wrappers_settings"] = wrappers_settings
     data["key_to_add"] = key_to_add
+    data["params"] = params
 
     with open(model_path + ".json", 'w') as outfile:
         json.dump(data, outfile, indent=4)
@@ -189,7 +190,7 @@ def key_to_add_count_calc(key_to_add, n_actions, n_actions_stack, char_list):
 
     for key in key_to_add:
         if "actions" in key:
-            key_to_add_count.append([n_actions_stack*(n_actions[0]+n_actions[1])])
+            key_to_add_count.append([n_actions_stack * (n_actions[0] + n_actions[1])])
         elif "Char" in key:
             key_to_add_count.append([len(char_list)])
         else:
