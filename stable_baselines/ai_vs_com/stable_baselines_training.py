@@ -1,96 +1,76 @@
 import sys
 import os
 import time
+import yaml
 import argparse
+base_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(base_path, '../'))
 from make_stable_baselines_env import make_stable_baselines_env
 from wrappers.tektag_rew_wrap import TektagRoundEndChar2Penalty, TektagHealthBarUnbalancePenalty
 
-from sb_utils import linear_schedule, AutoSave, ModelCfgSave
+from sb_utils import linear_schedule, AutoSave, model_cfg_save
 from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
 
 from stable_baselines import PPO2
 
-base_path = os.path.dirname(os.path.abspath(__file__))
-
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfgFile', type=str,   default="doapp",    help='Game ID')
+    parser.add_argument('--cfgFile', type=str, required=True, help='Training configuration file')
     opt = parser.parse_args()
     print(opt)
 
-    # TO BE READ FROM CFG:
-    # - Model and TB folders base paths
-    # - settings: gameid, step_ratio, frame_shape, characters, difficuly,
-    #   continue_game, action space, attack_but_comb
-    # - wrappers settings: frame_stack, dilation, actios_stack
-    # - custom_wrappers
-    # - key_to_append
-    # - gamma
-    # - checkpoint
-    # - learning_rate, cliprate, cliprate_vf,
+    # Read the cfg file
+    yaml_file = open(opt.cfgFile)
+    params = yaml.load(yaml_file, Loader=yaml.FullLoader)
+    print("Params = ", params)
+    yaml_file.close()
 
-    time_dep_seed = int((time.time()-int(time.time()-0.5))*1000)
+    time_dep_seed = int((time.time() - int(time.time() - 0.5)) * 1000)
 
-    base_path = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(os.path.join(base_path, '../../'))
-
-    model_folder = os.path.join(base_path, "model/")
-    tensor_board_folder = os.path.join(base_path, "TB/")
+    model_folder = os.path.join(base_path, params["settings_game_id"] + params["model_folder"])
+    tensor_board_folder = os.path.join(base_path, params["settings_game_id"] + params["tensor_board_folder"])
 
     os.makedirs(model_folder, exist_ok=True)
 
     # Settings
     settings = {}
-    settings["game_id"] = "tektagt"
-    settings["step_ratio"] = 6
-    settings["frame_shape"] = [128, 128, 1]
+    settings["game_id"] = params["settings_game_id"]
+    settings["step_ratio"] = params["settings_step_ratio"]
+    settings["frame_shape"] = params["settings_frame_shape"]
     settings["player"] = "Random"  # P1 / P2
 
-    settings["characters"] = [["Jin", "Yoshimitsu"], ["Jin", "Yoshimitsu"]]
+    settings["characters"] = params["settings_characters"]
 
-    settings["difficulty"] = 6
+    settings["difficulty"] = params["settings_difficulty"]
     settings["char_outfits"] = [2, 2]
 
-    settings["continue_game"] = -2.0
+    settings["continue_game"] = params["settings_continue_game"]
     settings["show_final"] = False
 
-    settings["action_space"] = "discrete"
-    settings["attack_but_combination"] = False
+    settings["action_space"] = params["settings_action_space"]
+    settings["attack_but_combination"] = params["settings_attack_but_combination"]
 
     # Wrappers Settings
     wrappers_settings = {}
     wrappers_settings["no_op_max"] = 0
     wrappers_settings["reward_normalization"] = True
     wrappers_settings["clip_rewards"] = False
-    wrappers_settings["frame_stack"] = 4
-    wrappers_settings["dilation"] = 1
-    wrappers_settings["actions_stack"] = 12
+    wrappers_settings["frame_stack"] = params["wrappers_settings_frame_stack"]
+    wrappers_settings["dilation"] = params["wrappers_settings_dilation"]
+    wrappers_settings["actions_stack"] = params["wrappers_settings_actions_stack"]
     wrappers_settings["scale"] = True
     wrappers_settings["scale_mod"] = 0
 
     # Additional custom wrappers
-    custom_wrappers = [TektagRoundEndChar2Penalty, tektagHealthBarUnbalancePenalty]
+    custom_wrappers = None
+    if params["custom_wrappers"] is True:
+        custom_wrappers = [TektagRoundEndChar2Penalty, TektagHealthBarUnbalancePenalty]
 
     # Additional obs key list
     key_to_add = []
-    key_to_add.append("actions")
-
-    key_to_add.append("ownHealth1")
-    key_to_add.append("ownHealth2")
-    key_to_add.append("oppHealth1")
-    key_to_add.append("oppHealth2")
-    key_to_add.append("ownActiveChar")
-    key_to_add.append("oppActiveChar")
-
-    key_to_add.append("ownSide")
-    key_to_add.append("oppSide")
-    key_to_add.append("stage")
-
-    #key_to_add.append("ownChar1")
-    #key_to_add.append("ownChar2")
-    #key_to_add.append("oppChar1")
-    #key_to_add.append("oppChar2")
+    for key in params["key_to_add"]:
+        key_to_add.append(key)
 
     env, num_env = make_stable_baselines_env(time_dep_seed, settings, wrappers_settings,
                                              custom_wrappers=custom_wrappers,
@@ -115,59 +95,59 @@ if __name__ == '__main__':
     char_names = env.get_attr("char_names")[0]
 
     policy_kwargs = {}
-    policy_kwargs["n_add_info"] = n_actions_stack*(n_actions[0]+n_actions[1]) +\
-        len(key_to_add)-1
-    policy_kwargs["layers"] = [64, 64]
+    policy_kwargs["n_add_info"] = params["policy_kwargs_n_add_info"]
+    policy_kwargs["layers"] = params["policy_kwargs_layers"]
 
-    policy_kwargs["cnn_extractor"] = local_nature_cnn_small
+    if params["policy_kwargs_use_small_cnn"] is True:
+        policy_kwargs["cnn_extractor"] = local_nature_cnn_small
 
     print("n_actions =", n_actions)
     print("n_char =", n_char)
     print("n_add_info =", policy_kwargs["n_add_info"])
 
     # PPO param
-    gamma = 0.94
-    model_checkpoint = "235M_penalties"
-    '''
-    learning_rate = linear_schedule(2.5e-4, 2.5e-6)
-    cliprange = linear_schedule(0.15, 0.025)
+    gamma = params["ppo_gamma"]
+    model_checkpoint = params["ppo_model_checkpoint"]
+
+    learning_rate = linear_schedule(params["ppo_learning_rate"][0], params["ppo_learning_rate"][1])
+    cliprange = linear_schedule(params["ppo_cliprange"][0], params["ppo_cliprange"][1])
     cliprange_vf = cliprange
-    # Initialize the model
-    model = PPO2(CustCnnPolicy, env, verbose=1,
-                 gamma=gamma, nminibatches=8, noptepochs=4, n_steps=128,
-                 learning_rate=learning_rate, cliprange=cliprange,
-                 cliprange_vf=cliprange_vf, policy_kwargs=policy_kwargs,
-                 tensorboard_log=tensor_board_folder)
-    #OR
-    '''
-    #learning_rate = linear_schedule(8.0e-5, 2.5e-6)
-    #cliprange    = linear_schedule(0.095, 0.025)
-    learning_rate = linear_schedule(2.0e-5, 2.5e-6)
-    cliprange    = linear_schedule(0.050, 0.025)
-    cliprange_vf  = cliprange
-    # Load the trained agent
-    model = PPO2.load(os.path.join(model_folder, model_checkpoint), env=env,
-                      policy_kwargs=policy_kwargs, gamma=gamma,
-                      learning_rate=learning_rate,
-                      cliprange=cliprange, cliprange_vf=cliprange_vf,
-                      tensorboard_log=tensor_board_folder)
+    nminibatches = params["ppo_nminibatches"]
+    noptepochs = params["ppo_noptepochs"]
+    n_steps = params["ppo_n_steps"]
+
+    if model_checkpoint == "0M":
+        # Initialize the model
+        model = PPO2(CustCnnPolicy, env, verbose=1,
+                     gamma=gamma, nminibatches=nminibatches,
+                     noptepochs=noptepochs, n_steps=n_steps,
+                     learning_rate=learning_rate, cliprange=cliprange,
+                     cliprange_vf=cliprange_vf, policy_kwargs=policy_kwargs,
+                     tensorboard_log=tensor_board_folder)
+    else:
+
+        # Load the trained agent
+        model = PPO2.load(os.path.join(model_folder, model_checkpoint), env=env,
+                          policy_kwargs=policy_kwargs, gamma=gamma,
+                          learning_rate=learning_rate,
+                          cliprange=cliprange, cliprange_vf=cliprange_vf,
+                          tensorboard_log=tensor_board_folder)
 
     print("Model discount factor = ", model.gamma)
 
     # Create the callback: autosave every USER DEF steps
-    auto_save_callback = AutoSave(check_freq=1000000, num_env=num_env,
+    autosave_freq = params["ppo_autosave_freq"]
+    auto_save_callback = AutoSave(check_freq=autosave_freq, num_env=num_env,
                                   save_path=os.path.join(model_folder, model_checkpoint + "_"))
 
     # Train the agent
-    time_steps = 10000000
+    time_steps = params["ppo_time_steps"]
     model.learn(total_timesteps=time_steps, callback=auto_save_callback)
 
     # Save the agent
-    model_path = os.path.join(model_folder, "245M_penalties")
+    new_model_checkpoint = str(int(model_checkpoint[:-1]) + time_steps) + "M"
+    model_path = os.path.join(model_folder, new_model_checkpoint)
     model.save(model_path)
-    # Save the correspondent CFG file
-    ModelCfgSave(model_path, "PPOSmall", n_actions, char_names,
-                 settings, wrappers_settings, key_to_add)
 
     # Close the environment
     env.close()
