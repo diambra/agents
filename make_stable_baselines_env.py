@@ -51,7 +51,7 @@ def make_stable_baselines_env(seed, env_settings, wrappers_settings=None,
         def thunk():
             env = diambra.arena.make(env_settings["game_id"], env_settings,
                                      wrappers_settings, traj_rec_settings,
-                                     seed=seed+rank, rank=rank)
+                                     seed=seed + rank, rank=rank)
             if not hardcore:
 
                 # Applying custom wrappers
