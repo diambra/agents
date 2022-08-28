@@ -1,18 +1,26 @@
-model_folder: "/Model/"
-tensor_board_folder: "/TB/"
+folders:
+  model: "ModelSmall/"
+  tensor_board: "TBSmall/"
 
-settings_game_id: "tektagt"
-settings_step_ratio: 6
-settings_frame_shape: [128, 128, 1]
-settings_characters: [["Jin", "Yoshimitsu"], ["Jin", "Yoshimitsu"]]
-settings_difficulty: 6
-settings_continue_game: 0.0
-settings_action_space: "discrete"
-settings_attack_but_combination: false
+settings:
+  game_id: "tektagt"
+  characters: [["Jin", "Yoshimitsu"], ["Jin", "Yoshimitsu"]]
+  difficulty: 6
+  step_ratio: 6
+  frame_shape: [128, 128, 1]
+  continue_game: 0.0
+  action_space: "discrete"
+  attack_but_combination: false
+  char_outfits: [2, 2]
+  player: "Random"
+  show_final: false
 
-wrappers_settings_frame_stack: 4
-wrappers_settings_dilation: 1
-wrappers_settings_actions_stack: 12
+wrappers_settings:
+  frame_stack: 4
+  dilation: 1
+  actions_stack: 12
+  reward_normalization: true
+  scale: true
 
 custom_wrappers: false
 
@@ -30,19 +38,20 @@ key_to_add:
     "stage",
   ]
 
-policy_kwargs_n_add_info: 189 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-1
-policy_kwargs_layers: [64, 64]
-policy_kwargs_use_small_cnn: true
+policy_kwargs:
+  n_add_info: 189 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-1
+  layers: [64, 64]
+  use_small_cnn: true
 
-ppo_gamma: 0.94
-ppo_model_checkpoint: "0M"
-ppo_learning_rate: [2.5e-4, 2.5e-6] # To start
-ppo_cliprange: [0.15, 0.025] # To start
-#ppo_learning_rate: [5.0e-5, 2.5e-6] # Fine Tuning
-#cliprange: [0.075, 0.025] # Fine Tuning
-ppo_nminibatches: 8
-ppo_noptepochs: 4
-ppo_n_steps: 128
-
-ppo_autosave_freq: 1000000
-ppo_time_steps: 40000000
+ppo_settings:
+  gamma: 0.94
+  model_checkpoint: "0M"
+  learning_rate: [2.5e-4, 2.5e-6] # To start
+  cliprange: [0.15, 0.025] # To start
+  #learning_rate: [5.0e-5, 2.5e-6] # Fine Tuning
+  #cliprange: [0.075, 0.025] # Fine Tuning
+  nminibatches: 8
+  noptepochs: 4
+  n_steps: 128
+  autosave_freq: 1000000
+  time_steps: 40000000
