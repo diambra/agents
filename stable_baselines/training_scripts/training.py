@@ -2,6 +2,7 @@ import sys
 import os
 import time
 import yaml
+import json
 import argparse
 base_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_path, '../'))
@@ -23,44 +24,21 @@ if __name__ == '__main__':
     # Read the cfg file
     yaml_file = open(opt.cfgFile)
     params = yaml.load(yaml_file, Loader=yaml.FullLoader)
-    print("Params = ", params)
+    print("Params = ", json.dumps(params, sort_keys=True, indent=4))
     yaml_file.close()
 
     time_dep_seed = int((time.time() - int(time.time() - 0.5)) * 1000)
 
-    model_folder = os.path.join(base_path, params["settings_game_id"] + params["model_folder"])
-    tensor_board_folder = os.path.join(base_path, params["settings_game_id"] + params["tensor_board_folder"])
+    model_folder = os.path.join(base_path, "games_specific_files", params["settings"]["game_id"], params["folders"]["model"])
+    tensor_board_folder = os.path.join(base_path, "games_specific_files", params["settings"]["game_id"], params["folders"]["tensor_board"])
 
     os.makedirs(model_folder, exist_ok=True)
 
     # Settings
-    settings = {}
-    settings["game_id"] = params["settings_game_id"]
-    settings["step_ratio"] = params["settings_step_ratio"]
-    settings["frame_shape"] = params["settings_frame_shape"]
-    settings["player"] = "Random"  # P1 / P2
-
-    settings["characters"] = params["settings_characters"]
-
-    settings["difficulty"] = params["settings_difficulty"]
-    settings["char_outfits"] = [2, 2]
-
-    settings["continue_game"] = params["settings_continue_game"]
-    settings["show_final"] = False
-
-    settings["action_space"] = params["settings_action_space"]
-    settings["attack_but_combination"] = params["settings_attack_but_combination"]
+    settings = params["settings"]
 
     # Wrappers Settings
-    wrappers_settings = {}
-    wrappers_settings["no_op_max"] = 0
-    wrappers_settings["reward_normalization"] = True
-    wrappers_settings["clip_rewards"] = False
-    wrappers_settings["frame_stack"] = params["wrappers_settings_frame_stack"]
-    wrappers_settings["dilation"] = params["wrappers_settings_dilation"]
-    wrappers_settings["actions_stack"] = params["wrappers_settings_actions_stack"]
-    wrappers_settings["scale"] = True
-    wrappers_settings["scale_mod"] = 0
+    wrappers_settings = params["wrappers_settings"]
 
     # Additional custom wrappers
     custom_wrappers = None
@@ -68,9 +46,7 @@ if __name__ == '__main__':
         custom_wrappers = [TektagRoundEndChar2Penalty, TektagHealthBarUnbalancePenalty]
 
     # Additional obs key list
-    key_to_add = []
-    for key in params["key_to_add"]:
-        key_to_add.append(key)
+    key_to_add = params["key_to_add"]
 
     env, num_env = make_stable_baselines_env(time_dep_seed, settings, wrappers_settings,
                                              custom_wrappers=custom_wrappers,
@@ -94,27 +70,26 @@ if __name__ == '__main__':
     n_char = env.get_attr("number_of_characters")[0]
     char_names = env.get_attr("char_names")[0]
 
-    policy_kwargs = {}
-    policy_kwargs["n_add_info"] = params["policy_kwargs_n_add_info"]
-    policy_kwargs["layers"] = params["policy_kwargs_layers"]
+    policy_kwargs = params["policy_kwargs"]
 
-    if params["policy_kwargs_use_small_cnn"] is True:
+    if params["policy_kwargs"]["use_small_cnn"] is True:
         policy_kwargs["cnn_extractor"] = local_nature_cnn_small
 
     print("n_actions =", n_actions)
     print("n_char =", n_char)
     print("n_add_info =", policy_kwargs["n_add_info"])
 
-    # PPO param
-    gamma = params["ppo_gamma"]
-    model_checkpoint = params["ppo_model_checkpoint"]
+    # PPO settings
+    ppo_settings = params["ppo_settings"]
+    gamma = ppo_settings["gamma"]
+    model_checkpoint = ppo_settings["model_checkpoint"]
 
-    learning_rate = linear_schedule(params["ppo_learning_rate"][0], params["ppo_learning_rate"][1])
-    cliprange = linear_schedule(params["ppo_cliprange"][0], params["ppo_cliprange"][1])
+    learning_rate = linear_schedule(ppo_settings["learning_rate"][0], ppo_settings["learning_rate"][1])
+    cliprange = linear_schedule(ppo_settings["cliprange"][0], ppo_settings["cliprange"][1])
     cliprange_vf = cliprange
-    nminibatches = params["ppo_nminibatches"]
-    noptepochs = params["ppo_noptepochs"]
-    n_steps = params["ppo_n_steps"]
+    nminibatches = ppo_settings["nminibatches"]
+    noptepochs = ppo_settings["noptepochs"]
+    n_steps = ppo_settings["n_steps"]
 
     if model_checkpoint == "0M":
         # Initialize the model
@@ -136,12 +111,12 @@ if __name__ == '__main__':
     print("Model discount factor = ", model.gamma)
 
     # Create the callback: autosave every USER DEF steps
-    autosave_freq = params["ppo_autosave_freq"]
+    autosave_freq = ppo_settings["autosave_freq"]
     auto_save_callback = AutoSave(check_freq=autosave_freq, num_env=num_env,
                                   save_path=os.path.join(model_folder, model_checkpoint + "_"))
 
     # Train the agent
-    time_steps = params["ppo_time_steps"]
+    time_steps = ppo_settings["time_steps"]
     model.learn(total_timesteps=time_steps, callback=auto_save_callback)
 
     # Save the agent
