@@ -24,9 +24,9 @@ show_gym_obs(observation, env.char_names)
 
 while True:
 
-    actions = env.action_space.sample()
+    action = 0 if settings["action_space"] == "discrete" else [0, 0]
 
-    observation, reward, done, info = env.step(actions)
+    observation, reward, done, info = env.step(action)
     show_gym_obs(observation, env.char_names)
     print("Reward: {}".format(reward))
     print("Done: {}".format(done))
