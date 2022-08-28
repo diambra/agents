@@ -2,38 +2,40 @@
 import diambra.arena
 from diambra.arena.utils.gym_utils import show_gym_obs, env_spaces_summary
 
-# Settings
-settings = {
-    "player": "P2",
-    "step_ratio": 6,
-    "frame_shape": [128, 128, 1],
-    "hardcore": False,
-    "difficulty": 4,
-    "characters": [["Random"], ["Random"]],
-    "char_outfits": [1, 1],
-    "action_space": "multi_discrete",
-    "attack_but_combination": False
-}
+if __name__ == "__main__":
 
-env = diambra.arena.make("doapp", settings)
+    # Settings
+    settings = {
+        "player": "P2",
+        "step_ratio": 6,
+        "frame_shape": [128, 128, 1],
+        "hardcore": False,
+        "difficulty": 4,
+        "characters": [["Random"], ["Random"]],
+        "char_outfits": [1, 1],
+        "action_space": "multi_discrete",
+        "attack_but_combination": False
+    }
 
-env_spaces_summary(env)
+    env = diambra.arena.make("doapp", settings)
 
-observation = env.reset()
-show_gym_obs(observation, env.char_names)
+    env_spaces_summary(env)
 
-while True:
-
-    action = 0 if settings["action_space"] == "discrete" else [0, 0]
-
-    observation, reward, done, info = env.step(action)
+    observation = env.reset()
     show_gym_obs(observation, env.char_names)
-    print("Reward: {}".format(reward))
-    print("Done: {}".format(done))
-    print("Info: {}".format(info))
 
-    if done:
-        observation = env.reset()
+    while True:
+
+        action = 0 if settings["action_space"] == "discrete" else [0, 0]
+
+        observation, reward, done, info = env.step(action)
         show_gym_obs(observation, env.char_names)
+        print("Reward: {}".format(reward))
+        print("Done: {}".format(done))
+        print("Info: {}".format(info))
 
-env.close()
+        if done:
+            observation = env.reset()
+            show_gym_obs(observation, env.char_names)
+
+    env.close()

@@ -2,38 +2,40 @@
 import diambra.arena
 from diambra.arena.utils.gym_utils import show_gym_obs, env_spaces_summary
 
-# Settings
-settings = {
-    "player": "P2",
-    "step_ratio": 2,
-    "frame_shape": [256, 256, 3],
-    "hardcore": False,
-    "difficulty": 4,
-    "characters": [["Kasumi"], ["Kasumi"]],
-    "char_outfits": [3, 3],
-    "action_space": "discrete",
-    "attack_but_combination": True
-}
+if __name__ == "__main__":
 
-env = diambra.arena.make("doapp", settings)
+    # Settings
+    settings = {
+        "player": "P2",
+        "step_ratio": 2,
+        "frame_shape": [256, 256, 3],
+        "hardcore": False,
+        "difficulty": 4,
+        "characters": [["Kasumi"], ["Kasumi"]],
+        "char_outfits": [3, 3],
+        "action_space": "discrete",
+        "attack_but_combination": True
+    }
 
-env_spaces_summary(env)
+    env = diambra.arena.make("doapp", settings)
 
-observation = env.reset()
-show_gym_obs(observation, env.char_names)
+    env_spaces_summary(env)
 
-while True:
-
-    actions = env.action_space.sample()
-
-    observation, reward, done, info = env.step(actions)
+    observation = env.reset()
     show_gym_obs(observation, env.char_names)
-    print("Reward: {}".format(reward))
-    print("Done: {}".format(done))
-    print("Info: {}".format(info))
 
-    if done:
-        observation = env.reset()
+    while True:
+
+        actions = env.action_space.sample()
+
+        observation, reward, done, info = env.step(actions)
         show_gym_obs(observation, env.char_names)
+        print("Reward: {}".format(reward))
+        print("Done: {}".format(done))
+        print("Info: {}".format(info))
 
-env.close()
+        if done:
+            observation = env.reset()
+            show_gym_obs(observation, env.char_names)
+
+    env.close()
