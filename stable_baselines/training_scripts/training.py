@@ -24,7 +24,7 @@ if __name__ == '__main__':
     # Read the cfg file
     yaml_file = open(opt.cfgFile)
     params = yaml.load(yaml_file, Loader=yaml.FullLoader)
-    print("Params = ", json.dumps(params, sort_keys=True, indent=4))
+    print("Config parameters = ", json.dumps(params, sort_keys=True, indent=4))
     yaml_file.close()
 
     time_dep_seed = int((time.time() - int(time.time() - 0.5)) * 1000)
