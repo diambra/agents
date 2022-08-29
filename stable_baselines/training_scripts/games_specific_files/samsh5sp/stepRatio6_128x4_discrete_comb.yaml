@@ -29,7 +29,8 @@ key_to_add: ["actions", "ownHealth", "oppHealth", "ownSide", "oppSide", "stage"]
 policy_kwargs:
   n_add_info: 245 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-1
   layers: [64, 64]
-  use_small_cnn: true
+
+use_small_cnn: true
 
 ppo_settings:
   gamma: 0.94
