@@ -65,19 +65,10 @@ if __name__ == '__main__':
         print("Act_space n = ", env.action_space.n)
 
     # Policy param
-    n_actions = env.get_attr("n_actions")[0][0]
-    n_actions_stack = env.get_attr("n_actions_stack")[0]
-    n_char = env.get_attr("number_of_characters")[0]
-    char_names = env.get_attr("char_names")[0]
-
     policy_kwargs = params["policy_kwargs"]
 
-    if params["policy_kwargs"]["use_small_cnn"] is True:
+    if params["use_small_cnn"] is True:
         policy_kwargs["cnn_extractor"] = local_nature_cnn_small
-
-    print("n_actions =", n_actions)
-    print("n_char =", n_char)
-    print("n_add_info =", policy_kwargs["n_add_info"])
 
     # PPO settings
     ppo_settings = params["ppo_settings"]
