@@ -1,1 +1,1 @@
-diambra-arena==v2.0.0rc3
+git+https://github.com/diambra/arena.git@newEvalAndSeed#egg=diambra-arena
