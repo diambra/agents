@@ -6,7 +6,7 @@ sys.path.append(os.path.join(base_path, '../.'))
 from make_stable_baselines_env import make_stable_baselines_env
 from stable_baselines import PPO2
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     time_dep_seed = int((time.time() - int(time.time() - 0.5)) * 1000)
 
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     key_to_add.append("stage")
 
     env, num_env = make_stable_baselines_env(time_dep_seed, settings, wrappers_settings,
-                                            key_to_add=key_to_add, use_subprocess=False)
+                                            key_to_add=key_to_add, no_vec=True)
 
     # Load the trained agent
     model = PPO2.load(os.path.join(model_folder, "doappSmall25M"))
@@ -61,7 +61,7 @@ if __name__ == "__main__":
         obs, reward, done, info = env.step(action)
 
         if done:
-            pass  # No need to call reset method since it is done by the vectorized environment
+            obs = env.reset()
 
     # Close the environment
     env.close()
