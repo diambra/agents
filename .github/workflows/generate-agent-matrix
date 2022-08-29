@@ -1,0 +1,8 @@
+#!/bin/bash
+set -euo pipefail
+
+for dir in "$@"; do
+  [[ -f "$dir/Dockerfile" ]] || continue
+  name="$(basename "$dir")"
+  jq -n --arg dir "$dir" --arg name "${name//_/-}" '{"dir": $dir, "name": $name}'
+done | jq -c -r -s '.'
