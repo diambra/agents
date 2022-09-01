@@ -227,7 +227,7 @@ if __name__ == '__main__':
         if opt.noAction == 1 and np.mean(cumulative_ep_rew_all) > -(max_continue+1)*2*n_rounds+0.001:
             raise RuntimeError("NoAction policy and average reward different than {} ({})".format(-(max_continue+1)*2*n_rounds, np.mean(cumulative_ep_rew_all)))
 
-        print("ALL GOOD!")
+        print("COMPLETED SUCCESSFULLY!")
     except Exception as e:
         print(e)
-        print("ALL BAD")
+        print("ERROR, ABORTED.")
