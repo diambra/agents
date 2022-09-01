@@ -1,5 +1,5 @@
 folders:
-  parent_dir: "../tests/training_cfg_files/"
+  parent_dir: "../tests/"
   model: "Model/"
   tensor_board: "TB/"
 

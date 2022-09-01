@@ -1,11 +1,11 @@
 folders:
-  parent_dir: "../tests/training_cfg_files/"
+  parent_dir: "../tests/"
   model: "Model/"
   tensor_board: "TB/"
 
 settings:
-  game_id: "sfiii3n"
-  characters: [["Ryu"], ["Ryu"]]
+  game_id: "kof98umh"
+  characters: [["Terry", "Mai", "Kyo"], ["Terry", "Mai", "Kyo"]]
   difficulty: 6
   step_ratio: 6
   frame_shape: [128, 128, 1]
@@ -38,7 +38,7 @@ key_to_add:
   ]
 
 policy_kwargs:
-  n_add_info: 237 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-3 + 2*nChars
+  n_add_info: 263 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-3 + 2*nChars
   layers: [64, 64]
 
 use_small_cnn: true
