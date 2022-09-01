@@ -1,6 +1,7 @@
 folders:
-  model: "/Model_30Hz/"
-  tensor_board: "/TB_30Hz/"
+  parent_dir: "training_cfg_files"
+  model: "Model_StepRatio2/"
+  tensor_board: "TB_StepRatio2/"
 
 settings:
   game_id: "sfiii3n"

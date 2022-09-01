@@ -1,6 +1,7 @@
 folders:
-  model: "ModelSmall_extra/"
-  tensor_board: "TBSmall_extra/"
+  parent_dir: "training_cfg_files"
+  model: "ModelSmall_comb/"
+  tensor_board: "TBSmall_comb/"
 
 settings:
   game_id: "samsh5sp"
