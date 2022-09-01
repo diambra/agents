@@ -7,14 +7,13 @@ import argparse
 base_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_path, '../'))
 from make_stable_baselines_env import make_stable_baselines_env
-from wrappers.tektag_rew_wrap import TektagRoundEndChar2Penalty, TektagHealthBarUnbalancePenalty
 
 from stable_baselines import PPO2
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfgFile', type=str, required=True, help='Training configuration file')
+    parser.add_argument('--cfgFile', type=str, required=True, help='Evaluation configuration file')
     opt = parser.parse_args()
     print(opt)
 
@@ -26,7 +25,7 @@ if __name__ == '__main__':
 
     time_dep_seed = int((time.time() - int(time.time() - 0.5)) * 1000)
 
-    model_folder = os.path.join(base_path, "games_specific_files", params["settings"]["game_id"], params["folders"]["model"])
+    model_folder = os.path.join(base_path, params["parent_dir"], params["settings"]["game_id"], params["folders"]["model"])
 
     # Settings
     settings = params["settings"]
@@ -38,7 +37,7 @@ if __name__ == '__main__':
     key_to_add = params["key_to_add"]
 
     env, num_env = make_stable_baselines_env(time_dep_seed, settings, wrappers_settings,
-                                            key_to_add=key_to_add, no_vec=True)
+                                             key_to_add=key_to_add, no_vec=True)
 
     # Load the trained agent
     model_checkpoint = params["ppo_settings"]["model_checkpoint"]
