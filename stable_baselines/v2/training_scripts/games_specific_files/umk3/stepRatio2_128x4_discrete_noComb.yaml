@@ -1,6 +1,7 @@
 folders:
-  model: "ModelSmall/"
-  tensor_board: "TBSmall/"
+  parent_dir: "training_cfg_files"
+  model: "ModelSmall_StepRatio2/"
+  tensor_board: "TBSmall_StepRatio2/"
 
 settings:
   game_id: "umk3"

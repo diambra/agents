@@ -1,4 +1,5 @@
 folders:
+  parent_dir: "training_cfg_files"
   model: "/ModelPenalties/"
   tensor_board: "/TBPenalties/"
 
