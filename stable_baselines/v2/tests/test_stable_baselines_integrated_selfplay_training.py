@@ -132,7 +132,7 @@ if __name__ == '__main__':
         # Close the environment
         env.close()
 
-        print("ALL GOOD!")
+        print("COMPLETED SUCCESSFULLY!")
     except Exception as e:
         print(e)
-        print("ALL BAD")
+        print("ERROR, ABORTED.")

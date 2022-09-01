@@ -117,3 +117,5 @@ if __name__ == '__main__':
 
     # Close the environment
     env.close()
+
+    print("COMPLETED SUCCESSFULLY!")
