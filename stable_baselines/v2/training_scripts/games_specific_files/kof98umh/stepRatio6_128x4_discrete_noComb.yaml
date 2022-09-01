@@ -1,4 +1,5 @@
 folders:
+  parent_dir: "training_cfg_files"
   model: "ModelSmall/"
   tensor_board: "TBSmall/"
 

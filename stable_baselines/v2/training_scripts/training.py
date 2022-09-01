@@ -29,8 +29,8 @@ if __name__ == '__main__':
 
     time_dep_seed = int((time.time() - int(time.time() - 0.5)) * 1000)
 
-    model_folder = os.path.join(base_path, "games_specific_files", params["settings"]["game_id"], params["folders"]["model"])
-    tensor_board_folder = os.path.join(base_path, "games_specific_files", params["settings"]["game_id"], params["folders"]["tensor_board"])
+    model_folder = os.path.join(base_path, params["folders"]["parent_dir"], params["settings"]["game_id"], params["folders"]["model"])
+    tensor_board_folder = os.path.join(base_path, params["folders"]["parent_dir"], params["settings"]["game_id"], params["folders"]["tensor_board"])
 
     os.makedirs(model_folder, exist_ok=True)
 
