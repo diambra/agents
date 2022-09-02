@@ -44,5 +44,3 @@ ppo_settings:
   n_steps: 128
   autosave_freq: 1000000
   time_steps: 40000000
-
-trained_model: "107M"

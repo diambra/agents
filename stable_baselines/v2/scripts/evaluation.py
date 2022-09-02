@@ -1,6 +1,5 @@
 import sys
 import os
-import glob
 import time
 import yaml
 import json
@@ -15,7 +14,8 @@ if __name__ == '__main__':
 
     try:
         parser = argparse.ArgumentParser()
-        parser.add_argument('--cfgFile', type=str, required=True, help='Evaluation configuration file')
+        parser.add_argument('--cfgFile', type=str, required=True, help='Configuration file')
+        parser.add_argument('--trainedModel', type=str, required=True, help='Model checkpoint')
         opt = parser.parse_args()
         print(opt)
 
@@ -45,14 +45,7 @@ if __name__ == '__main__':
                                                  key_to_add=key_to_add, no_vec=True)
 
         # Load the trained agent
-        if params["trained_model"] == "":
-            saved_models = glob.glob(model_folder + "*.zip")
-            if len(saved_models) == 0:
-                raise Exception("ERROR: No model to load.")
-            latest_model = max(saved_models, key=os.path.getctime)
-            model_path = latest_model
-        else:
-            model_path = os.path.join(model_folder, params["trained_model"])
+        model_path = os.path.join(model_folder, opt.trainedModel)
         model = PPO2.load(model_path)
 
         obs = env.reset()
