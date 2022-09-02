@@ -48,3 +48,8 @@ ppo_settings:
   n_steps: 128
   autosave_freq: 256
   time_steps: 512
+
+selfplay_settings:
+  sampling_probability: 0.3
+  previous_models: ["0M"]
+  check_freq: 128
