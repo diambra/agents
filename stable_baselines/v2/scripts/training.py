@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
     try:
         parser = argparse.ArgumentParser()
-        parser.add_argument('--cfgFile', type=str, required=True, help='Training configuration file')
+        parser.add_argument('--cfgFile', type=str, required=True, help='Configuration file')
         opt = parser.parse_args()
         print(opt)
 

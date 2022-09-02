@@ -1,6 +1,6 @@
 folders:
   parent_dir: "./results/"
-  model: "sr2_128x4_das_nc"
+  model_name: "sr2_128x4_das_nc"
 
 settings:
   game_id: "sfiii3n"
@@ -44,5 +44,3 @@ ppo_settings:
   n_steps: 384
   autosave_freq: 3000000
   time_steps: 120000000
-
-trained_model: "210M"
