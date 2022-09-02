@@ -50,10 +50,10 @@ if __name__ == '__main__':
         # Additional obs key list
         key_to_add = params["key_to_add"]
 
-        if opt.gameId == "doapp":
+        if params["settings"]["game_id"] == "doapp":
             n_actions = [9, 8]
         else:
-            raise ValueError("n_actions not provided for selected gameId = {}".format(opt.gameId))
+            raise ValueError("n_actions not provided for selected gameId = {}".format(params["settings"]["game_id"]))
 
         model = PPO2.load(os.path.join(model_folder, "0M"))
 
