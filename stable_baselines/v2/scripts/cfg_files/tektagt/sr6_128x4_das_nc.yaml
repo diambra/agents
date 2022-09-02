@@ -54,5 +54,5 @@ ppo_settings:
   nminibatches: 8
   noptepochs: 4
   n_steps: 128
-  autosave_freq: 1000000
-  time_steps: 40000000
+  autosave_freq: 256
+  time_steps: 512

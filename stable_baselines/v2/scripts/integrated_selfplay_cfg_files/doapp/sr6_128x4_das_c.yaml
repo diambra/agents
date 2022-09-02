@@ -1,20 +1,16 @@
 folders:
-  parent_dir: "../tests/"
-  model: "Model/"
-  tensor_board: "TB/"
+  parent_dir: "./integrated_selfplay_results/"
+  model_name: "sr6_128x4_das_c"
 
 settings:
   game_id: "doapp"
   characters: [["Kasumi"], ["Kasumi"]]
-  difficulty: 3
   step_ratio: 6
   frame_shape: [128, 128, 1]
-  continue_game: 0.0
-  action_space: "discrete"
-  attack_but_combination: true
+  action_space: ["discrete", "discrete"]
+  attack_but_combination: [true, true]
   char_outfits: [2, 2]
-  player: "Random"
-  show_final: false
+  player: "P1P2"
 
 wrappers_settings:
   frame_stack: 4
@@ -32,13 +28,12 @@ key_to_add:
     "oppHealth",
     "ownSide",
     "oppSide",
-    "stage",
     "ownChar",
     "oppChar",
   ]
 
 policy_kwargs:
-  n_add_info: 183 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-3 + 2*nChars
+  n_add_info: 230 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-3 + 2*nChars
   layers: [64, 64]
 
 use_small_cnn: true
@@ -48,7 +43,7 @@ ppo_settings:
   model_checkpoint: "0M"
   learning_rate: [2.5e-4, 2.5e-6]
   cliprange: [0.15, 0.025]
-  nminibatches: 4
+  nminibatches: 8
   noptepochs: 4
   n_steps: 128
   autosave_freq: 256
