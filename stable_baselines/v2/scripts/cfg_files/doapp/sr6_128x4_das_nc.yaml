@@ -1,12 +1,11 @@
 folders:
-  parent_dir: "training_cfg_files"
-  model: "ModelSmall/"
-  tensor_board: "TBSmall/"
+  parent_dir: "./results/"
+  model_name: "sr6_128x4_das_nc"
 
 settings:
-  game_id: "umk3"
-  characters: [["Sektor"], ["Sektor"]]
-  difficulty: 4
+  game_id: "doapp"
+  characters: [["Kasumi"], ["Kasumi"]]
+  difficulty: 3
   step_ratio: 6
   frame_shape: [128, 128, 1]
   continue_game: 0.0
@@ -28,7 +27,7 @@ custom_wrappers: false
 key_to_add: ["actions", "ownHealth", "oppHealth", "ownSide", "oppSide", "stage"]
 
 policy_kwargs:
-  n_add_info: 197 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-1
+  n_add_info: 161 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-1
   layers: [64, 64]
 
 use_small_cnn: true
@@ -45,3 +44,5 @@ ppo_settings:
   n_steps: 128
   autosave_freq: 1000000
   time_steps: 40000000
+
+trained_model: "25M"
