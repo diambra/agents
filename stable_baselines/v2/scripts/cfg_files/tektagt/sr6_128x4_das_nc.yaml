@@ -1,17 +1,16 @@
 folders:
-  parent_dir: "training_cfg_files"
-  model: "ModelSmall_comb/"
-  tensor_board: "TBSmall_comb/"
+  parent_dir: "./results/"
+  model_name: "sr6_128x4_das_nc"
 
 settings:
-  game_id: "samsh5sp"
-  characters: [["Haohmaru"], ["Haohmaru"]]
+  game_id: "tektagt"
+  characters: [["Jin", "Yoshimitsu"], ["Jin", "Yoshimitsu"]]
   difficulty: 6
   step_ratio: 6
   frame_shape: [128, 128, 1]
   continue_game: 0.0
   action_space: "discrete"
-  attack_but_combination: true
+  attack_but_combination: false
   char_outfits: [2, 2]
   player: "Random"
   show_final: false
@@ -25,10 +24,22 @@ wrappers_settings:
 
 custom_wrappers: false
 
-key_to_add: ["actions", "ownHealth", "oppHealth", "ownSide", "oppSide", "stage"]
+key_to_add:
+  [
+    "actions",
+    "ownHealth1",
+    "ownHealth2",
+    "oppHealth1",
+    "oppHealth2",
+    "ownSide",
+    "oppSide",
+    "ownActiveChar",
+    "oppActiveChar",
+    "stage",
+  ]
 
 policy_kwargs:
-  n_add_info: 245 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-1
+  n_add_info: 189 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-1
   layers: [64, 64]
 
 use_small_cnn: true
@@ -45,3 +56,5 @@ ppo_settings:
   n_steps: 128
   autosave_freq: 1000000
   time_steps: 40000000
+
+trained_model: "25M"
