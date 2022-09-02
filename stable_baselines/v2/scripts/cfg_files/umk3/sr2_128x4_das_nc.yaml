@@ -1,7 +1,6 @@
 folders:
-  parent_dir: "training_cfg_files"
-  model: "ModelSmall_StepRatio2/"
-  tensor_board: "TBSmall_StepRatio2/"
+  parent_dir: "./results/"
+  model_name: "sr2_128x4_das_nc"
 
 settings:
   game_id: "umk3"
@@ -45,3 +44,5 @@ ppo_settings:
   n_steps: 384
   autosave_freq: 3000000
   time_steps: 120000000
+
+trained_model: "25M"

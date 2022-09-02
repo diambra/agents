@@ -1,14 +1,13 @@
 folders:
-  parent_dir: "training_cfg_files"
-  model: "Model/"
-  tensor_board: "TB/"
+  parent_dir: "./results/"
+  model: "sr2_128x4_das_nc"
 
 settings:
   game_id: "sfiii3n"
   characters: [["Ryu"], ["Ryu"]]
   difficulty: 6
-  step_ratio: 6
-  frame_shape: [256, 256, 1]
+  step_ratio: 2
+  frame_shape: [128, 128, 1]
   continue_game: 0.0
   action_space: "discrete"
   attack_but_combination: false
@@ -17,9 +16,9 @@ settings:
   show_final: false
 
 wrappers_settings:
-  frame_stack: 6
-  dilation: 1
-  actions_stack: 12
+  frame_stack: 4
+  dilation: 3
+  actions_stack: 36
   reward_normalization: true
   scale: true
 
@@ -28,20 +27,22 @@ custom_wrappers: false
 key_to_add: ["actions", "ownHealth", "oppHealth", "ownSide", "oppSide", "stage"]
 
 policy_kwargs:
-  n_add_info: 197 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-1
+  n_add_info: 581 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-1
   layers: [64, 64]
 
-use_small_cnn: false
+use_small_cnn: true
 
 ppo_settings:
-  gamma: 0.94
+  gamma: 0.9933
   model_checkpoint: "0M"
-  learning_rate: [2.5e-4, 2.5e-6] # To start
-  cliprange: [0.15, 0.025] # To start
+  learning_rate: [0.4e-4, 0.6e-6] # To start
+  cliprange: [0.45, 0.075] # To start
   #learning_rate: [5.0e-5, 2.5e-6] # Fine Tuning
   #cliprange: [0.075, 0.025] # Fine Tuning
-  nminibatches: 8
-  noptepochs: 4
-  n_steps: 128
-  autosave_freq: 1000000
-  time_steps: 40000000
+  nminibatches: 6
+  noptepochs: 3
+  n_steps: 384
+  autosave_freq: 3000000
+  time_steps: 120000000
+
+trained_model: "210M"
