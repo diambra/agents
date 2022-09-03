@@ -126,7 +126,7 @@ class UpdateRLPolicyWeights(BaseCallback):
         super(UpdateRLPolicyWeights, self).__init__(verbose)
         self.check_freq = int(check_freq / num_env)
         self.num_env = num_env
-        self.save_path = save_path + 'lastModel'
+        self.save_path = os.path.join(save_path, 'lastModel')
         self.sampling_probability = prev_agents_sampling["probability"]
         self.prev_agents_list = prev_agents_sampling["list"]
         time_dep_seed = int((time.time() - int(time.time() - 0.5)) * 1000)

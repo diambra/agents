@@ -5,15 +5,12 @@ folders:
 settings:
   game_id: "samsh5sp"
   characters: [["Haohmaru"], ["Haohmaru"]]
-  difficulty: 6
   step_ratio: 6
   frame_shape: [128, 128, 1]
-  continue_game: 0.0
   action_space: ["discrete", "discrete"]
   attack_but_combination: [true, true]
   char_outfits: [2, 2]
-  player: "Random"
-  show_final: false
+  player: "P1P2"
 
 wrappers_settings:
   frame_stack: 4
