@@ -1,13 +1,12 @@
 folders:
   parent_dir: "./integrated_selfplay_results/"
-  model_name: "sr6_128x4_das_c_p"
+  model_name: "sr6_128x4_das_c"
 
 settings:
   game_id: "tektagt"
   characters: [["Jin", "Yoshimitsu"], ["Jin", "Yoshimitsu"]]
   step_ratio: 6
   frame_shape: [128, 128, 1]
-  continue_game: 0.0
   action_space: ["discrete", "discrete"]
   attack_but_combination: [true, true]
   char_outfits: [2, 2]
@@ -20,7 +19,7 @@ wrappers_settings:
   reward_normalization: true
   scale: true
 
-custom_wrappers: true
+custom_wrappers: false
 
 key_to_add:
   [
