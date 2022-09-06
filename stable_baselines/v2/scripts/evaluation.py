@@ -58,6 +58,8 @@ if __name__ == '__main__':
 
             if done:
                 obs = env.reset()
+                if info["env_done"]:
+                    break
 
         # Close the environment
         env.close()
@@ -66,3 +68,4 @@ if __name__ == '__main__':
     except Exception as e:
         print(e)
         print("ERROR, ABORTED.")
+        sys.exit(1)
