@@ -37,5 +37,7 @@ if __name__ == "__main__":
         if done:
             observation = env.reset()
             show_gym_obs(observation, env.char_names)
+            if info["env_done"]:
+                break
 
     env.close()
