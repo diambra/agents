@@ -4,16 +4,23 @@ import diambra.arena
 
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from stable_baselines3.common.utils import set_random_seed
+from stable_baselines3.common import Logger, Monitor
 
 # Make Stable Baselines Env function
 def make_stable_baselines_env(game_id, env_settings, wrappers_settings=None,
-                              use_subprocess=True, seed=0):
+                              use_subprocess=True, seed=0,
+                              start_index=0, allow_early_resets=True,
+                              start_method=None, no_vec=False):
     """
-    Create a wrapped VecEnv.
+    Create a wrapped, monitored VecEnv.
     :param game_id: (str) the game environment ID
     :param env_settings: (dict) parameters for DIAMBRA Arena environment
     :param wrappers_settings: (dict) parameters for environment
                               wraping function
+    :param start_index: (int) start rank index
+    :param allow_early_resets: (bool) allows early reset of the environment
+    :param start_method: (str) method used to start the subprocesses.
+                        See SubprocVecEnv doc for more information
     :param use_subprocess: (bool) Whether to use `SubprocVecEnv` or
                           `DummyVecEnv` when
     :param no_vec: (bool) Whether to avoid usage of Vectorized Env or not.
@@ -33,6 +40,9 @@ def make_stable_baselines_env(game_id, env_settings, wrappers_settings=None,
         def _init():
             env = diambra.arena.make(game_id, env_settings, wrappers_settings,
                                      seed=seed + rank, rank=rank)
+
+            env = Monitor(env, Logger.get_dir() and os.path.join(Logger.get_dir(), str(rank)),
+                          allow_early_resets=allow_early_resets)
             return env
         return _init
     set_random_seed(seed)
@@ -43,8 +53,9 @@ def make_stable_baselines_env(game_id, env_settings, wrappers_settings=None,
     else:
         # When using one environment, no need to start subprocesses
         if num_envs == 1 or not use_subprocess:
-            env = DummyVecEnv([make_sb_env(i) for i in range(num_envs)])
+            env = DummyVecEnv([make_sb_env(i + start_index) for i in range(num_envs)])
         else:
-            env = SubprocVecEnv([make_sb_env(i) for i in range(num_envs)])
+            env = SubprocVecEnv([make_sb_env(i + start_index) for i in range(num_envs)],
+                             start_method=start_method)
 
     return env, num_envs
