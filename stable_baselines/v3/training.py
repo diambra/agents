@@ -7,6 +7,7 @@ import argparse
 base_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(base_path)
 from make_stable_baselines_env import make_stable_baselines_env
+from sb3_utils import linear_schedule, AutoSave
 
 from stable_baselines3 import PPO
 
@@ -40,18 +41,52 @@ if __name__ == '__main__':
         wrappers_settings = params["wrappers_settings"]
 
         # Create environment
-        env, num_env = make_stable_baselines_env(params["settings"]["game_id"], settings, wrappers_settings, seed=time_dep_seed)
+        env, num_envs = make_stable_baselines_env(params["settings"]["game_id"], settings, wrappers_settings, seed=time_dep_seed)
         print("Activated {} environment(s)".format(num_envs))
 
         print("Observation space =", env.observation_space)
         print("Act_space =", env.action_space)
 
-        # Instantiate the agent
-        model = PPO('MultiInputPolicy', env, verbose=1)
+        # Policy param
+        policy_kwargs = params["policy_kwargs"]
+
+        # PPO settings
+        ppo_settings = params["ppo_settings"]
+        gamma = ppo_settings["gamma"]
+        model_checkpoint = ppo_settings["model_checkpoint"]
+
+        learning_rate = linear_schedule(ppo_settings["learning_rate"][0], ppo_settings["learning_rate"][1])
+        clip_range = linear_schedule(ppo_settings["cliprange"][0], ppo_settings["cliprange"][1])
+        clip_range_vf = cliprange
+        batch_size = ppo_settings["batch_size"]
+        n_epochs = ppo_settings["n_epochs"]
+        n_steps = ppo_settings["n_steps"]
+
+        if model_checkpoint == "0M":
+            # Initialize the model
+            model = PPO('MultiInputPolicy', env, verbose=1,
+                        gamma=gamma, batch_size=batch_size,
+                        n_epochs=n_epochs, n_steps=n_steps,
+                        learning_rate=learning_rate, clip_range=clip_range,
+                        clip_range_vf=clip_range_vf, policy_kwargs=policy_kwargs,
+                        tensorboard_log=tensor_board_folder)
+        else:
+            # Load the trained agent
+            model = PPO.load(os.path.join(model_folder, model_checkpoint), env=env,
+                             gamma=gamma, learning_rate=learning_rate, clip_range=clip_range,
+                             clip_range_vf=clip_range_vf, policy_kwargs=policy_kwargs,
+                             tensorboard_log=tensor_board_folder)
+
+        print("Model discount factor = ", model.gamma)
+
+        # Create the callback: autosave every USER DEF steps
+        autosave_freq = ppo_settings["autosave_freq"]
+        auto_save_callback = AutoSave(check_freq=autosave_freq, num_envs=num_envs,
+                                      save_path=os.path.join(model_folder, model_checkpoint + "_"))
 
         # Train the agent
         time_steps = ppo_settings["time_steps"]
-        model.learn(total_timesteps=time_steps)
+        model.learn(total_timesteps=time_steps, callback=auto_save_callback)
 
         # Save the agent
         new_model_checkpoint = str(int(model_checkpoint[:-1]) + time_steps) + "M"

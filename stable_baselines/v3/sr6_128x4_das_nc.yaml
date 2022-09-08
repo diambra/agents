@@ -25,17 +25,15 @@ wrappers_settings:
 policy_kwargs:
   layers: [64, 64]
 
-use_small_cnn: true
-
 ppo_settings:
   gamma: 0.94
   model_checkpoint: "0M"
   learning_rate: [2.5e-4, 2.5e-6] # To start
-  cliprange: [0.15, 0.025] # To start
+  clip_range: [0.15, 0.025] # To start
   #learning_rate: [5.0e-5, 2.5e-6] # Fine Tuning
-  #cliprange: [0.075, 0.025] # Fine Tuning
-  nminibatches: 8
-  noptepochs: 4
+  #clip_range: [0.075, 0.025] # Fine Tuning
+  batch_size: 256 #8 #nminibatches gave different batch size depending on the number of environments: batch_size = (n_steps * n_envs) // nminibatches
+  n_epochs: 4
   n_steps: 128
   autosave_freq: 256
   time_steps: 512
