@@ -48,7 +48,7 @@ if __name__ == '__main__':
         print("Act_space =", env.action_space)
 
         # Policy param
-        policy_kwargs = params["policy_kwargs"]
+        policy_kwargs = None  # params["policy_kwargs"] temporarily deactivated
 
         # PPO settings
         ppo_settings = params["ppo_settings"]
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
         learning_rate = linear_schedule(ppo_settings["learning_rate"][0], ppo_settings["learning_rate"][1])
         clip_range = linear_schedule(ppo_settings["cliprange"][0], ppo_settings["cliprange"][1])
-        clip_range_vf = cliprange
+        clip_range_vf = clip_range
         batch_size = ppo_settings["batch_size"]
         n_epochs = ppo_settings["n_epochs"]
         n_steps = ppo_settings["n_steps"]
