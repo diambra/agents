@@ -8,7 +8,7 @@ env = diambra.arena.make("doapp", {"hardcore": True, "frame_shape": [128, 128, 1
 # Instantiate the agent
 model = A2C('CnnPolicy', env, verbose=1)
 # Train the agent
-model.learn(total_timesteps=1000)
+model.learn(total_timesteps=200)
 # Save the agent
 model.save("a2c_doapp")
 del model  # delete trained model to demonstrate loading
