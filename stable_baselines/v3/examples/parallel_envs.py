@@ -70,6 +70,11 @@ if __name__ == '__main__':
 
     # Instantiate the agent
     model = PPO('CnnPolicy', env, verbose=1)
+
+    # Print policy network architecture
+    print("Policy architecure:")
+    print(model.policy)
+
     # Train the agent
     model.learn(total_timesteps=200)
 

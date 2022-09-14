@@ -7,8 +7,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecFram
 from stable_baselines3.common.utils import set_random_seed
 
 # Make Stable Baselines Env function
-def make_stable_baselines_env(game_id, env_settings, wrappers_settings=None,
-                              use_subprocess=True, seed=0):
+def make_sb3_env(game_id, env_settings, wrappers_settings=None,
+                 use_subprocess=True, seed=0):
     """
     Create a wrapped VecEnv.
     :param game_id: (str) the game environment ID
@@ -58,12 +58,14 @@ if __name__ == '__main__':
     wrappers_settings["reward_normalization"] = True
     wrappers_settings["actions_stack"] = 12
     wrappers_settings["frame_stack"] = 5
+    wrappers_settings["scale"] = True
+    wrappers_settings["exclude_image_scaling"] = True
     wrappers_settings["flatten"] = True
     wrappers_settings["filter_keys"] = ["stage", "P1_ownHealth", "P1_oppHealth", "P1_ownSide",
                                         "P1_oppSide", "P1_oppChar", "P1_actions_move", "P1_actions_attack"]
 
     # Create environment
-    env, num_envs = make_stable_baselines_env("doapp", settings, wrappers_settings)
+    env, num_envs = make_sb3_env("doapp", settings, wrappers_settings)
     print("Activated {} environment(s)".format(num_envs))
 
     print("Observation space =", env.observation_space)
@@ -71,8 +73,13 @@ if __name__ == '__main__':
 
     # Instantiate the agent
     model = PPO('MultiInputPolicy', env, verbose=1)
+
+    # Print policy network architecture
+    print("Policy architecure:")
+    print(model.policy)
+
     # Train the agent
-    model.learn(total_timesteps=1000)
+    model.learn(total_timesteps=200)
 
     # Enjoy trained agent
     observation = env.reset()
