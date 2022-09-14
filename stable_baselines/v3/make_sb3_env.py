@@ -7,10 +7,10 @@ from stable_baselines3.common.utils import set_random_seed
 from stable_baselines3.common import Logger, Monitor
 
 # Make Stable Baselines Env function
-def make_stable_baselines_env(game_id, env_settings, wrappers_settings=None,
-                              use_subprocess=True, seed=0,
-                              start_index=0, allow_early_resets=True,
-                              start_method=None, no_vec=False):
+def make_sb3_env(game_id, env_settings, wrappers_settings=None,
+                 use_subprocess=True, seed=0,
+                 start_index=0, allow_early_resets=True,
+                 start_method=None, no_vec=False):
     """
     Create a wrapped, monitored VecEnv.
     :param game_id: (str) the game environment ID
@@ -56,6 +56,6 @@ def make_stable_baselines_env(game_id, env_settings, wrappers_settings=None,
             env = DummyVecEnv([make_sb_env(i + start_index) for i in range(num_envs)])
         else:
             env = SubprocVecEnv([make_sb_env(i + start_index) for i in range(num_envs)],
-                             start_method=start_method)
+                                start_method=start_method)
 
     return env, num_envs
