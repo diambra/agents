@@ -7,8 +7,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecFram
 from stable_baselines3.common.utils import set_random_seed
 
 # Make Stable Baselines Env function
-def make_stable_baselines_env(game_id, env_settings, wrappers_settings=None,
-                              use_subprocess=True, seed=0):
+def make_sb3_env(game_id, env_settings, wrappers_settings=None,
+                 use_subprocess=True, seed=0):
     """
     Create a wrapped VecEnv.
     :param game_id: (str) the game environment ID
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     wrappers_settings["frame_stack"] = 5
 
     # Create environment
-    env, num_envs = make_stable_baselines_env("doapp", settings, wrappers_settings)
+    env, num_envs = make_sb3_env("doapp", settings, wrappers_settings)
     print("Activated {} environment(s)".format(num_envs))
 
     print("Observation space shape =", env.observation_space.shape)
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     # Instantiate the agent
     model = PPO('CnnPolicy', env, verbose=1)
     # Train the agent
-    model.learn(total_timesteps=1000)
+    model.learn(total_timesteps=200)
 
     # Enjoy trained agent
     observation = env.reset()
