@@ -6,7 +6,7 @@ import json
 import argparse
 base_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(base_path)
-from make_stable_baselines_env import make_stable_baselines_env
+from make_sb3_env import make_sb3_env
 from sb3_utils import linear_schedule, AutoSave
 
 from stable_baselines3 import PPO
@@ -41,7 +41,7 @@ if __name__ == '__main__':
         wrappers_settings = params["wrappers_settings"]
 
         # Create environment
-        env, num_envs = make_stable_baselines_env(params["settings"]["game_id"], settings, wrappers_settings, seed=time_dep_seed)
+        env, num_envs = make_sb3_env(params["settings"]["game_id"], settings, wrappers_settings, seed=time_dep_seed)
         print("Activated {} environment(s)".format(num_envs))
 
         print("Observation space =", env.observation_space)
@@ -56,7 +56,7 @@ if __name__ == '__main__':
         model_checkpoint = ppo_settings["model_checkpoint"]
 
         learning_rate = linear_schedule(ppo_settings["learning_rate"][0], ppo_settings["learning_rate"][1])
-        clip_range = linear_schedule(ppo_settings["cliprange"][0], ppo_settings["cliprange"][1])
+        clip_range = linear_schedule(ppo_settings["clip_range"][0], ppo_settings["clip_range"][1])
         clip_range_vf = clip_range
         batch_size = ppo_settings["batch_size"]
         n_epochs = ppo_settings["n_epochs"]
@@ -77,7 +77,10 @@ if __name__ == '__main__':
                              clip_range_vf=clip_range_vf, policy_kwargs=policy_kwargs,
                              tensorboard_log=tensor_board_folder)
 
-        print("Model discount factor = ", model.gamma)
+
+        # Print policy network architecture
+        print("Policy architecure:")
+        print(model.policy)
 
         # Create the callback: autosave every USER DEF steps
         autosave_freq = ppo_settings["autosave_freq"]
