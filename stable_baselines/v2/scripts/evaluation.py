@@ -10,6 +10,8 @@ from make_stable_baselines_env import make_stable_baselines_env
 
 from stable_baselines import PPO2
 
+# diambra run -g python stable_baselines/v2/scripts/evaluation.py --cfgFile $PWD/stable_baselines/v2/scripts/cfg_files/doapp/sr6_128x4_das_nc.yaml  --trainedModel "25M"
+
 if __name__ == '__main__':
 
     try:
@@ -43,6 +45,18 @@ if __name__ == '__main__':
 
         env, num_env = make_stable_baselines_env(time_dep_seed, settings, wrappers_settings,
                                                  key_to_add=key_to_add, no_vec=True)
+
+        print("Obs_space = ", env.observation_space)
+        print("Obs_space type = ", env.observation_space.dtype)
+        print("Obs_space high = ", env.observation_space.high)
+        print("Obs_space low = ", env.observation_space.low)
+
+        print("Act_space = ", env.action_space)
+        print("Act_space type = ", env.action_space.dtype)
+        if settings["action_space"] == "multi_discrete":
+            print("Act_space n = ", env.action_space.nvec)
+        else:
+            print("Act_space n = ", env.action_space.n)
 
         # Load the trained agent
         model_path = os.path.join(model_folder, opt.trainedModel)

@@ -21,6 +21,19 @@ wrappers_settings:
   actions_stack: 12
   reward_normalization: true
   scale: true
+  exclude_image_scaling: true
+  flatten: true
+  filter_keys:
+    [
+      "stage",
+      "P1_ownHealth",
+      "P1_oppHealth",
+      "P1_ownSide",
+      "P1_oppSide",
+      "P1_oppChar",
+      "P1_actions_move",
+      "P1_actions_attack",
+    ]
 
 policy_kwargs:
   layers: [64, 64]
