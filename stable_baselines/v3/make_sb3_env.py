@@ -4,7 +4,7 @@ import diambra.arena
 
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from stable_baselines3.common.utils import set_random_seed
-from stable_baselines3.common import Logger, Monitor
+from stable_baselines3.common.monitor import Monitor
 
 # Make Stable Baselines Env function
 def make_sb3_env(game_id, env_settings, wrappers_settings=None,
@@ -41,8 +41,10 @@ def make_sb3_env(game_id, env_settings, wrappers_settings=None,
             env = diambra.arena.make(game_id, env_settings, wrappers_settings,
                                      seed=seed + rank, rank=rank)
 
-            env = Monitor(env, Logger.get_dir() and os.path.join(Logger.get_dir(), str(rank)),
-                          allow_early_resets=allow_early_resets)
+            # Create log dir
+            log_dir = os.path.join("/tmp/DIAMBRALog/", str(rank))
+            os.makedirs(log_dir, exist_ok=True)
+            env = Monitor(env, log_dir, allow_early_resets=allow_early_resets)
             return env
         return _init
     set_random_seed(seed)

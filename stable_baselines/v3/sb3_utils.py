@@ -1,4 +1,4 @@
-from stable_baselines.common.callbacks import BaseCallback
+from stable_baselines3.common.callbacks import BaseCallback
 import cv2
 import os
 import time
