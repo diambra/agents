@@ -48,7 +48,7 @@ if __name__ == '__main__':
         print("Act_space =", env.action_space)
 
         # Policy param
-        policy_kwargs = None  # params["policy_kwargs"] temporarily deactivated
+        policy_kwargs = params["policy_kwargs"]
 
         # PPO settings
         ppo_settings = params["ppo_settings"]
