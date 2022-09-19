@@ -36,7 +36,8 @@ wrappers_settings:
     ]
 
 policy_kwargs:
-  layers: [64, 64]
+  #net_arch: [{ pi: [64, 64], vf: [32, 32] }]
+  net_arch: [64, 64]
 
 ppo_settings:
   gamma: 0.94
