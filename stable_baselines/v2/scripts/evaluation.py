@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
         # Settings
         settings = params["settings"]
-        settings["Player"] = "P1"
+        settings["player"] = "P1"
 
         # Wrappers Settings
         wrappers_settings = params["wrappers_settings"]
