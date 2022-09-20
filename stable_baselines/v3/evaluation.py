@@ -1,94 +1,78 @@
 import os
 import sys
-import diambra.arena
+import time
+import yaml
+import json
+import argparse
+base_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(base_path)
+from make_sb3_env import make_sb3_env
 
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecFrameStack
-from stable_baselines3.common.utils import set_random_seed
 
-# Make Stable Baselines Env function
-def make_stable_baselines_env(game_id, env_settings, wrappers_settings=None,
-                              use_subprocess=True, seed=0):
-    """
-    Create a wrapped VecEnv.
-    :param game_id: (str) the game environment ID
-    :param env_settings: (dict) parameters for DIAMBRA Arena environment
-    :param wrappers_settings: (dict) parameters for environment
-                              wraping function
-    :param use_subprocess: (bool) Whether to use `SubprocVecEnv` or
-                          `DummyVecEnv` when
-    :param no_vec: (bool) Whether to avoid usage of Vectorized Env or not.
-                   Default: False
-    :param seed: (int) initial seed for RNG
-    :return: (VecEnv) The diambra environment
-    """
-
-    env_addresses = os.getenv("DIAMBRA_ENVS", "").split()
-    if len(env_addresses) == 0:
-        raise Exception("ERROR: Running script without DIAMBRA CLI.")
-        sys.exit(1)
-
-    num_envs = len(env_addresses)
-
-    def make_sb_env(rank):
-        def _init():
-            env = diambra.arena.make(game_id, env_settings, wrappers_settings,
-                                     seed=seed + rank, rank=rank)
-            return env
-        return _init
-    set_random_seed(seed)
-
-    # When using one environment, no need to start subprocesses
-    if num_envs == 1 or not use_subprocess:
-        env = DummyVecEnv([make_sb_env(i) for i in range(num_envs)])
-    else:
-        env = SubprocVecEnv([make_sb_env(i) for i in range(num_envs)])
-
-    return env, num_envs
+# diambra run -g python stable_baselines/v3/evaluation.py --cfgFile $PWD/stable_baselines/v3/cfg_files/doapp/sr6_128x4_das_nc.yaml  --trainedModel "25M"
 
 if __name__ == '__main__':
 
-    # Settings
-    settings = {}
-    settings["frame_shape"] = [128, 128, 1]
-    settings["characters"] = [["Kasumi"], ["Kasumi"]]
+    try:
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--cfgFile', type=str, required=True, help='Configuration file')
+        parser.add_argument('--trainedModel', type=str, required=True, help='Model checkpoint')
+        opt = parser.parse_args()
+        print(opt)
 
-    # Wrappers Settings
-    wrappers_settings = {}
-    wrappers_settings["reward_normalization"] = True
-    wrappers_settings["actions_stack"] = 12
-    wrappers_settings["frame_stack"] = 5
-    wrappers_settings["flatten"] = True
-    wrappers_settings["filter_keys"] = ["stage", "P1_ownHealth", "P1_oppHealth", "P1_ownSide",
-                                        "P1_oppSide", "P1_oppChar", "P1_actions_move", "P1_actions_attack"]
+        # Read the cfg file
+        yaml_file = open(opt.cfgFile)
+        params = yaml.load(yaml_file, Loader=yaml.FullLoader)
+        print("Config parameters = ", json.dumps(params, sort_keys=True, indent=4))
+        yaml_file.close()
 
-    # Create environment
-    env, num_envs = make_stable_baselines_env("doapp", settings, wrappers_settings)
-    print("Activated {} environment(s)".format(num_envs))
+        time_dep_seed = int((time.time() - int(time.time() - 0.5)) * 1000)
 
-    print("Observation space =", env.observation_space)
-    print("Act_space =", env.action_space)
+        model_folder = os.path.join(base_path, params["folders"]["parent_dir"], params["settings"]["game_id"],
+                                    params["folders"]["model_name"], "model")
 
-    # Instantiate the agent
-    model = PPO('MultiInputPolicy', env, verbose=1)
-    # Train the agent
-    model.learn(total_timesteps=1000)
+        # Settings
+        settings = params["settings"]
+        settings["player"] = "P1"
 
-    # Enjoy trained agent
-    observation = env.reset()
-    cumulative_reward = [0.0 for _ in range(num_envs)]
-    while True:
-        env.render()
+        # Wrappers Settings
+        wrappers_settings = params["wrappers_settings"]
+        wrappers_settings["reward_normalization"] = False
 
-        action, _state = model.predict(observation, deterministic=True)
+        # Create environment
+        env, num_envs = make_sb3_env(params["settings"]["game_id"], settings, wrappers_settings, seed=time_dep_seed, no_vec=True)
+        print("Activated {} environment(s)".format(num_envs))
 
-        observation, reward, done, info = env.step(action)
-        cumulative_reward += reward
-        if any(x != 0 for x in reward):
-            print("Cumulative reward(s) =", cumulative_reward)
+        print("Observation space =", env.observation_space)
+        print("Act_space =", env.action_space)
 
-        if done.any():
-            observation = env.reset()
-            break
+        # Load the trained agent
+        model_path = os.path.join(model_folder, opt.trainedModel)
+        model = PPO.load(model_path, env=env)
 
-    env.close()
+        # Print policy network architecture
+        print("Policy architecure:")
+        print(model.policy)
+
+        obs = env.reset()
+
+        while True:
+
+            action, _ = model.predict(obs, deterministic=True)
+
+            obs, reward, done, info = env.step(action)
+
+            if done:
+                obs = env.reset()
+                if info["env_done"]:
+                    break
+
+        # Close the environment
+        env.close()
+
+        print("COMPLETED SUCCESSFULLY!")
+    except Exception as e:
+        print(e)
+        print("ERROR, ABORTED.")
+        sys.exit(1)
