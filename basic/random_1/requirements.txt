@@ -1,1 +1,1 @@
-diambra-arena
+git+https://github.com/diambra/arena@logging#egg=diambra-arena
