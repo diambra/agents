@@ -19,6 +19,13 @@ if __name__ == "__main__":
             "settings": settings,
         },
         "num_workers": 0,
+
+        "train_batch_size": 200,
+
+        # Only for evaluation runs, render the env.
+        "evaluation_config": {
+            "render_env": True,
+        },
     }
 
     # Update config file
@@ -35,23 +42,18 @@ if __name__ == "__main__":
     print("\n .. training completed.")
     print("Training results: {}".format(results))
 
-    # Run the trained agent (and render each timestep output).
-    print("\nStarting trained agent execution ...\n")
+    '''
+    # Save the agent
+    model.save("a2c_doapp")
+    del model  # delete trained model to demonstrate loading
 
-    env = diambra.arena.make("doapp", settings)
+    # Load the trained agent
+    model = A2C.load("a2c_doapp", env=env)
+    '''
 
-    obs = env.reset()
-    while True:
-        env.render()
-
-        action = agent.compute_action(obs)
-
-        obs, reward, done, info = env.step(action)
-
-        if done:
-            obs = env.reset()
-            break
-
-    print("\n... trained agent execution completed.\n")
-
-    env.close()
+    # Evaluate the trained agent (and render each timestep to the shell's
+    # output).
+    print("\nStarting evaluation ...\n")
+    results = agent.evaluate()
+    print("\n... evaluation completed.\n")
+    print("Evaluation results: {}".format(results))
