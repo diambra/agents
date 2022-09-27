@@ -19,6 +19,7 @@ if __name__ == "__main__":
             "settings": settings,
         },
         "num_workers": 0,
+        "train_batch_size": 200,
     }
 
     # Update config file
@@ -31,9 +32,8 @@ if __name__ == "__main__":
     print("\nStarting training ...\n")
     for idx in range(1):
         print("Training iteration:", idx + 1)
-        results = agent.train()
+        agent.train()
     print("\n .. training completed.")
-    print("Training results: {}".format(results))
 
     # Run the trained agent (and render each timestep output).
     print("\nStarting trained agent execution ...\n")

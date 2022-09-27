@@ -3,6 +3,7 @@ import os
 import diambra.arena
 from make_ray_env import DiambraArena, preprocess_ray_config
 from ray.rllib.algorithms.ppo import PPO
+from ray.tune.logger import pretty_print
 
 if __name__ == "__main__":
 
@@ -19,13 +20,7 @@ if __name__ == "__main__":
             "settings": settings,
         },
         "num_workers": 0,
-
         "train_batch_size": 200,
-
-        # Only for evaluation runs, render the env.
-        "evaluation_config": {
-            "render_env": True,
-        },
     }
 
     # Update config file
@@ -40,20 +35,21 @@ if __name__ == "__main__":
         print("Training iteration:", idx + 1)
         results = agent.train()
     print("\n .. training completed.")
-    print("Training results: {}".format(results))
+    print("Training results:\n{}".format(pretty_print(results)))
 
-    '''
     # Save the agent
-    model.save("a2c_doapp")
-    del model  # delete trained model to demonstrate loading
+    checkpoint = agent.save()
+    print("Checkpoint saved at {}".format(checkpoint))
+    del agent  # delete trained model to demonstrate loading
 
     # Load the trained agent
-    model = A2C.load("a2c_doapp", env=env)
-    '''
+    agent = PPO(config=config)
+    agent.restore(checkpoint)
+    print("Agent loaded")
 
     # Evaluate the trained agent (and render each timestep to the shell's
     # output).
     print("\nStarting evaluation ...\n")
     results = agent.evaluate()
     print("\n... evaluation completed.\n")
-    print("Evaluation results: {}".format(results))
+    print("Evaluation results:\n{}".format(pretty_print(results)))
