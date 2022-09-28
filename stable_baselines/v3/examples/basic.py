@@ -4,22 +4,22 @@ from stable_baselines3 import A2C
 env = diambra.arena.make("doapp", {"hardcore": True, "frame_shape": [128, 128, 1]})
 
 print("\nStarting training ...\n")
-model = A2C('CnnPolicy', env, verbose=1)
-model.learn(total_timesteps=200)
+agent = A2C('CnnPolicy', env, verbose=1)
+agent.learn(total_timesteps=200)
 print("\n .. training completed.")
 
-print("\nStarting evaluation ...\n")
+print("\nStarting trained agent execution ...\n")
 observation = env.reset()
 while True:
     env.render()
 
-    action, _state = model.predict(observation, deterministic=True)
+    action, _state = agent.predict(observation, deterministic=True)
 
     observation, reward, done, info = env.step(action)
 
     if done:
         observation = env.reset()
         break
-print("\n... evaluation completed.\n")
+print("\n... trained agent execution completed.\n")
 
 env.close()

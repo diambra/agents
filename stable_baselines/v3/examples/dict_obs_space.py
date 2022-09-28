@@ -72,22 +72,22 @@ if __name__ == '__main__':
     print("Act_space =", env.action_space)
 
     # Instantiate the agent
-    model = PPO('MultiInputPolicy', env, verbose=1)
+    agent = PPO('MultiInputPolicy', env, verbose=1)
 
     # Print policy network architecture
     print("Policy architecure:")
-    print(model.policy)
+    print(agent.policy)
 
     # Train the agent
-    model.learn(total_timesteps=200)
+    agent.learn(total_timesteps=200)
 
-    # Enjoy trained agent
+    # Run trained agent
     observation = env.reset()
     cumulative_reward = [0.0 for _ in range(num_envs)]
     while True:
         env.render()
 
-        action, _state = model.predict(observation, deterministic=True)
+        action, _state = agent.predict(observation, deterministic=True)
 
         observation, reward, done, info = env.step(action)
         cumulative_reward += reward
