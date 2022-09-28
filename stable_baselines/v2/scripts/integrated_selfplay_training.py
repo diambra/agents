@@ -84,14 +84,14 @@ if __name__ == '__main__':
         noptepochs = ppo_settings["noptepochs"]
         n_steps = ppo_settings["n_steps"]
 
-        # Initialize the model
-        model = PPO2Selfplay(CustCnnPolicy, env, verbose=1,
+        # Initialize the agent
+        agent = PPO2Selfplay(CustCnnPolicy, env, verbose=1,
                              gamma=gamma, nminibatches=nminibatches,
                              noptepochs=noptepochs, n_steps=n_steps,
                              learning_rate=learning_rate, cliprange=cliprange,
                              cliprange_vf=cliprange_vf, policy_kwargs=policy_kwargs)
 
-        print("Model discount factor = ", model.gamma)
+        print("Model discount factor = ", agent.gamma)
 
         # Create the callback: autosave every USER DEF steps
         autosave_freq = ppo_settings["autosave_freq"]
@@ -100,12 +100,12 @@ if __name__ == '__main__':
 
         # Train the agent
         time_steps = ppo_settings["time_steps"]
-        model.learn(total_timesteps=time_steps, callback=auto_save_callback)
+        agent.learn(total_timesteps=time_steps, callback=auto_save_callback)
 
         # Save the agent
         new_model_checkpoint = str(int(model_checkpoint[:-1]) + time_steps) + "M"
         model_path = os.path.join(model_folder, new_model_checkpoint)
-        model.save(model_path)
+        agent.save(model_path)
 
         # Close the environment
         env.close()

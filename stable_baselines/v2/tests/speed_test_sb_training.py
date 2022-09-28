@@ -76,18 +76,18 @@ if __name__ == '__main__':
     cliprange_vf = cliprange
     n_steps = 128
 
-    # Initialize the model
-    model = PPO2(CustCnnPolicy, env, verbose=1,
+    # Initialize the agent
+    agent = PPO2(CustCnnPolicy, env, verbose=1,
                  gamma=gamma, nminibatches=4, noptepochs=4, n_steps=n_steps,
                  learning_rate=learning_rate, cliprange=cliprange,
                  cliprange_vf=cliprange_vf, policy_kwargs=policy_kwargs)
 
-    print("Model discount factor = ", model.gamma)
+    print("Model discount factor = ", agent.gamma)
 
     # Train the agent
     time_steps = n_steps*2*num_env
     tic = time.time()
-    model.learn(total_timesteps=time_steps)
+    agent.learn(total_timesteps=time_steps)
     toc = time.time()
 
     print("Time elapsed = ", toc-tic)

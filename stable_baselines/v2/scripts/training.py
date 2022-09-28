@@ -86,8 +86,8 @@ if __name__ == '__main__':
         n_steps = ppo_settings["n_steps"]
 
         if model_checkpoint == "0M":
-            # Initialize the model
-            model = PPO2(CustCnnPolicy, env, verbose=1,
+            # Initialize the agent
+            agent = PPO2(CustCnnPolicy, env, verbose=1,
                          gamma=gamma, nminibatches=nminibatches,
                          noptepochs=noptepochs, n_steps=n_steps,
                          learning_rate=learning_rate, cliprange=cliprange,
@@ -96,13 +96,13 @@ if __name__ == '__main__':
         else:
 
             # Load the trained agent
-            model = PPO2.load(os.path.join(model_folder, model_checkpoint), env=env,
+            agent = PPO2.load(os.path.join(model_folder, model_checkpoint), env=env,
                               policy_kwargs=policy_kwargs, gamma=gamma,
                               learning_rate=learning_rate,
                               cliprange=cliprange, cliprange_vf=cliprange_vf,
                               tensorboard_log=tensor_board_folder)
 
-        print("Model discount factor = ", model.gamma)
+        print("Model discount factor = ", agent.gamma)
 
         # Create the callback: autosave every USER DEF steps
         autosave_freq = ppo_settings["autosave_freq"]
@@ -111,12 +111,12 @@ if __name__ == '__main__':
 
         # Train the agent
         time_steps = ppo_settings["time_steps"]
-        model.learn(total_timesteps=time_steps, callback=auto_save_callback)
+        agent.learn(total_timesteps=time_steps, callback=auto_save_callback)
 
         # Save the agent
         new_model_checkpoint = str(int(model_checkpoint[:-1]) + time_steps) + "M"
         model_path = os.path.join(model_folder, new_model_checkpoint)
-        model.save(model_path)
+        agent.save(model_path)
 
         # Close the environment
         env.close()

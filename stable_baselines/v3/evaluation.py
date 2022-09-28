@@ -49,17 +49,17 @@ if __name__ == '__main__':
 
         # Load the trained agent
         model_path = os.path.join(model_folder, opt.trainedModel)
-        model = PPO.load(model_path, env=env)
+        agent = PPO.load(model_path, env=env)
 
         # Print policy network architecture
         print("Policy architecure:")
-        print(model.policy)
+        print(agent.policy)
 
         obs = env.reset()
 
         while True:
 
-            action, _ = model.predict(obs, deterministic=True)
+            action, _ = agent.predict(obs, deterministic=True)
 
             obs, reward, done, info = env.step(action)
 

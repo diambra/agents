@@ -60,13 +60,13 @@ if __name__ == '__main__':
 
         # Load the trained agent
         model_path = os.path.join(model_folder, opt.trainedModel)
-        model = PPO2.load(model_path)
+        agent = PPO2.load(model_path)
 
         obs = env.reset()
 
         while True:
 
-            action, _ = model.predict(obs, deterministic=True)
+            action, _ = agent.predict(obs, deterministic=True)
 
             obs, reward, done, info = env.step(action)
 
