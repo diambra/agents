@@ -9,8 +9,16 @@ if __name__ == "__main__":
 
     # Settings
     settings = {}
-    settings["hardcore"] = True
     settings["frame_shape"] = [84, 84, 1]
+    settings["characters"] = [["Kasumi"], ["Kasumi"]]
+
+    # Wrappers Settings
+    wrappers_settings = {}
+    wrappers_settings["reward_normalization"] = True
+    wrappers_settings["actions_stack"] = 12
+    wrappers_settings["frame_stack"] = 5
+    wrappers_settings["scale"] = True
+    wrappers_settings["process_discrete_binary"] = True
 
     config = {
         # Define and configure the environment
@@ -18,6 +26,7 @@ if __name__ == "__main__":
         "env_config": {
             "game_id": "doapp",
             "settings": settings,
+            "wrappers_settings": wrappers_settings,
         },
         "num_workers": 0,
         "train_batch_size": 200,
@@ -38,16 +47,6 @@ if __name__ == "__main__":
         results = agent.train()
     print("\n .. training completed.")
     print("Training results:\n{}".format(pretty_print(results)))
-
-    # Save the agent
-    checkpoint = agent.save()
-    print("Checkpoint saved at {}".format(checkpoint))
-    del agent  # delete trained model to demonstrate loading
-
-    # Load the trained agent
-    agent = PPO(config=config)
-    agent.restore(checkpoint)
-    print("Agent loaded")
 
     # Evaluate the trained agent (and render each timestep to the shell's
     # output).
