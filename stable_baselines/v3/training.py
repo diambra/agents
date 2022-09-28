@@ -63,8 +63,8 @@ if __name__ == '__main__':
         n_steps = ppo_settings["n_steps"]
 
         if model_checkpoint == "0M":
-            # Initialize the model
-            model = PPO('MultiInputPolicy', env, verbose=1,
+            # Initialize the agent
+            agent = PPO('MultiInputPolicy', env, verbose=1,
                         gamma=gamma, batch_size=batch_size,
                         n_epochs=n_epochs, n_steps=n_steps,
                         learning_rate=learning_rate, clip_range=clip_range,
@@ -72,7 +72,7 @@ if __name__ == '__main__':
                         tensorboard_log=tensor_board_folder)
         else:
             # Load the trained agent
-            model = PPO.load(os.path.join(model_folder, model_checkpoint), env=env,
+            agent = PPO.load(os.path.join(model_folder, model_checkpoint), env=env,
                              gamma=gamma, learning_rate=learning_rate, clip_range=clip_range,
                              clip_range_vf=clip_range_vf, policy_kwargs=policy_kwargs,
                              tensorboard_log=tensor_board_folder)
@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
         # Print policy network architecture
         print("Policy architecure:")
-        print(model.policy)
+        print(agent.policy)
 
         # Create the callback: autosave every USER DEF steps
         autosave_freq = ppo_settings["autosave_freq"]
@@ -89,12 +89,12 @@ if __name__ == '__main__':
 
         # Train the agent
         time_steps = ppo_settings["time_steps"]
-        model.learn(total_timesteps=time_steps, callback=auto_save_callback)
+        agent.learn(total_timesteps=time_steps, callback=auto_save_callback)
 
         # Save the agent
         new_model_checkpoint = str(int(model_checkpoint[:-1]) + time_steps) + "M"
         model_path = os.path.join(model_folder, new_model_checkpoint)
-        model.save(model_path)
+        agent.save(model_path)
 
         # Close the environment
         env.close()

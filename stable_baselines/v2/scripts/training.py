@@ -6,7 +6,7 @@ import json
 import argparse
 base_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_path, '../'))
-from make_stable_baselines_env import make_stable_baselines_env
+from make_sb_env import make_sb_env
 from wrappers.tektag_rew_wrap import TektagRoundEndChar2Penalty, TektagHealthBarUnbalancePenalty
 
 from sb_utils import linear_schedule, AutoSave
@@ -51,9 +51,9 @@ if __name__ == '__main__':
         # Additional obs key list
         key_to_add = params["key_to_add"]
 
-        env, num_env = make_stable_baselines_env(time_dep_seed, settings, wrappers_settings,
-                                                 custom_wrappers=custom_wrappers,
-                                                 key_to_add=key_to_add, use_subprocess=True)
+        env, num_env = make_sb_env(time_dep_seed, settings, wrappers_settings,
+                                   custom_wrappers=custom_wrappers,
+                                   key_to_add=key_to_add, use_subprocess=True)
 
         print("Obs_space = ", env.observation_space)
         print("Obs_space type = ", env.observation_space.dtype)
