@@ -7,7 +7,7 @@ base_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_path, '../'))
 from diambra.arena.utils.gym_utils import discrete_to_multi_discrete_action
 from sb_utils import show_obs
-from make_stable_baselines_env import make_stable_baselines_env
+from make_sb_env import make_sb_env
 from wrappers.tektag_rew_wrap import TektagRoundEndChar2Penalty,\
                                      TektagHealthBarUnbalancePenalty
 
@@ -109,9 +109,9 @@ if __name__ == '__main__':
         hardcore = False if opt.hardcore == 0 else True
         settings["hardcore"] = hardcore
 
-        env, _ = make_stable_baselines_env(time_dep_seed, settings, wrappers_settings,
-                                           custom_wrappers=custom_wrappers,
-                                           key_to_add=key_to_add, no_vec=True)
+        env, _ = make_sb_env(time_dep_seed, settings, wrappers_settings,
+                             custom_wrappers=custom_wrappers,
+                             key_to_add=key_to_add, no_vec=True)
 
         print("Observation Space:", env.observation_space)
         print("Action Space:", env.action_space)

@@ -8,7 +8,7 @@ from stable_baselines.common.misc_util import set_global_seeds
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv
 
 
-def make_stable_baselines_il_env(env_prefix, settings, seed, key_to_add=None,
+def make_sb_il_env(env_prefix, settings, seed, key_to_add=None,
                                  start_index=0, allow_early_resets=True,
                                  start_method=None, no_vec=False,
                                  use_subprocess=False):
@@ -33,8 +33,8 @@ def make_stable_baselines_il_env(env_prefix, settings, seed, key_to_add=None,
     if "hardcore" in settings:
         hardcore = settings["hardcore"]
 
-    def make_sb_env(rank):
-        def thunk():
+    def _make_sb_env(rank):
+        def _thunk():
             if hardcore:
                 env = ImitationLearningHardcore(**settings, rank=rank)
             else:
@@ -45,16 +45,16 @@ def make_stable_baselines_il_env(env_prefix, settings, seed, key_to_add=None,
                           os.path.join(logger.get_dir(), str(rank)),
                           allow_early_resets=allow_early_resets)
             return env
-        return thunk
+        return _thunk
     set_global_seeds(seed)
 
     # If not wanting vectorized envs
     if no_vec and settings["totalCpus"] == 1:
-        return make_sb_env(0)()
+        return _make_sb_env(0)()
 
     # When using one environment, no need to start subprocesses
     if settings["totalCpus"] == 1 or not use_subprocess:
-        return DummyVecEnv([make_sb_env(i + start_index) for i in range(settings["totalCpus"])])
+        return DummyVecEnv([_make_sb_env(i + start_index) for i in range(settings["totalCpus"])])
 
-    return SubprocVecEnv([make_sb_env(i + start_index) for i in range(settings["totalCpus"])],
+    return SubprocVecEnv([_make_sb_env(i + start_index) for i in range(settings["totalCpus"])],
                          start_method=start_method)
