@@ -9,12 +9,12 @@ from stable_baselines.common.misc_util import set_global_seeds
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv
 
 
-def make_stable_baselines_env(seed, env_settings, wrappers_settings=None,
-                              traj_rec_settings=None, custom_wrappers=None,
-                              key_to_add=None, p2_mode=None, p2_policy=None,
-                              start_index=0, allow_early_resets=True,
-                              start_method=None, no_vec=False,
-                              use_subprocess=False):
+def make_sb_env(seed, env_settings, wrappers_settings=None,
+                traj_rec_settings=None, custom_wrappers=None,
+                key_to_add=None, p2_mode=None, p2_policy=None,
+                start_index=0, allow_early_resets=True,
+                start_method=None, no_vec=False,
+                use_subprocess=False):
     """
     Create a wrapped, monitored VecEnv.
     :param seed: (int) initial seed for RNG
@@ -47,8 +47,8 @@ def make_stable_baselines_env(seed, env_settings, wrappers_settings=None,
     if "hardcore" in env_settings:
         hardcore = env_settings["hardcore"]
 
-    def make_sb_env(rank):
-        def thunk():
+    def _make_sb_env(rank):
+        def _thunk():
             env = diambra.arena.make(env_settings["game_id"], env_settings,
                                      wrappers_settings, traj_rec_settings,
                                      seed=seed + rank, rank=rank)
@@ -71,16 +71,16 @@ def make_stable_baselines_env(seed, env_settings, wrappers_settings=None,
             env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
                           allow_early_resets=allow_early_resets)
             return env
-        return thunk
+        return _thunk
     set_global_seeds(seed)
 
     # If not wanting vectorized envs
     if no_vec and num_envs == 1:
-        return make_sb_env(0)(), num_envs
+        return _make_sb_env(0)(), num_envs
 
     # When using one environment, no need to start subprocesses
     if num_envs == 1 or not use_subprocess:
-        return DummyVecEnv([make_sb_env(i + start_index) for i in range(num_envs)]), num_envs
+        return DummyVecEnv([_make_sb_env(i + start_index) for i in range(num_envs)]), num_envs
 
-    return SubprocVecEnv([make_sb_env(i + start_index) for i in range(num_envs)],
+    return SubprocVecEnv([_make_sb_env(i + start_index) for i in range(num_envs)],
                          start_method=start_method), num_envs

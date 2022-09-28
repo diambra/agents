@@ -3,7 +3,7 @@ import os
 import time
 base_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_path, '../'))
-from make_stable_baselines_env import make_stable_baselines_env
+from make_sb_env import make_sb_env
 from sb_utils import linear_schedule
 from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
 from stable_baselines import PPO2
@@ -49,8 +49,8 @@ if __name__ == '__main__':
     key_to_add.append("ownChar")
     key_to_add.append("oppChar")
 
-    env, num_env = make_stable_baselines_env(time_dep_seed, settings, wrappers_settings,
-                                          key_to_add=key_to_add, use_subprocess=True)
+    env, num_env = make_sb_env(time_dep_seed, settings, wrappers_settings,
+                               key_to_add=key_to_add, use_subprocess=True)
 
     # Policy param
     n_actions = env.get_attr("n_actions")[0][0]
