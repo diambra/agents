@@ -56,10 +56,10 @@ if __name__ == '__main__':
         else:
             raise ValueError("n_actions not provided for selected gameId = {}".format(params["settings"]["game_id"]))
 
-        model = PPO2.load(os.path.join(model_folder, "0M"))
+        agent = PPO2.load(os.path.join(model_folder, "0M"))
 
         deterministic_flag = False
-        rl_policy = RLPolicy(model, deterministic_flag, n_actions, name="PPO-0M",
+        rl_policy = RLPolicy(agent, deterministic_flag, n_actions, name="PPO-0M",
                              action_space=settings["action_space"])
 
         env, num_env = make_stable_baselines_env(time_dep_seed, settings, wrappers_settings,
@@ -97,14 +97,14 @@ if __name__ == '__main__':
         noptepochs = ppo_settings["noptepochs"]
         n_steps = ppo_settings["n_steps"]
 
-        # Initialize the model
-        model = PPO2(CustCnnPolicy, env, verbose=1,
+        # Initialize the agent
+        agent = PPO2(CustCnnPolicy, env, verbose=1,
                      gamma=gamma, nminibatches=nminibatches,
                      noptepochs=noptepochs, n_steps=n_steps,
                      learning_rate=learning_rate, cliprange=cliprange,
                      cliprange_vf=cliprange_vf, policy_kwargs=policy_kwargs)
 
-        print("Model discount factor = ", model.gamma)
+        print("Model discount factor = ", agent.gamma)
 
         # Create the callback: autosave every USER DEF steps
         autosave_freq = ppo_settings["autosave_freq"]
@@ -121,13 +121,13 @@ if __name__ == '__main__':
 
         # Train the agent
         time_steps = ppo_settings["time_steps"]
-        model.learn(total_timesteps=time_steps, callback=[auto_save_callback,
+        agent.learn(total_timesteps=time_steps, callback=[auto_save_callback,
                                                           up_rl_pol_weights_callback])
 
         # Save the agent
         new_model_checkpoint = str(int(model_checkpoint[:-1]) + time_steps) + "M"
         model_path = os.path.join(model_folder, new_model_checkpoint)
-        model.save(model_path)
+        agent.save(model_path)
 
         # Close the environment
         env.close()
