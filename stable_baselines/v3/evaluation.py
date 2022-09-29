@@ -5,7 +5,6 @@ import yaml
 import json
 import argparse
 base_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(base_path)
 from make_sb3_env import make_sb3_env
 
 from stable_baselines3 import PPO
