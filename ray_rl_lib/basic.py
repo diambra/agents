@@ -44,7 +44,7 @@ if __name__ == "__main__":
     while True:
         env.render()
 
-        action = agent.compute_action(obs)
+        action = agent.compute_single_action(obs)
 
         obs, reward, done, info = env.step(action)
 
