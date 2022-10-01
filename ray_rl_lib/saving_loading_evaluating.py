@@ -1,7 +1,7 @@
 import sys
 import os
 import diambra.arena
-from make_ray_env import DiambraArena, preprocess_ray_config
+from diambra.arena.ray_rllib.make_ray_env import DiambraArena, preprocess_ray_config
 from ray.rllib.algorithms.ppo import PPO
 from ray.tune.logger import pretty_print
 
