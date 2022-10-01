@@ -36,7 +36,7 @@ def make_sb3_env(game_id, env_settings, wrappers_settings=None,
 
     num_envs = len(env_addresses)
 
-    def make_sb_env(rank):
+    def _make_sb3_env(rank):
         def _init():
             env = diambra.arena.make(game_id, env_settings, wrappers_settings,
                                      seed=seed + rank, rank=rank)
@@ -51,13 +51,13 @@ def make_sb3_env(game_id, env_settings, wrappers_settings=None,
 
     # If not wanting vectorized envs
     if no_vec and num_envs == 1:
-        env = make_sb_env(0)()
+        env = _make_sb3_env(0)()
     else:
         # When using one environment, no need to start subprocesses
         if num_envs == 1 or not use_subprocess:
-            env = DummyVecEnv([make_sb_env(i + start_index) for i in range(num_envs)])
+            env = DummyVecEnv([_make_sb3_env(i + start_index) for i in range(num_envs)])
         else:
-            env = SubprocVecEnv([make_sb_env(i + start_index) for i in range(num_envs)],
+            env = SubprocVecEnv([_make_sb3_env(i + start_index) for i in range(num_envs)],
                                 start_method=start_method)
 
     return env, num_envs
