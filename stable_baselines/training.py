@@ -4,14 +4,10 @@ import time
 import yaml
 import json
 import argparse
-base_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(base_path, '../'))
-from make_sb_env import make_sb_env
-from wrappers.tektag_rew_wrap import TektagRoundEndChar2Penalty, TektagHealthBarUnbalancePenalty
-
-from sb_utils import linear_schedule, AutoSave
-from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
-
+from diambra.arena.stable_baselines.make_sb_env import make_sb_env
+from diambra.arena.stable_baselines.wrappers.tektag_rew_wrap import TektagRoundEndChar2Penalty, TektagHealthBarUnbalancePenalty
+from diambra.arena.stable_baselines.sb_utils import linear_schedule, AutoSave
+from diambra.arena.stable_baselines.custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
 from stable_baselines import PPO2
 
 if __name__ == '__main__':
@@ -30,6 +26,7 @@ if __name__ == '__main__':
 
         time_dep_seed = int((time.time() - int(time.time() - 0.5)) * 1000)
 
+        base_path = os.path.dirname(os.path.abspath(__file__))
         model_folder = os.path.join(base_path, params["folders"]["parent_dir"], params["settings"]["game_id"],
                                     params["folders"]["model_name"], "model")
         tensor_board_folder = os.path.join(base_path, params["folders"]["parent_dir"], params["settings"]["game_id"],
