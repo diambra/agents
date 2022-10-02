@@ -7,7 +7,7 @@ import argparse
 from diambra.arena.stable_baselines.make_sb_env import make_sb_env
 from stable_baselines import PPO2
 
-# diambra run -g python stable_baselines/v2/scripts/evaluation.py --cfgFile $PWD/stable_baselines/v2/scripts/cfg_files/doapp/sr6_128x4_das_nc.yaml  --trainedModel "25M"
+# diambra run -g python stable_baselines/agent.py --cfgFile $PWD/stable_baselines/cfg_files/doapp/sr6_128x4_das_nc.yaml  --trainedModel "25M"
 
 if __name__ == '__main__':
 
