@@ -7,8 +7,8 @@ import argparse
 from diambra.arena.stable_baselines.make_sb_env import make_sb_env
 from diambra.arena.stable_baselines.wrappers.tektag_rew_wrap import TektagRoundEndChar2Penalty, TektagHealthBarUnbalancePenalty
 from diambra.arena.stable_baselines.sb_utils import linear_schedule, AutoSave
-from diambra.arena.stable_baselines.custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
-from diambra.arena.stable_baselines.custom_rl_algo.ppo2_selfplay import PPO2Selfplay
+from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
+from custom_rl_algo.ppo2_selfplay import PPO2Selfplay
 
 if __name__ == '__main__':
 
