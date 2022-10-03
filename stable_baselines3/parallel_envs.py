@@ -1,5 +1,3 @@
-import os
-import sys
 import diambra.arena
 from diambra.arena.stable_baselines3.make_sb3_env import make_sb3_env
 from stable_baselines3 import PPO
