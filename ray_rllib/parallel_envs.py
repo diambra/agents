@@ -1,5 +1,3 @@
-import sys
-import os
 import diambra.arena
 from diambra.arena.ray_rllib.make_ray_env import DiambraArena, preprocess_ray_config
 from ray.rllib.algorithms.ppo import PPO
