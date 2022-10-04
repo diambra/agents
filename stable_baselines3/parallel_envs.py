@@ -2,7 +2,7 @@ import diambra.arena
 from diambra.arena.stable_baselines3.make_sb3_env import make_sb3_env
 from stable_baselines3 import PPO
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # Settings
     settings = {}
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     print("Act_space =", env.action_space)
 
     # Instantiate the agent
-    agent = PPO('CnnPolicy', env, verbose=1)
+    agent = PPO("CnnPolicy", env, verbose=1)
 
     # Print policy network architecture
     print("Policy architecure:")

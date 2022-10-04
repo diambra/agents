@@ -12,7 +12,7 @@ from stable_baselines3 import PPO
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfgFile', type=str, required=True, help='Configuration file')
+    parser.add_argument("--cfgFile", type=str, required=True, help="Configuration file")
     opt = parser.parse_args()
     print(opt)
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     if model_checkpoint == "0M":
         # Initialize the agent
-        agent = PPO('MultiInputPolicy', env, verbose=1,
+        agent = PPO("MultiInputPolicy", env, verbose=1,
                     gamma=gamma, batch_size=batch_size,
                     n_epochs=n_epochs, n_steps=n_steps,
                     learning_rate=learning_rate, clip_range=clip_range,
