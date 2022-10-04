@@ -28,7 +28,7 @@ if __name__ == "__main__":
     print("Act_space =", env.action_space)
 
     # Instantiate the agent
-    agent = PPO('MultiInputPolicy', env, verbose=1)
+    agent = PPO("MultiInputPolicy", env, verbose=1)
 
     # Print policy network architecture
     print("Policy architecure:")

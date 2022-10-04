@@ -6,7 +6,7 @@ if __name__ == "__main__":
     env = diambra.arena.make("doapp", {"hardcore": True, "frame_shape": [128, 128, 1]})
 
     print("\nStarting training ...\n")
-    agent = A2C('CnnPolicy', env, verbose=1)
+    agent = A2C("CnnPolicy", env, verbose=1)
     agent.learn(total_timesteps=200)
     print("\n .. training completed.")
 
