@@ -6,13 +6,17 @@ import argparse
 from diambra.arena.stable_baselines3.make_sb3_env import make_sb3_env
 from stable_baselines3 import PPO
 
-# diambra run -g python stable_baselines3/agent.py --cfgFile $PWD/stable_baselines3/cfg_files/doapp/sr6_128x4_das_nc.yaml  --trainedModel "512M"
+"""This is a example agent based on stable baselines 3.
+
+Usage:
+diambra run -g python stable_baselines/agent.py --cfgFile $PWD/stable_baselines/cfg_files/doapp/sr6_128x4_das_nc.yaml --trainedModel "512M"
+"""
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfgFile', type=str, required=True, help='Configuration file')
-    parser.add_argument('--trainedModel', type=str, required=True, help='Model checkpoint')
+    parser.add_argument("--cfgFile", type=str, required=True, help="Configuration file")
+    parser.add_argument("--trainedModel", type=str, required=True, help="Model checkpoint")
     opt = parser.parse_args()
     print(opt)
 

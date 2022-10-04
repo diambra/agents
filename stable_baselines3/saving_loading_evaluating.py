@@ -8,7 +8,7 @@ if __name__ == "__main__":
     env = diambra.arena.make("doapp", {"hardcore": True, "frame_shape": [128, 128, 1]})
 
     # Instantiate the agent
-    agent = A2C('CnnPolicy', env, verbose=1)
+    agent = A2C("CnnPolicy", env, verbose=1)
     # Train the agent
     agent.learn(total_timesteps=200)
     # Save the agent
