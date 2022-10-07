@@ -31,7 +31,7 @@ if __name__ == "__main__":
     agent = PPO("MultiInputPolicy", env, verbose=1)
 
     # Print policy network architecture
-    print("Policy architecure:")
+    print("Policy architecture:")
     print(agent.policy)
 
     # Train the agent
