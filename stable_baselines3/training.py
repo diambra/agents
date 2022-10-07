@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
 
     # Print policy network architecture
-    print("Policy architecure:")
+    print("Policy architecture:")
     print(agent.policy)
 
     # Create the callback: autosave every USER DEF steps

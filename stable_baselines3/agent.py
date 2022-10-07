@@ -52,7 +52,7 @@ if __name__ == "__main__":
     agent = PPO.load(model_path, env=env)
 
     # Print policy network architecture
-    print("Policy architecure:")
+    print("Policy architecture:")
     print(agent.policy)
 
     obs = env.reset()
