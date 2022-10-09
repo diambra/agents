@@ -38,16 +38,16 @@ if __name__ == "__main__":
 
     env = diambra.arena.make("doapp", settings)
 
-    obs = env.reset()
+    observation = env.reset()
     while True:
         env.render()
 
-        action = agent.compute_single_action(obs)
+        action = agent.compute_single_action(observation)
 
-        obs, reward, done, info = env.step(action)
+        observation, reward, done, info = env.step(action)
 
         if done:
-            obs = env.reset()
+            observation = env.reset()
             break
 
     print("\n... trained agent execution completed.\n")
