@@ -11,3 +11,5 @@
   <a href="https://www.youtube.com/c/diambra_ai">YouTube</a> •
   <a href="https://twitter.com/diambra_ai">Twitter</a>
 </p>
+
+###### DIAMBRA™ is a Trade Mark, © Copyright 2018 - 2022. All Right Reserved.
