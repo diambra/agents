@@ -4,14 +4,14 @@ folders:
 
 settings:
   game_id: "kof98umh"
-  characters: [["Terry", "Mai", "Kyo"], ["Terry", "Mai", "Kyo"]]
+  characters: ("Terry", "Mai", "Kyo")
   difficulty: 6
   step_ratio: 6
-  frame_shape: [128, 128, 1]
+  frame_shape: (128, 128, 1)
   continue_game: 0.0
   action_space: "discrete"
   attack_but_combination: false
-  char_outfits: [2, 2]
+  char_outfits: 2
   player: "Random"
   show_final: false
 

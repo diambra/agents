@@ -5,7 +5,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 if __name__ == "__main__":
 
     # Create environment
-    env = diambra.arena.make("doapp", {"hardcore": True, "frame_shape": [128, 128, 1]})
+    env = diambra.arena.make("doapp", {"hardcore": True, "frame_shape": (128, 128, 1)})
 
     # Instantiate the agent
     agent = A2C("CnnPolicy", env, verbose=1)

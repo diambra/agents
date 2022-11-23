@@ -44,16 +44,18 @@ if __name__ == '__main__':
         settings["game_id"] = opt.gameId
         settings["continue_game"] = opt.continueGame
         settings["step_ratio"] = opt.stepRatio
-        settings["frame_shape"] = [128, 128, 1]
+        settings["frame_shape"] = (128, 128, 1)
         settings["player"] = opt.player
 
-        settings["characters"] = [[opt.character1, opt.character1_2, opt.character1_3],
-                                  [opt.character2, opt.character2_2, opt.character2_3]]
-        settings["char_outfits"] = [2, 2]
+        settings["characters"] = ((opt.character1, opt.character1_2, opt.character1_3),
+                                  (opt.character2, opt.character2_2, opt.character2_3))
+        settings["char_outfits"] = (2, 2)
+        settings["action_space"] = (opt.actionSpace, opt.actionSpace)
+        settings["attack_but_combination"] = (opt.attButComb, opt.attButComb)
 
-        settings["action_space"] = [opt.actionSpace, opt.actionSpace]
-        settings["attack_but_combination"] = [opt.attButComb, opt.attButComb]
         if settings["player"] != "P1P2":
+            settings["characters"] = settings["characters"][0]
+            settings["char_outfits"] = settings["characters"][0]
             settings["action_space"] = settings["action_space"][0]
             settings["attack_but_combination"] = settings["attack_but_combination"][0]
 
@@ -148,7 +150,7 @@ if __name__ == '__main__':
                         actions = 0
 
                 if settings["action_space"] == "discrete":
-                    move_action, att_action = discrete_to_multi_discrete_action(actions, env.n_actions[0][0])
+                    move_action, att_action = discrete_to_multi_discrete_action(actions, env.n_actions[0])
                 else:
                     move_action, att_action = actions[0], actions[1]
 
