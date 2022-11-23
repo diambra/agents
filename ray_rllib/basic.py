@@ -7,7 +7,7 @@ if __name__ == "__main__":
     # Settings
     settings = {}
     settings["hardcore"] = True
-    settings["frame_shape"] = [84, 84, 1]
+    settings["frame_shape"] = (84, 84, 1)
 
     config = {
         # Define and configure the environment

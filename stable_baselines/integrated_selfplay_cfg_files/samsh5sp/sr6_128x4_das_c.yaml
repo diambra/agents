@@ -4,12 +4,12 @@ folders:
 
 settings:
   game_id: "samsh5sp"
-  characters: [["Haohmaru"], ["Haohmaru"]]
+  characters: (("Haohmaru"), ("Haohmaru"))
   step_ratio: 6
-  frame_shape: [128, 128, 1]
-  action_space: ["discrete", "discrete"]
-  attack_but_combination: [true, true]
-  char_outfits: [2, 2]
+  frame_shape: (128, 128, 1)
+  action_space: ("discrete", "discrete")
+  attack_but_combination: (true, true)
+  char_outfits: (2, 2)
   player: "P1P2"
 
 wrappers_settings:
