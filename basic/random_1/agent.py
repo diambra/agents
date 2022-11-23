@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import diambra.arena
-from diambra.arena.utils.gym_utils import show_gym_obs, env_spaces_summary
+from diambra.arena.utils.gym_utils import env_spaces_summary
 
 if __name__ == "__main__":
 
@@ -8,11 +8,11 @@ if __name__ == "__main__":
     settings = {
         "player": "P2",
         "step_ratio": 6,
-        "frame_shape": [128, 128, 1],
+        "frame_shape": (128, 128, 1),
         "hardcore": False,
         "difficulty": 4,
-        "characters": [["Random"], ["Random"]],
-        "char_outfits": [1, 1],
+        "characters": ("Random"),
+        "char_outfits": 1,
         "action_space": "multi_discrete",
         "attack_but_combination": False
     }
@@ -22,21 +22,21 @@ if __name__ == "__main__":
     env_spaces_summary(env)
 
     observation = env.reset()
-    show_gym_obs(observation, env.char_names)
+    env.show_obs(observation)
 
     while True:
 
         actions = env.action_space.sample()
 
         observation, reward, done, info = env.step(actions)
-        show_gym_obs(observation, env.char_names)
+        env.show_obs(observation)
         print("Reward: {}".format(reward))
         print("Done: {}".format(done))
         print("Info: {}".format(info))
 
         if done:
             observation = env.reset()
-            show_gym_obs(observation, env.char_names)
+            env.show_obs(observation)
             if info["env_done"]:
                 break
 
