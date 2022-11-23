@@ -13,13 +13,13 @@ if __name__ == '__main__':
     settings = {}
     settings["game_id"] = "doapp"
     settings["step_satio"] = 6
-    settings["frame_shape"] = [128, 128, 1]
+    settings["frame_shape"] = (128, 128, 1)
     settings["player"] = "Random"  # P1 / P2
 
-    settings["characters"] = [["Random", "Random", "Random"], ["Random", "Random", "Random"]]
+    settings["characters"] = ("Random", "Random", "Random")
 
     settings["difficulty"] = 3
-    settings["char_outfits"] = [2, 2]
+    settings["char_outfits"] = 2
 
     settings["action_space"] = "discrete"
     settings["attack_but_combination"] = False
@@ -51,7 +51,7 @@ if __name__ == '__main__':
                                key_to_add=key_to_add, use_subprocess=True)
 
     # Policy param
-    n_actions = env.get_attr("n_actions")[0][0]
+    n_actions = env.get_attr("n_actions")[0]
     n_actions_stack = env.get_attr("n_actions_stack")[0]
     n_char = env.get_attr("number_of_characters")[0]
     char_names = env.get_attr("char_names")[0]

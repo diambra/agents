@@ -6,8 +6,8 @@ if __name__ == "__main__":
 
     # Settings
     settings = {}
-    settings["frame_shape"] = [128, 128, 1]
-    settings["characters"] = [["Kasumi"], ["Kasumi"]]
+    settings["frame_shape"] = (128, 128, 1)
+    settings["characters"] = ("Kasumi")
 
     # Wrappers Settings
     wrappers_settings = {}
