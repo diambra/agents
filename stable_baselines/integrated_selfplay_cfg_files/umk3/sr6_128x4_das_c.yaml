@@ -9,7 +9,7 @@ settings:
   frame_shape: (128, 128, 1)
   action_space: ("discrete", "discrete")
   attack_but_combination: (true, true)
-  char_outfits: (2, 2)
+  char_outfits: (1, 1)
   player: "P1P2"
 
 wrappers_settings:

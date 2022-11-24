@@ -11,7 +11,7 @@ settings:
   continue_game: 0.0
   action_space: "discrete"
   attack_but_combination: false
-  char_outfits: 2
+  char_outfits: 1
   player: "Random"
   show_final: false
 
