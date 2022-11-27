@@ -4,10 +4,10 @@ folders:
 
 settings:
   game_id: "umk3"
-  characters: ("Sektor")
+  characters: "Sektor"
   difficulty: 4
   step_ratio: 2
-  frame_shape: (128, 128, 1)
+  frame_shape: !!python/tuple [128, 128, 1]
   continue_game: 0.0
   action_space: "discrete"
   attack_but_combination: false
