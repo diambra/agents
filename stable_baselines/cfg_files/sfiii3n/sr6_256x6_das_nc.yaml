@@ -4,10 +4,10 @@ folders:
 
 settings:
   game_id: "sfiii3n"
-  characters: ("Ryu")
+  characters: "Ryu"
   difficulty: 6
   step_ratio: 6
-  frame_shape: (256, 256, 1)
+  frame_shape: !!python/tuple [256, 256, 1]
   continue_game: 0.0
   action_space: "discrete"
   attack_but_combination: false
