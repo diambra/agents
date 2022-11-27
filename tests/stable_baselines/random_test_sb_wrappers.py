@@ -27,7 +27,7 @@ if __name__ == '__main__':
         parser.add_argument('--nEpisodes',      type=int,   default=1,          help='Number of episodes')
         parser.add_argument('--continueGame',   type=float, default=0.0,        help='ContinueGame flag (-inf,+1.0]')
         parser.add_argument('--actionSpace',    type=str,   default="discrete", help='(discrete)/multi_discrete')
-        parser.add_argument('--attButComb',     type=int,   default=0,          help='If to use attack button combinations (0=False)/1=True')
+        parser.add_argument('--attButComb',     type=bool,  default=False,      help='If to use attack button combinations')
         parser.add_argument('--noAction',       type=int,   default=0,          help='If to use no action policy (0=False)')
         parser.add_argument('--hardcore',       type=int,   default=0,          help='Hard core mode (0=False)')
         parser.add_argument('--interactiveViz', type=int,   default=0,          help='Interactive Visualization (0=False)')
@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
         if settings["player"] != "P1P2":
             settings["characters"] = settings["characters"][0]
-            settings["char_outfits"] = settings["characters"][0]
+            settings["char_outfits"] = settings["char_outfits"][0]
             settings["action_space"] = settings["action_space"][0]
             settings["attack_but_combination"] = settings["attack_but_combination"][0]
 
@@ -122,6 +122,8 @@ if __name__ == '__main__':
                 print(k, v)
 
         n_actions = env.n_actions
+        if settings["player"] != "P1P2":
+            n_actions = [env.n_actions, env.n_actions]
 
         actions_print_dict = env.print_actions_dict
 
@@ -224,8 +226,8 @@ if __name__ == '__main__':
         if opt.gameId == "tektagt":
             max_continue = (max_continue + 1) * 0.7 - 1
 
-        if opt.noAction == 1 and np.mean(cumulative_ep_rew_all) > -(max_continue+1)*2*n_rounds+0.001:
-            raise RuntimeError("NoAction policy and average reward different than {} ({})".format(-(max_continue+1)*2*n_rounds, np.mean(cumulative_ep_rew_all)))
+        if opt.noAction == 1 and np.mean(cumulative_ep_rew_all) > -(max_continue+1) * 2 * n_rounds + 0.001:
+            raise RuntimeError("NoAction policy and average reward different than {} ({})".format(-(max_continue+1) * 2 * n_rounds, np.mean(cumulative_ep_rew_all)))
 
         print("COMPLETED SUCCESSFULLY!")
     except Exception as e:
