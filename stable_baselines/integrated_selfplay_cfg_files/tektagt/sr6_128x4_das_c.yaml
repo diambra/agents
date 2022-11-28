@@ -4,12 +4,12 @@ folders:
 
 settings:
   game_id: "tektagt"
-  characters: (("Jin", "Yoshimitsu"), ("Jin", "Yoshimitsu"))
+  characters: [["Jin", "Yoshimitsu"], ["Jin", "Yoshimitsu"]] # To be converted in tuple of tuples
   step_ratio: 6
-  frame_shape: (128, 128, 1)
-  action_space: ("discrete", "discrete")
-  attack_but_combination: (true, true)
-  char_outfits: (2, 2)
+  frame_shape: !!python/tuple [128, 128, 1]
+  action_space: !!python/tuple ["discrete", "discrete"]
+  attack_but_combination: !!python/tuple [true, true]
+  char_outfits: !!python/tuple [2, 2]
   player: "P1P2"
 
 wrappers_settings:

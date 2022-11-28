@@ -35,6 +35,8 @@ if __name__ == '__main__':
 
         # Settings
         settings = params["settings"]
+        settings["characters"] = tuple([tuple(settings["characters"][0]), 
+                                        tuple(settings["characters"][1])])
 
         # Wrappers Settings
         wrappers_settings = params["wrappers_settings"]
