@@ -4,7 +4,7 @@ folders:
 
 settings:
   game_id: "doapp"
-  characters: !!python/tuple ["Kasumi", "Kasumi"]
+  characters: [["Kasumi"], ["Kasumi"]] # To be converted in tuple of tuples
   step_ratio: 6
   frame_shape: !!python/tuple [128, 128, 1]
   action_space: !!python/tuple ["discrete", "discrete"]
