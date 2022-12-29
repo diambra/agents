@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "[Agents] (conda diambra-arena) No-Action Agent",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/basic/no_action/agent.py",
+        "console": "integratedTerminal",
+      },
+      {
+        "name": "[Agents] (conda diambra-arena) Random Agent",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/basic/random_1/agent.py",
+        "console": "integratedTerminal",
+      },
+      {
+        "name": "[Agents] (conda diambra-arena-sb) SB Trained",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/stable_baselines/agent.py",
+        "args": [
+          "--cfgFile", "${workspaceFolder}/stable_baselines/cfg_files/doapp/sr6_128x4_das_nc.yaml",
+          "--trainedModel", "25M",
+        ],
+        "console": "integratedTerminal",
+      }
+    ]
+}
