@@ -12,4 +12,4 @@
   <a href="https://twitter.com/diambra_ai">Twitter</a>
 </p>
 
-###### DIAMBRA™ is a Trade Mark, © Copyright 2018 - 2022. All Right Reserved.
+###### DIAMBRA™ is a Trade Mark, © Copyright 2018-2023. All Right Reserved.
