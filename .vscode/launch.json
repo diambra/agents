@@ -4,7 +4,7 @@
       {
           "id": "DIAMBRA_ENVS",
           "type": "pickString",
-          "description": "Select DIAMBRA Engine Address",
+          "description": "DIAMBRA Engine Address:",
           "default": "0.0.0.0:50051",
           "options": [
               { "label": "Normal", "value": "0.0.0.0:50051" },
