@@ -1,53 +1,40 @@
 {
     "version": "0.2.0",
+    "inputs": [
+      {
+          "id": "DIAMBRA_ENVS",
+          "type": "pickString",
+          "description": "Select DIAMBRA Engine Address",
+          "default": "0.0.0.0:50051",
+          "options": [
+              { "label": "Normal", "value": "0.0.0.0:50051" },
+              { "label": "Via Proxy Server (Evaluator)", "value": "0.0.0.0:50052" }
+          ],
+      }
+    ],
     "configurations": [
       {
-        "name": "[Agents-Freerun] (conda diambra-arena) No-Action Agent",
-        "type": "python",
-        "request": "launch",
-        "program": "${workspaceFolder}/basic/no_action/agent.py",
-        "console": "integratedTerminal",
-      },
-      {
-        "name": "[Agents-Freerun] (conda diambra-arena) Random Agent",
-        "type": "python",
-        "request": "launch",
-        "program": "${workspaceFolder}/basic/random_1/agent.py",
-        "console": "integratedTerminal",
-      },
-      {
-        "name": "[Agents-Freerun] (conda diambra-arena-sb) SB Trained",
-        "type": "python",
-        "request": "launch",
-        "program": "${workspaceFolder}/stable_baselines/agent.py",
-        "args": [
-          "--cfgFile", "${workspaceFolder}/stable_baselines/cfg_files/doapp/sr6_128x4_das_nc.yaml",
-          "--trainedModel", "25M",
-        ],
-        "console": "integratedTerminal"
-      },
-      {
-        "name": "[Agents-Evaluator] (conda diambra-arena) No-Action Agent",
+        "name": "[Agents] No-Action Agent (venv:diambra-arena)",
         "type": "python",
         "request": "launch",
         "program": "${workspaceFolder}/basic/no_action/agent.py",
         "console": "integratedTerminal",
         "env": {
-              "DIAMBRA_ENVS": "0.0.0.0:50052"
+          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
         },
       },
       {
-        "name": "[Agents-Evaluator] (conda diambra-arena) Random Agent",
+        "name": "[Agents] Random Agent (venv:diambra-arena)",
         "type": "python",
         "request": "launch",
         "program": "${workspaceFolder}/basic/random_1/agent.py",
         "console": "integratedTerminal",
         "env": {
-          "DIAMBRA_ENVS": "0.0.0.0:50052"
+          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
         },
       },
       {
-        "name": "[Agents-Evaluator] (conda diambra-arena-sb) SB Trained",
+        "name": "[Agents] SB Trained (venv:diambra-arena-sb)",
         "type": "python",
         "request": "launch",
         "program": "${workspaceFolder}/stable_baselines/agent.py",
@@ -57,7 +44,7 @@
         ],
         "console": "integratedTerminal",
         "env": {
-          "DIAMBRA_ENVS": "0.0.0.0:50052"
+          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
         },
       }
     ]
