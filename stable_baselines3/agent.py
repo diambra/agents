@@ -6,10 +6,10 @@ import argparse
 from diambra.arena.stable_baselines3.make_sb3_env import make_sb3_env
 from stable_baselines3 import PPO
 
-"""This is a example agent based on stable baselines 3.
+"""This is an example agent based on stable baselines 3.
 
 Usage:
-diambra run -g python stable_baselines/agent.py --cfgFile $PWD/stable_baselines/cfg_files/doapp/sr6_128x4_das_nc.yaml --trainedModel "512M"
+diambra run python stable_baselines3/agent.py --cfgFile $PWD/stable_baselines3/cfg_files/doapp/sr6_128x4_das_nc.yaml --trainedModel "model_name"
 """
 
 if __name__ == "__main__":
