@@ -12,13 +12,14 @@ from ray.rllib.algorithms.ppo import PPO
 """This is an example agent based on RL Lib.
 
 Usage:
-diambra run python agent.py --trainedModel /absolute/path/to/checkpoint/
+diambra run python agent.py --trainedModel /absolute/path/to/checkpoint/ --envSpaces /absolute/path/to/environment/spaces/descriptor/
 """
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--trainedModel", type=str, required=True, help="Model path")
+    parser.add_argument("--envSpaces", type=str, required=True, help="Environment spaces descriptor file path")
     opt = parser.parse_args()
     print(opt)
 
@@ -44,6 +45,8 @@ if __name__ == "__main__":
             "game_id": "doapp",
             "settings": settings,
             "wrappers_settings": wrappers_settings,
+            "load_spaces_from_file": True,
+            "env_spaces_file_name": opt.envSpaces,
         },
         "num_workers": 0,
         "train_batch_size": 200,
