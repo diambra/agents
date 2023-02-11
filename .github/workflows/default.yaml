@@ -3,17 +3,17 @@ name: build-and-push
 on:
   push:
     branches:
-      - "main"
+      - main
   pull_request: {}
 
 jobs:
   generate-matrix:
-    name: Generate matrix
+    name: Generate build matrix
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Get changed files
@@ -22,9 +22,9 @@ jobs:
           dir_names: "true"
         uses: tj-actions/changed-files@v29.0.2
       - id: set-matrix
-        run: echo "::set-output name=matrix::$(./.github/workflows/generate-agent-matrix ${{ steps.changed-files.outputs.all_changed_files }})"
+        run: echo "::set-output name=matrix::$(./.github/workflows/generate-image-build-matrix ${{ steps.changed-files.outputs.all_changed_files }})"
 
-  build-and-push-agents:
+  build-and-push-images:
     needs: [generate-matrix]
     runs-on: ubuntu-latest
     if: ${{ needs.generate-matrix.outputs.matrix != '[]' }}
@@ -32,6 +32,7 @@ jobs:
       fail-fast: true
       matrix:
         include: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
