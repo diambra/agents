@@ -27,6 +27,7 @@ jobs:
   build-and-push-agents:
     needs: [generate-matrix]
     runs-on: ubuntu-latest
+    if: ${{ needs.generate-matrix.outputs.matrix != '[]' }}
     strategy:
       fail-fast: true
       matrix:
@@ -53,7 +54,7 @@ jobs:
         with:
           registry: quay.io
           username: diambra+github
-          password: ${{ secrets.QUAY_PASSWORD }}
+          password: ${{ secrets.QUAY_TOKEN }}
 
       - name: Build and push agent ${{ matrix.dir }}
         uses: docker/build-push-action@v3
