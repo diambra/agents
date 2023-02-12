@@ -46,6 +46,20 @@
         "env": {
           "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
         },
+      }, 
+      {
+        "name": "[Agents] Ray RL Lib Trained (venv:diambra-arena-ray)",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/ray_rllib/agent.py",
+        "args": [
+          "--trainedModel", "${workspaceFolder}/ray_rllib/results/doapp_sr6_84x5_mdas_c/",
+          "--envSpaces", "${workspaceFolder}/ray_rllib/results/doapp_sr6_84x5_mdas_c/diambra_ray_env_spaces",
+        ],
+        "console": "integratedTerminal",
+        "env": {
+          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
+        },
       }
     ]
 }
