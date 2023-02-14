@@ -1,1 +1,2 @@
+tensorflow>=1.8.0,<2.0.0 # sb depends on this without declaring, so we need to add it here
 diambra-arena[stable-baselines]==2.1.0rc4
