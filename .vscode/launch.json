@@ -15,7 +15,7 @@
         "id": "gameId",
         "type": "pickString",
         "description": "Game ID:",
-        "default": "doapp",
+        "default": "random",
         "options": [
             { "label": "Random", "value": "random" },
             { "label": "DOA++", "value": "doapp" }
