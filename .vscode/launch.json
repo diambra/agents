@@ -10,7 +10,22 @@
               { "label": "Normal", "value": "0.0.0.0:50051" },
               { "label": "Via Proxy Server (Evaluator)", "value": "0.0.0.0:50052" }
           ],
-      }
+      },
+      {
+        "id": "gameId",
+        "type": "pickString",
+        "description": "Game ID:",
+        "default": "doapp",
+        "options": [
+            { "label": "Random", "value": "random" },
+            { "label": "DOA++", "value": "doapp" }
+            { "label": "SFIII", "value": "sfiii3n" }
+            { "label": "Tekken Tag", "value": "tektagt" }
+            { "label": "UMK3", "value": "umk3" }
+            { "label": "Samurai Showdown", "value": "samsh5sp" }
+            { "label": "KOF", "value": "kof98umh" }
+        ],
+    }
     ],
     "configurations": [
       {
@@ -18,6 +33,9 @@
         "type": "python",
         "request": "launch",
         "program": "${workspaceFolder}/basic/no_action/agent.py",
+        "args": [
+          "--gameId", "${input:gameId}",
+        ],
         "console": "integratedTerminal",
         "env": {
           "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
@@ -28,6 +46,9 @@
         "type": "python",
         "request": "launch",
         "program": "${workspaceFolder}/basic/random_1/agent.py",
+        "args": [
+          "--gameId", "${input:gameId}",
+        ],
         "console": "integratedTerminal",
         "env": {
           "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
