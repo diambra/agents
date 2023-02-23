@@ -1,8 +1,21 @@
 #!/usr/bin/env python3
 import diambra.arena
-from diambra.arena.utils.gym_utils import env_spaces_summary
+from diambra.arena.utils.gym_utils import env_spaces_summary, available_games
+import random
+import argparse
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--gameId', type=str, default="random", help='Game ID')
+    opt = parser.parse_args()
+    print(opt)
+
+    game_dict = available_games(False)
+    if opt.gameId == "random":
+        game_id = random.sample(game_dict.keys(),1)[0]
+    else:
+        game_id = opt.gameId if opt.gameId in game_dict.keys() else random.sample(game_dict.keys(),1)[0]
 
     # Settings
     settings = {
@@ -17,7 +30,7 @@ if __name__ == "__main__":
         "attack_but_combination": True
     }
 
-    env = diambra.arena.make("doapp", settings)
+    env = diambra.arena.make(game_id, settings)
 
     env_spaces_summary(env)
 
