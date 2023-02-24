@@ -25,7 +25,7 @@ if __name__ == "__main__":
         "hardcore": False,
         "difficulty": 4,
         "characters": ("Random"),
-        "char_outfits": 3,
+        "char_outfits": 1,
         "action_space": "discrete",
         "attack_but_combination": True
     }
