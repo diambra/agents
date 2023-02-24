@@ -21,7 +21,7 @@ if __name__ == "__main__":
     settings = {
         "player": "P2",
         "step_ratio": 2,
-        "frame_shape": (256, 256, 3),
+        "frame_shape": (256, 256, 0),
         "hardcore": False,
         "difficulty": 4,
         "characters": ("Random"),
