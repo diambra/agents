@@ -23,6 +23,7 @@ jobs:
         id: changed-files
         with:
           dir_names: "true"
+          since_last_remote_commit: "true"
         uses: tj-actions/changed-files@v29.0.2
       - id: set-matrix
         run: |
