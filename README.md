@@ -12,7 +12,7 @@
   <a href="https://twitter.com/diambra_ai">Twitter</a>
 </p>
 
-# A collection or Agents interfaced with DIAMBRA Arena
+# A collection of Agents interfaced with DIAMBRA Arena
 
 This repository contains many examples of Agents that interact with <a href="https://github.com/diambra/arena">DIAMBRA Arena</a>, our exclusive suite of Reinforcement Learning environments. They show how to use the standard OpenAI Gym API, and how to interface it with the most widely used state-of-the-art RL libraries.
 
