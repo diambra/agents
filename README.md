@@ -24,4 +24,4 @@ They are divided in the following categories:
 
 Take a look at the dedicated section of our <a href="https://docs.diambra.ai/handsonreinforcementlearning/#end-to-end-deep-reinforcement-learning">Documentation</a> to know more!
 
-###### DIAMBRA™ is a Trade Mark, © Copyright 2018-2023. All Right Reserved.
+###### DIAMBRA™ is a Trade Mark, © Copyright 2018-2023. All Rights Reserved.
