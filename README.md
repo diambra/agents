@@ -12,4 +12,16 @@
   <a href="https://twitter.com/diambra_ai">Twitter</a>
 </p>
 
+# A collection or Agents interfaced with DIAMBRA Arena
+
+This repository contains many examples of Agents that interact with <a href="https://github.com/diambra/arena">DIAMBRA Arena</a>, our exclusive suite of Reinforcement Learning environments. They show how to use the standard OpenAI Gym API, and how to interface it with the most widely used state-of-the-art RL libraries.
+
+They are divided in the following categories:
+- <a href="https://github.com/diambra/agents/tree/main/basic">Basic (No-Op, Random)</a>
+- <a href="https://github.com/diambra/agents/tree/main/stable_baselines3">Stable-Baselines 3</a>
+- <a href="https://github.com/diambra/agents/tree/main/ray_rllib">Ray RLlib</a>
+- <a href="https://github.com/diambra/agents/tree/main/stable_baselines">Stable-Baselines (Deprecated)</a>
+
+Take a look at the dedicated section of our <a href="https://docs.diambra.ai/handsonreinforcementlearning/#end-to-end-deep-reinforcement-learning">Documentation</a> to know more!
+
 ###### DIAMBRA™ is a Trade Mark, © Copyright 2018-2023. All Right Reserved.
