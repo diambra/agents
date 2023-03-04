@@ -73,9 +73,12 @@ jobs:
           tags: |
             ghcr.io/diambra/agent-${{ matrix.name }}:${{ github.sha }}
             ghcr.io/diambra/agent-${{ matrix.name }}:${{ github.head_ref || github.ref_name }}
+            ${{ github.ref_name == 'main' && 'ghcr.io/diambra/agent-${{ matrix.name }}:latest' || '' }}
 
             docker.io/diambra/agent-${{ matrix.name }}:${{ github.sha }}
             docker.io/diambra/agent-${{ matrix.name }}:${{ github.head_ref || github.ref_name }}
+            ${{ github.ref_name == 'main' && 'docker.io/diambra/agent-${{ matrix.name }}:latest' || '' }}
 
             quay.io/diambra/agent-${{ matrix.name }}:${{ github.sha }}
             quay.io/diambra/agent-${{ matrix.name }}:${{ github.head_ref || github.ref_name }}
+            ${{ github.ref_name == 'main' && 'quay.io/diambra/agent-${{ matrix.name }}:latest' || '' }}
