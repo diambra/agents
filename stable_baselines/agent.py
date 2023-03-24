@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
     while True:
 
-        action, _ = agent.predict(obs, deterministic=True)
+        action, _ = agent.predict(obs, deterministic=False)
 
         obs, reward, done, info = env.step(action)
 

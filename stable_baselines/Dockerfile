@@ -4,4 +4,4 @@ FROM $FROM
 WORKDIR /app
 COPY . .
 
-ENTRYPOINT [ "python3", "agent.py", "--cfgFile", "/app/cfg_files/doapp/sr6_128x4_das_nc.yaml", "--trainedModel", "25M"]
+ENTRYPOINT [ "python3", "agent.py", "--cfgFile", "/app/cfg_files/doapp/sr6_128x4_das_nc.yaml", "--trainedModel", "model"]

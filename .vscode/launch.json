@@ -17,13 +17,13 @@
         "description": "Game ID:",
         "default": "random",
         "options": [
-            { "label": "Random", "value": "random" },
-            { "label": "DOA++", "value": "doapp" }
-            { "label": "SFIII", "value": "sfiii3n" }
-            { "label": "Tekken Tag", "value": "tektagt" }
-            { "label": "UMK3", "value": "umk3" }
-            { "label": "Samurai Showdown", "value": "samsh5sp" }
-            { "label": "KOF", "value": "kof98umh" }
+            "random",
+            "doapp",
+            "sfiii3n",
+            "tektagt",
+            "umk3",
+            "samsh5sp",
+            "kof98umh",
         ],
     }
     ],
@@ -61,7 +61,7 @@
         "program": "${workspaceFolder}/stable_baselines/agent.py",
         "args": [
           "--cfgFile", "${workspaceFolder}/stable_baselines/cfg_files/doapp/sr6_128x4_das_nc.yaml",
-          "--trainedModel", "25M",
+          "--trainedModel", "model",
         ],
         "console": "integratedTerminal",
         "env": {
