@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     # Settings
     settings = params["settings"]
-    settings["characters"] = tuple([tuple(settings["characters"][0]), 
+    settings["characters"] = tuple([tuple(settings["characters"][0]),
                                     tuple(settings["characters"][1])])
 
     # Wrappers Settings
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     rl_policy = RLPolicy(agent, deterministic_flag, n_actions, name="PPO-0M",
                             action_space=settings["action_space"])
 
-    env, num_env = make_sb_env(time_dep_seed, settings, wrappers_settings,
+    env, num_envs = make_sb_env(time_dep_seed, settings, wrappers_settings,
                                 custom_wrappers=custom_wrappers,
                                 key_to_add=key_to_add, use_subprocess=False,
                                 p2_mode="selfPlayVsRL", p2_policy=rl_policy,)
@@ -105,8 +105,8 @@ if __name__ == '__main__':
 
     # Create the callback: autosave every USER DEF steps
     autosave_freq = ppo_settings["autosave_freq"]
-    auto_save_callback = AutoSave(check_freq=autosave_freq, num_env=num_env,
-                                    save_path=os.path.join(model_folder, model_checkpoint + "_"))
+    auto_save_callback = AutoSave(check_freq=autosave_freq, num_envs=num_envs,
+                                  save_path=model_folder, filename_prefix=model_checkpoint + "_")
 
     # Selfplay
     selfplay_settings = params["selfplay_settings"]

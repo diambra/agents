@@ -70,9 +70,9 @@ if __name__ == "__main__":
     else:
         # Load the trained agent
         agent = PPO.load(os.path.join(model_folder, model_checkpoint), env=env,
-                            gamma=gamma, learning_rate=learning_rate, clip_range=clip_range,
-                            clip_range_vf=clip_range_vf, policy_kwargs=policy_kwargs,
-                            tensorboard_log=tensor_board_folder)
+                         gamma=gamma, learning_rate=learning_rate, clip_range=clip_range,
+                         clip_range_vf=clip_range_vf, policy_kwargs=policy_kwargs,
+                         tensorboard_log=tensor_board_folder)
 
 
     # Print policy network architecture
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     # Create the callback: autosave every USER DEF steps
     autosave_freq = ppo_settings["autosave_freq"]
     auto_save_callback = AutoSave(check_freq=autosave_freq, num_envs=num_envs,
-                                    save_path=os.path.join(model_folder, model_checkpoint + "_"))
+                                  save_path=model_folder, filename_prefix=model_checkpoint + "_")
 
     # Train the agent
     time_steps = ppo_settings["time_steps"]

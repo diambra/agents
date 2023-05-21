@@ -47,7 +47,7 @@ if __name__ == '__main__':
     # Additional obs key list
     key_to_add = params["key_to_add"]
 
-    env, num_env = make_sb_env(time_dep_seed, settings, wrappers_settings,
+    env, num_envs = make_sb_env(time_dep_seed, settings, wrappers_settings,
                                 custom_wrappers=custom_wrappers,
                                 key_to_add=key_to_add, use_subprocess=True)
 
@@ -102,8 +102,8 @@ if __name__ == '__main__':
 
     # Create the callback: autosave every USER DEF steps
     autosave_freq = ppo_settings["autosave_freq"]
-    auto_save_callback = AutoSave(check_freq=autosave_freq, num_env=num_env,
-                                    save_path=os.path.join(model_folder, model_checkpoint + "_"))
+    auto_save_callback = AutoSave(check_freq=autosave_freq, num_envs=num_envs,
+                                  save_path=model_folder, filename_prefix=model_checkpoint + "_")
 
     # Train the agent
     time_steps = ppo_settings["time_steps"]
