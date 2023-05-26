@@ -40,11 +40,11 @@ References: <a href="https://github.com/diambra/agents/tree/main/stable_baseline
 
 ### Ray RLlib
 
-References: <a href="https://github.com/diambra/agents/tree/main/ray_rllib">Code</a> - <a href="https://github.com/diambra/agents/tree/main/ray_rllib">Docs</a>
+References: <a href="https://github.com/diambra/agents/tree/main/ray_rllib">Code</a> - <a href="https://docs.diambra.ai/handsonreinforcementlearning/rayrllib/">Docs</a>
 
 ### Stable Baselines (Deprecated)
 
-References: <a href="https://docs.diambra.ai/handsonreinforcementlearning/rayrllib/">Code</a>
+References: <a href="https://github.com/diambra/agents/tree/main/stable_baselines">Code</a>
 
 
 
