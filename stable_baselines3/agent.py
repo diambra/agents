@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--cfgFile", type=str, required=True, help="Configuration file")
-    parser.add_argument("--trainedModel", type=str, required=True, help="Model checkpoint")
+    parser.add_argument("--trainedModel", type=str, default="model", help="Model checkpoint")
     opt = parser.parse_args()
     print(opt)
 
@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     # Load the trained agent
     model_path = os.path.join(model_folder, opt.trainedModel)
-    agent = PPO.load(model_path, env=env)
+    agent = PPO.load(model_path)
 
     # Print policy network architecture
     print("Policy architecture:")
@@ -59,9 +59,9 @@ if __name__ == "__main__":
 
     while True:
 
-        action, _ = agent.predict(obs, deterministic=True)
+        action, _ = agent.predict(obs, deterministic=False)
 
-        obs, reward, done, info = env.step(action)
+        obs, reward, done, info = env.step(action.tolist())
 
         if done:
             obs = env.reset()

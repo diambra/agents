@@ -1,4 +1,3 @@
-import sys
 import os
 import time
 import yaml
@@ -7,13 +6,17 @@ import argparse
 from diambra.arena.stable_baselines.make_sb_env import make_sb_env
 from stable_baselines import PPO2
 
-# diambra run python stable_baselines/agent.py --cfgFile $PWD/stable_baselines/cfg_files/doapp/sr6_128x4_das_nc.yaml  --trainedModel "25M"
+"""This is an example agent based on stable baselines.
 
-if __name__ == '__main__':
+Usage:
+diambra run python stable_baselines/agent.py --cfgFile $PWD/stable_baselines/cfg_files/doapp/sr6_128x4_das_nc.yaml --trainedModel "model_name"
+"""
+
+if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfgFile', type=str, required=True, help='Configuration file')
-    parser.add_argument('--trainedModel', type=str, required=True, help='Model checkpoint')
+    parser.add_argument("--cfgFile", type=str, required=True, help="Configuration file")
+    parser.add_argument("--trainedModel", type=str, default="model", help="Model checkpoint")
     opt = parser.parse_args()
     print(opt)
 
@@ -40,8 +43,7 @@ if __name__ == '__main__':
     # Additional obs key list
     key_to_add = params["key_to_add"]
 
-    env, num_env = make_sb_env(time_dep_seed, settings, wrappers_settings,
-                                key_to_add=key_to_add, no_vec=True)
+    env, num_env = make_sb_env(time_dep_seed, settings, wrappers_settings, key_to_add=key_to_add, no_vec=True)
 
     print("Obs_space = ", env.observation_space)
     print("Obs_space type = ", env.observation_space.dtype)

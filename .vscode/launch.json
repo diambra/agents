@@ -25,6 +25,28 @@
             "samsh5sp",
             "kof98umh",
         ],
+    },
+    {
+      "id": "SB3_example_script",
+      "type": "pickString",
+      "description": "Example script:",
+      "default": "basic.py",
+      "options": [
+          "basic.py",
+          "parallel_envs.py",
+          "saving_loading_evaluating.py",
+          "dict_obs_space.py"
+      ],
+    },
+    {
+      "id": "SB3_cfg_file",
+      "type": "pickString",
+      "description": "SB3 cfg file:",
+      "default": "sfiii3n/sr6_128x4_das_nc.yaml",
+      "options": [
+          "doapp/sr6_128x4_das_nc.yaml",
+          "sfiii3n/sr6_128x4_das_nc.yaml"
+      ],
     }
     ],
     "configurations": [
@@ -67,7 +89,44 @@
         "env": {
           "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
         },
-      }, 
+      },
+      {
+        "name": "[Agents] SB3 Examples (venv:diambra-arena-sb3)",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/stable_baselines3/${input:SB3_example_script}",
+        "console": "integratedTerminal",
+        "env": {
+          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
+        },
+      },
+      {
+        "name": "[Agents] SB3 Training (venv:diambra-arena-sb3)",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/stable_baselines3/training.py",
+        "args": [
+          "--cfgFile", "${workspaceFolder}/stable_baselines3/cfg_files/${input:SB3_cfg_file}",
+        ],
+        "console": "integratedTerminal",
+        "env": {
+          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
+        },
+      },
+      {
+        "name": "[Agents] SB3 Trained (venv:diambra-arena-sb3)",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/stable_baselines3/agent.py",
+        "args": [
+          "--cfgFile", "${workspaceFolder}/stable_baselines3/cfg_files/${input:SB3_cfg_file}",
+          "--trainedModel", "model",
+        ],
+        "console": "integratedTerminal",
+        "env": {
+          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
+        },
+      },
       {
         "name": "[Agents] Ray RL Lib Trained (venv:diambra-arena-ray)",
         "type": "python",

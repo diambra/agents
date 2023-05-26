@@ -3,13 +3,13 @@ folders:
   model_name: "sr6_128x4_das_nc"
 
 settings:
-  game_id: "doapp"
-  characters: "Kasumi"
-  difficulty: 3
+  game_id: "sfiii3n"
+  characters: "Ryu"
+  difficulty: 6
   step_ratio: 6
   frame_shape: !!python/tuple [128, 128, 1]
   continue_game: 0.0
-  action_space: "multi_discrete"
+  action_space: "discrete"
   attack_but_combination: false
   char_outfits: 2
   player: "Random"
