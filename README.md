@@ -46,6 +46,4 @@ References: <a href="https://github.com/diambra/agents/tree/main/ray_rllib">Code
 
 References: <a href="https://github.com/diambra/agents/tree/main/stable_baselines">Code</a>
 
-
-
 ###### DIAMBRA, Inc. © Copyright 2018-2023. All Rights Reserved.
