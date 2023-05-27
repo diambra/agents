@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
+import sys
 import diambra.arena
 from diambra.arena.utils.gym_utils import env_spaces_summary, available_games
 import random
 import argparse
 
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--gameId', type=str, default="random", help='Game ID')
-    opt = parser.parse_args()
-    print(opt)
+def main(game_id="random"):
 
     game_dict = available_games(False)
-    if opt.gameId == "random":
+    if game_id == "random":
         game_id = random.sample(game_dict.keys(),1)[0]
     else:
         game_id = opt.gameId if opt.gameId in game_dict.keys() else random.sample(game_dict.keys(),1)[0]
@@ -53,4 +49,17 @@ if __name__ == "__main__":
             if info["env_done"]:
                 break
 
+    # Close the environment
     env.close()
+
+    # Return success
+    return 0
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--gameId', type=str, default="random", help='Game ID')
+    opt = parser.parse_args()
+    print(opt)
+
+    main(opt.gameId)
