@@ -1,4 +1,3 @@
-import sys
 import os
 import time
 import yaml
@@ -10,15 +9,9 @@ from diambra.arena.stable_baselines.sb_utils import linear_schedule, AutoSave
 from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
 from custom_rl_algo.ppo2_selfplay import PPO2Selfplay
 
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--cfgFile', type=str, required=True, help='Training configuration file')
-    opt = parser.parse_args()
-    print(opt)
-
+def main(cfg_file):
     # Read the cfg file
-    yaml_file = open(opt.cfgFile)
+    yaml_file = open(cfg_file)
     params = yaml.load(yaml_file, Loader=yaml.FullLoader)
     print("Config parameters = ", json.dumps(params, sort_keys=True, indent=4))
     yaml_file.close()
@@ -107,3 +100,15 @@ if __name__ == '__main__':
 
     # Close the environment
     env.close()
+
+    # Return success
+    return 0
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cfgFile', type=str, required=True, help='Training configuration file')
+    opt = parser.parse_args()
+    print(opt)
+
+    main(opt.cfgFile)

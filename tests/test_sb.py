@@ -6,10 +6,10 @@ import os
 from diambra.arena.utils.engine_mock import DiambraEngineMock
 
 # Add the scripts directory to sys.path
-root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'stable_baselines3'))
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'stable_baselines'))
 sys.path.append(root_dir)
 
-import basic, saving_loading_evaluating, parallel_envs, dict_obs_space, training, agent
+import training, agent, selfplay_training, integrated_selfplay_training
 
 # Example Usage:
 # pytest
@@ -36,10 +36,12 @@ def func(script, mocker, *args):
         print(e)
         return 1
 
-cfg_file = os.path.join(root_dir, "cfg_files/sfiii3n/sr6_128x4_das_nc.yaml")
-scripts = [[basic, ()], [saving_loading_evaluating, ()], [parallel_envs, ()], [dict_obs_space, ()], [training, (cfg_file,)], [agent, (cfg_file, "model")]]
+cfg_file = os.path.join(root_dir, "cfg_files/doapp/sr6_128x4_das_nc.yaml")
+selfplay_cfg_file = os.path.join(root_dir, "selfplay_cfg_files/doapp/sr6_128x4_das_c.yaml")
+integrated_selfplay_cfg_file = os.path.join(root_dir, "integrated_selfplay_cfg_files/doapp/sr6_128x4_das_c.yaml")
+scripts = [[training, (cfg_file,)], [agent, (cfg_file, "model")], [selfplay_training, (selfplay_cfg_file,)], [integrated_selfplay_training, (integrated_selfplay_cfg_file,)]]
 
 @pytest.mark.parametrize("script", scripts)
-def test_sb3_scripts(script, mocker):
+def test_sb_scripts(script, mocker):
 
     assert func(script[0], mocker, *script[1]) == 0
