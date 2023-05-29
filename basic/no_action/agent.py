@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import sys
 import diambra.arena
 from diambra.arena.utils.gym_utils import env_spaces_summary, available_games
 import random

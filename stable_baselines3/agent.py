@@ -12,16 +12,10 @@ Usage:
 diambra run python stable_baselines3/agent.py --cfgFile $PWD/stable_baselines3/cfg_files/doapp/sr6_128x4_das_nc.yaml --trainedModel "model_name"
 """
 
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--cfgFile", type=str, required=True, help="Configuration file")
-    parser.add_argument("--trainedModel", type=str, default="model", help="Model checkpoint")
-    opt = parser.parse_args()
-    print(opt)
+def main(cfg_file, trained_model):
 
     # Read the cfg file
-    yaml_file = open(opt.cfgFile)
+    yaml_file = open(cfg_file)
     params = yaml.load(yaml_file, Loader=yaml.FullLoader)
     print("Config parameters = ", json.dumps(params, sort_keys=True, indent=4))
     yaml_file.close()
@@ -48,7 +42,7 @@ if __name__ == "__main__":
     print("Act_space =", env.action_space)
 
     # Load the trained agent
-    model_path = os.path.join(model_folder, opt.trainedModel)
+    model_path = os.path.join(model_folder, trained_model)
     agent = PPO.load(model_path)
 
     # Print policy network architecture
@@ -70,3 +64,16 @@ if __name__ == "__main__":
 
     # Close the environment
     env.close()
+
+    # Return success
+    return 0
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--cfgFile", type=str, required=True, help="Configuration file")
+    parser.add_argument("--trainedModel", type=str, default="model", help="Model checkpoint")
+    opt = parser.parse_args()
+    print(opt)
+
+    main(opt.cfgFile, opt.trainedModel)

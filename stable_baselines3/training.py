@@ -9,15 +9,10 @@ from stable_baselines3 import PPO
 
 # diambra run -s 8 python stable_baselines3/training.py --cfgFile $PWD/stable_baselines3/cfg_files/sfiii3n/sr6_128x4_das_nc.yaml
 
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--cfgFile", type=str, required=True, help="Configuration file")
-    opt = parser.parse_args()
-    print(opt)
+def main(cfg_file):
 
     # Read the cfg file
-    yaml_file = open(opt.cfgFile)
+    yaml_file = open(cfg_file)
     params = yaml.load(yaml_file, Loader=yaml.FullLoader)
     print("Config parameters = ", json.dumps(params, sort_keys=True, indent=4))
     yaml_file.close()
@@ -59,7 +54,7 @@ if __name__ == "__main__":
     n_epochs = ppo_settings["n_epochs"]
     n_steps = ppo_settings["n_steps"]
 
-    if model_checkpoint == "0M":
+    if model_checkpoint == "0":
         # Initialize the agent
         agent = PPO("MultiInputPolicy", env, verbose=1,
                     gamma=gamma, batch_size=batch_size,
@@ -89,9 +84,21 @@ if __name__ == "__main__":
     agent.learn(total_timesteps=time_steps, callback=auto_save_callback)
 
     # Save the agent
-    new_model_checkpoint = str(int(model_checkpoint[:-1]) + time_steps) + "M"
+    new_model_checkpoint = str(int(model_checkpoint) + time_steps)
     model_path = os.path.join(model_folder, new_model_checkpoint)
     agent.save(model_path)
 
     # Close the environment
     env.close()
+
+    # Return success
+    return 0
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--cfgFile", type=str, required=True, help="Configuration file")
+    opt = parser.parse_args()
+    print(opt)
+
+    main(opt.cfgFile)

@@ -41,7 +41,7 @@ policy_kwargs:
 
 ppo_settings:
   gamma: 0.94
-  model_checkpoint: "0M"
+  model_checkpoint: "0"
   learning_rate: [2.5e-4, 2.5e-6] # To start
   clip_range: [0.15, 0.025] # To start
   #learning_rate: [5.0e-5, 2.5e-6] # Fine Tuning

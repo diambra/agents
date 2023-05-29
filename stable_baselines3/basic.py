@@ -1,8 +1,7 @@
 import diambra.arena
 from stable_baselines3 import A2C
 
-if __name__ == "__main__":
-
+def main():
     env = diambra.arena.make("doapp", {"hardcore": True, "frame_shape": (128, 128, 1)})
 
     print("\nStarting training ...\n")
@@ -24,4 +23,11 @@ if __name__ == "__main__":
             break
     print("\n... trained agent execution completed.\n")
 
+    # Close the environment
     env.close()
+
+    # Return success
+    return 0
+
+if __name__ == "__main__":
+    main()

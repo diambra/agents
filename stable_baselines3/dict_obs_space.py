@@ -1,9 +1,7 @@
-import diambra.arena
 from diambra.arena.stable_baselines3.make_sb3_env import make_sb3_env
 from stable_baselines3 import PPO
 
-if __name__ == "__main__":
-
+def main():
     # Settings
     settings = {}
     settings["frame_shape"] = (128, 128, 1)
@@ -54,4 +52,11 @@ if __name__ == "__main__":
             observation = env.reset()
             break
 
+    # Close the environment
     env.close()
+
+    # Return success
+    return 0
+
+if __name__ == "__main__":
+    main()
