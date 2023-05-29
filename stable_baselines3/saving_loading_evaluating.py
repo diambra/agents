@@ -2,8 +2,7 @@ import diambra.arena
 from stable_baselines3 import A2C
 from stable_baselines3.common.evaluation import evaluate_policy
 
-if __name__ == "__main__":
-
+def main():
     # Create environment
     env = diambra.arena.make("doapp", {"hardcore": True, "frame_shape": (128, 128, 1)})
 
@@ -45,4 +44,11 @@ if __name__ == "__main__":
             observation = env.reset()
             break
 
+    # Close the environment
     env.close()
+
+    # Return success
+    return 0
+
+if __name__ == "__main__":
+    main()

@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 import pytest
 import sys
-import random
 from os.path import expanduser
 import os
 from diambra.arena.utils.engine_mock import DiambraEngineMock
 
 # Add the scripts directory to sys.path
-root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'stable_baselines3'))
 sys.path.append(root_dir)
 
-from basic.no_action import agent as NoActionAgent
-from basic.random_1 import agent as RandomAgent1
-from basic.random_2 import agent as RandomAgent2
+import basic, saving_loading_evaluating, parallel_envs, dict_obs_space, training, agent
 
 # Example Usage:
 # pytest
@@ -21,7 +18,7 @@ from basic.random_2 import agent as RandomAgent2
 #    -s (show output)
 #    -k 'expression' (filter tests using case-insensitive with parts of the test name and/or parameters values combined with boolean operators, e.g. 'wrappers and doapp')
 
-def func(agent, mocker):
+def func(script, mocker, *args):
 
     diambra_engine_mock = DiambraEngineMock()
 
@@ -33,14 +30,16 @@ def func(agent, mocker):
     mocker.patch('diambra.arena.engine.interface.DiambraEngine.close', diambra_engine_mock._mock_close)
 
     try:
-        return agent.main()
+        os.environ["DIAMBRA_ENVS"] = "0.0.0.0:50051"
+        return script.main(*args)
     except Exception as e:
         print(e)
         return 1
 
-agents = [NoActionAgent, RandomAgent1, RandomAgent2]
+cfg_file = os.path.join(root_dir, "cfg_files/sfiii3n/sr6_128x4_das_nc.yaml")
+scripts = [[basic, ()], [basic, ()], [basic, ()], [basic, ()], [training, (cfg_file,)], [agent, (cfg_file, "model")]]
 
-@pytest.mark.parametrize("agent", agents)
-def test_basic_agents(agent, mocker):
+@pytest.mark.parametrize("script", scripts)
+def test_sb3_scripts(script, mocker):
 
-    assert func(agent, mocker) == 0
+    assert func(script[0], mocker, *script[1]) == 0
