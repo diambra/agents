@@ -2,8 +2,7 @@ import diambra.arena
 from diambra.arena.ray_rllib.make_ray_env import DiambraArena, preprocess_ray_config
 from ray.rllib.algorithms.ppo import PPO
 
-if __name__ == "__main__":
-
+def main():
     # Settings
     settings = {}
     settings["hardcore"] = True
@@ -52,4 +51,11 @@ if __name__ == "__main__":
 
     print("\n... trained agent execution completed.\n")
 
+    # Close the environment
     env.close()
+
+    # Return success
+    return 0
+
+if __name__ == "__main__":
+    main()
