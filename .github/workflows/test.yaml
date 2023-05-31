@@ -1,0 +1,25 @@
+#on:
+#  pull_request: {}
+
+#jobs:
+#  test:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#      - uses: actions/setup-python@v4
+#        with:
+#          python-version: "3.x"
+#      - run: python3 -m pip install diambra-arena[tests]
+#      - run: pytest tests/test_basic.py
+
+#      - run: python3 -m pip install diambra-arena[tests]
+#      - run: python3 -m pip install diambra-arena[stable-baselines]
+#      - run: pytest tests/test_sb.py
+
+#      - run: python3 -m pip install diambra-arena[tests]
+#      - run: python3 -m pip install diambra-arena[stable-baselines3]
+#      - run: pytest tests/test_sb3.py
+
+#      - run: python3 -m pip install diambra-arena[tests]
+#      - run: python3 -m pip install diambra-arena[ray-rllib]
+#      - run: pytest tests/test_ray_rllib.py
