@@ -1,7 +1,3 @@
-import os
-import time
-import yaml
-import json
 import argparse
 import diambra.arena
 from diambra.arena.ray_rllib.make_ray_env import DiambraArena, preprocess_ray_config
@@ -15,16 +11,7 @@ Usage:
 diambra run python agent.py --trainedModel /absolute/path/to/checkpoint/ --envSpaces /absolute/path/to/environment/spaces/descriptor/
 """
 
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--trainedModel", type=str, required=True, help="Model path")
-    parser.add_argument("--envSpaces", type=str, required=True, help="Environment spaces descriptor file path")
-    opt = parser.parse_args()
-    print(opt)
-
-    time_dep_seed = int((time.time() - int(time.time() - 0.5)) * 1000)
-
+def main(trained_model, env_spaces):
     # Settings
     settings = {}
     settings["frame_shape"] = (84, 84, 1)
@@ -46,7 +33,7 @@ if __name__ == "__main__":
             "settings": settings,
             "wrappers_settings": wrappers_settings,
             "load_spaces_from_file": True,
-            "env_spaces_file_name": opt.envSpaces,
+            "env_spaces_file_name": env_spaces,
         },
         "num_workers": 0,
         "train_batch_size": 200,
@@ -58,7 +45,7 @@ if __name__ == "__main__":
 
     # Load the trained agent
     agent = PPO(config=config)
-    agent.restore(opt.trainedModel)
+    agent.restore(trained_model)
     print("Agent loaded")
 
     # Print the agent policy architecture
@@ -83,3 +70,16 @@ if __name__ == "__main__":
 
     # Close the environment
     env.close()
+
+    # Return success
+    return 0
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--trainedModel", type=str, required=True, help="Model path")
+    parser.add_argument("--envSpaces", type=str, required=True, help="Environment spaces descriptor file path")
+    opt = parser.parse_args()
+    print(opt)
+
+    main(opt.trainedModel, opt.envSpaces)

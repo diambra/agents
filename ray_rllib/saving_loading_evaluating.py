@@ -1,10 +1,8 @@
-import diambra.arena
 from diambra.arena.ray_rllib.make_ray_env import DiambraArena, preprocess_ray_config
 from ray.rllib.algorithms.ppo import PPO
 from ray.tune.logger import pretty_print
 
-if __name__ == "__main__":
-
+def main():
     # Settings
     settings = {}
     settings["hardcore"] = True
@@ -53,3 +51,9 @@ if __name__ == "__main__":
     results = agent.evaluate()
     print("\n... evaluation completed.\n")
     print("Evaluation results:\n{}".format(pretty_print(results)))
+
+    # Return success
+    return 0
+
+if __name__ == "__main__":
+    main()
