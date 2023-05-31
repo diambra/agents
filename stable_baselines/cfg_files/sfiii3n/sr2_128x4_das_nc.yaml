@@ -34,7 +34,7 @@ use_small_cnn: true
 
 ppo_settings:
   gamma: 0.9933
-  model_checkpoint: "0M"
+  model_checkpoint: "0"
   learning_rate: [0.4e-4, 0.6e-6] # To start
   cliprange: [0.45, 0.075] # To start
   #learning_rate: [5.0e-5, 2.5e-6] # Fine Tuning

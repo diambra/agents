@@ -74,7 +74,7 @@ def main(cfg_file):
     noptepochs = ppo_settings["noptepochs"]
     n_steps = ppo_settings["n_steps"]
 
-    if model_checkpoint == "0M":
+    if model_checkpoint == "0":
         # Initialize the agent
         agent = PPO2(CustCnnPolicy, env, verbose=1,
                         gamma=gamma, nminibatches=nminibatches,
@@ -103,7 +103,7 @@ def main(cfg_file):
     agent.learn(total_timesteps=time_steps, callback=auto_save_callback)
 
     # Save the agent
-    new_model_checkpoint = str(int(model_checkpoint[:-1]) + time_steps) + "M"
+    new_model_checkpoint = str(int(model_checkpoint) + time_steps)
     model_path = os.path.join(model_folder, new_model_checkpoint)
     agent.save(model_path)
 

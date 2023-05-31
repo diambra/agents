@@ -115,7 +115,7 @@ def main(cfg_file):
                                                         up_rl_pol_weights_callback])
 
     # Save the agent
-    new_model_checkpoint = str(int(model_checkpoint[:-1]) + time_steps) + "M"
+    new_model_checkpoint = str(int(model_checkpoint) + time_steps)
     model_path = os.path.join(model_folder, new_model_checkpoint)
     agent.save(model_path)
 
