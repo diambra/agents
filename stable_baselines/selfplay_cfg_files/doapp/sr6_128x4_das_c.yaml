@@ -51,5 +51,5 @@ ppo_settings:
 
 selfplay_settings:
   sampling_probability: 0.3
-  previous_models: ["0M"]
+  previous_models: ["0"]
   check_freq: 128
