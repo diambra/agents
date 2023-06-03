@@ -1,29 +1,26 @@
-#on:
-#  pull_request: {}
+on:
+  pull_request: {}
 
-#jobs:
-#  test:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#      - uses: actions/setup-python@v4
-#        with:
-#          python-version: "3.x"
-#      - run: python3 -m pip install wheel==0.38.4 # To be removed when when updating arena packaging to use pyproject.toml
-#      - run: python3 -m pip install diambra-arena[tests]
-#      - run: pytest tests/test_basic.py
-
-#      - run: python3 -m pip install wheel==0.38.4 # To be removed when when updating arena packaging to use pyproject.toml
-#      - run: python3 -m pip install diambra-arena[tests]
-#      - run: python3 -m pip install diambra-arena[stable-baselines]
-#      - run: pytest tests/test_sb.py
-
-#      - run: python3 -m pip install wheel==0.38.4 # To be removed when when updating arena packaging to use pyproject.toml
-#      - run: python3 -m pip install diambra-arena[tests]
-#      - run: python3 -m pip install diambra-arena[stable-baselines3]
-#      - run: pytest tests/test_sb3.py
-
-#      - run: python3 -m pip install wheel==0.38.4 # To be removed when when updating arena packaging to use pyproject.toml
-#      - run: python3 -m pip install diambra-arena[tests]
-#      - run: python3 -m pip install diambra-arena[ray-rllib]
-#      - run: pytest tests/test_ray_rllib.py
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - extra: ""
+            script: "test_basic.py"
+          - extra: "stable-baselines"
+            script: "test_sb.py"
+          - extra: "stable-baselines3"
+            script: "test_sb3.py"
+          - extra: "ray-rllib"
+            script: "test_ray_rllib.py"
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - run: python3 -m pip install wheel==0.38.4 # To be removed when when updating arena packaging to use pyproject.toml
+      - run: python3 -m pip install diambra-arena[tests]
+      - run: python3 -m pip install diambra-arena[${{matrix.extra}}]
+      - run: pytest tests/${{matrix.script}}
