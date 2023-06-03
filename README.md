@@ -12,6 +12,13 @@
   <a href="https://twitter.com/diambra_ai">Twitter</a>
 </p>
 
+<p align="center">
+<a href="https://github.com/diambra/agents/actions/workflows/test.yaml"><img src="https://img.shields.io/github/actions/workflow/status/diambra/agents/test.yaml?label=agents%20tests&logo=github" alt="Agents Test"/></a>
+</p>
+<p align="center">
+<a href="https://docs.diambra.ai/handsonreinforcementlearning/"><img src="https://img.shields.io/github/last-commit/diambra/docs/main?label=docs%20last%20update&logo=readthedocs" alt="Last Docs Update"/></a>
+</p>
+
 # A collection of Agents interfaced with DIAMBRA Arena
 
 This repository contains many examples of Agents that interact with <a href="https://github.com/diambra/arena">DIAMBRA Arena</a>, our exclusive suite of Reinforcement Learning environments.
