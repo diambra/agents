@@ -46,11 +46,14 @@ def main(cfg_file):
     else:
         raise ValueError("n_actions not provided for selected gameId = {}".format(params["settings"]["game_id"]))
 
-    agent = PPO2.load(os.path.join(model_folder, "0M"))
+    # Selfplay settings
+    selfplay_settings = params["selfplay_settings"]
+
+    agent = PPO2.load(os.path.join(model_folder, selfplay_settings["previous_models"][0]))
 
     deterministic_flag = False
-    rl_policy = RLPolicy(agent, deterministic_flag, n_actions, name="PPO-0M",
-                            action_space=settings["action_space"])
+    rl_policy = RLPolicy(agent, deterministic_flag, n_actions, name="PPO-" + selfplay_settings["previous_models"][0],
+                         action_space=settings["action_space"])
 
     env, num_envs = make_sb_env(time_dep_seed, settings, wrappers_settings,
                                 custom_wrappers=custom_wrappers,
@@ -102,7 +105,6 @@ def main(cfg_file):
                                   save_path=model_folder, filename_prefix=model_checkpoint + "_")
 
     # Selfplay
-    selfplay_settings = params["selfplay_settings"]
     prev_agents_sampling_dict = {"probability": selfplay_settings["sampling_probability"],
                                     "list": [os.path.join(model_folder, model) for model in selfplay_settings["previous_models"]]}
     up_rl_pol_weights_callback = UpdateRLPolicyWeights(check_freq=selfplay_settings["check_freq"], num_envs=num_envs,
