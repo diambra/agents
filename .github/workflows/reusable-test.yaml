@@ -1,0 +1,44 @@
+on:
+  workflow_call:
+    inputs:
+      arena_requirement_specifier:
+        required: false
+        type: string
+      agents_ref:
+        required: true
+        type: string
+
+jobs:
+  reusable-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - extra: ""
+            script: "test_basic.py"
+            python-version: "3.10"
+          - extra: "stable-baselines"
+            script: "test_sb.py"
+            python-version: "3.7"
+          - extra: "stable-baselines3"
+            script: "test_sb3.py"
+            python-version: "3.10"
+          - extra: "ray-rllib"
+            script: "test_ray_rllib.py"
+            python-version: "3.10"
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: diambra/agents
+          ref: ${{ inputs.agents_ref }}
+          lfs: true
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{matrix.python-version}}
+      - run: python3 -m pip install wheel==0.38.4 # To be removed when when updating arena packaging to use pyproject.toml
+      - run: python3 -m pip install "${{ inputs.arena_requirement_specifier }}diambra-arena[tests]"
+      - if: ${{ matrix.extra != '' }}
+        run: python3 -m pip install "${{ inputs.arena_requirement_specifier }}diambra-arena[${{ matrix.extra }}]"
+      - if: ${{ matrix.extra == 'stable-baselines' }}
+        run: python3 -m pip install tensorflow==1.14.0
+      - run: pytest tests/${{ matrix.script }}
