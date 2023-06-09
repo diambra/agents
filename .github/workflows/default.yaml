@@ -6,6 +6,7 @@ on:
       - main
   pull_request: {}
   workflow_dispatch: {}
+  workflow_call: {}
 
 jobs:
   generate-matrix:
@@ -16,21 +17,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          repository: diambra/agents
           fetch-depth: 0
-      - name: Get changed files
-        if: ${{ github.event_name != 'workflow_dispatch' }}
-        id: changed-files
-        with:
-          dir_names: "true"
-          since_last_remote_commit: "true"
-        uses: tj-actions/changed-files@v29.0.2
       - id: set-matrix
-        run: |
-          if [[ "${{ github.event_name }}" != "workflow_dispatch" ]]; then
-            echo "::set-output name=matrix::$(./.github/workflows/generate-image-build-matrix ${{ steps.changed-files.outputs.all_changed_files }})"
-          else
-            echo "::set-output name=matrix::$(./.github/workflows/generate-image-build-matrix basic/* *)"
-          fi
+        run: echo "::set-output name=matrix::$(./.github/workflows/generate-image-build-matrix basic/* *)"
   build-and-push-images:
     needs: [generate-matrix]
     runs-on: ubuntu-latest
@@ -44,6 +34,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
+          repository: diambra/agents
           lfs: true
 
       - name: Login to GHCR
