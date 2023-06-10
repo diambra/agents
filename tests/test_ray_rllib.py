@@ -42,6 +42,6 @@ env_spaces_descriptor_path = os.path.join(trained_model_folder, "diambra_ray_env
 scripts = [[basic, ()], [saving_loading_evaluating, ()], [dict_obs_space, ()], [agent, (trained_model_folder, env_spaces_descriptor_path)]]
 
 @pytest.mark.parametrize("script", scripts)
-def test_sb3_scripts(script, mocker):
+def test_ray_rllib_scripts(script, mocker):
 
     assert func(script[0], mocker, *script[1]) == 0
