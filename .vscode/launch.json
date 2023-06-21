@@ -25,29 +25,29 @@
             "samsh5sp",
             "kof98umh",
         ],
-    },
-    {
-      "id": "SB3_example_script",
-      "type": "pickString",
-      "description": "Example script:",
-      "default": "basic.py",
-      "options": [
-          "basic.py",
-          "parallel_envs.py",
-          "saving_loading_evaluating.py",
-          "dict_obs_space.py"
-      ],
-    },
-    {
-      "id": "SB3_cfg_file",
-      "type": "pickString",
-      "description": "SB3 cfg file:",
-      "default": "sfiii3n/sr6_128x4_das_nc.yaml",
-      "options": [
-          "doapp/sr6_128x4_das_nc.yaml",
-          "sfiii3n/sr6_128x4_das_nc.yaml"
-      ],
-    }
+      },
+      {
+        "id": "SB3_example_script",
+        "type": "pickString",
+        "description": "Example script:",
+        "default": "basic.py",
+        "options": [
+            "basic.py",
+            "parallel_envs.py",
+            "saving_loading_evaluating.py",
+            "dict_obs_space.py"
+        ],
+      },
+      {
+        "id": "SB3_cfg_file",
+        "type": "pickString",
+        "description": "SB3 cfg file:",
+        "default": "sfiii3n/sr6_128x4_das_nc.yaml",
+        "options": [
+            "doapp/sr6_128x4_das_nc.yaml",
+            "sfiii3n/sr6_128x4_das_nc.yaml"
+        ],
+      }
     ],
     "configurations": [
       {
