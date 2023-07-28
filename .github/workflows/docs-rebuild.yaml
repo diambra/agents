@@ -1,0 +1,16 @@
+name: docs-rebuild-deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  docs-rebuild-deploy:
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token:  ${{ secrets.GITHUB_TOKEN }}
+          repository: diambra/docs
+          event-type: rebuild-deploy
