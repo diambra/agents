@@ -5,7 +5,7 @@
           "id": "DIAMBRA_ENVS",
           "type": "pickString",
           "description": "DIAMBRA Engine Address:",
-          "default": "0.0.0.0:50051",
+          "default": "0.0.0.0:50052",
           "options": [
               { "label": "Normal", "value": "0.0.0.0:50051" },
               { "label": "Via Proxy Server (Evaluator)", "value": "0.0.0.0:50052" }
@@ -47,6 +47,18 @@
             "doapp/sr6_128x4_das_nc.yaml",
             "sfiii3n/sr6_128x4_das_nc.yaml"
         ],
+      },
+      {
+        "id": "SB_cfg_file",
+        "type": "pickString",
+        "description": "SB cfg file:",
+        "default": "doapp/sr6_128x4_das_nc.yaml",
+        "options": [
+            "doapp/sr6_128x4_das_nc.yaml",
+            "sfiii3n/sr6_256x6_das_nc.yaml",
+            "tektagt/sr6_128x4_das_nc_p.yaml",
+            "umk3/sr6_128x4_das_nc.yaml",
+        ],
       }
     ],
     "configurations": [
@@ -82,7 +94,7 @@
         "request": "launch",
         "program": "${workspaceFolder}/stable_baselines/agent.py",
         "args": [
-          "--cfgFile", "${workspaceFolder}/stable_baselines/cfg_files/doapp/sr6_128x4_das_nc.yaml",
+          "--cfgFile", "${workspaceFolder}/stable_baselines/cfg_files/${input:SB_cfg_file}",
           "--trainedModel", "model",
         ],
         "console": "integratedTerminal",
