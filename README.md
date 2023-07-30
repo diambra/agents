@@ -13,8 +13,13 @@
 </p>
 
 <p align="center">
+<a href="https://docs.diambra.ai/handsonreinforcementlearning/#end-to-end-deep-reinforcement-learning"><img src="https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue?logo=python" alt="Supported OS"/></a>
+</p>
+
+<p align="center">
 <img src="https://img.shields.io/github/actions/workflow/status/diambra/agents/test_main_branch.yaml?label=main%20branch%20tests&logo=github" alt="Agents main branc tests"/>
 </p>
+
 <p align="center">
 <a href="https://docs.diambra.ai/handsonreinforcementlearning/"><img src="https://img.shields.io/github/last-commit/diambra/docs/main?label=docs%20last%20update&logo=readthedocs" alt="Last Docs Update"/></a>
 </p>
