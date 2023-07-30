@@ -1,0 +1,69 @@
+name: Reusable agents unit tests
+
+on:
+  workflow_call:
+    inputs:
+      arena_requirement_specifier:
+        required: false
+        type: string
+      agents_ref:
+        required: true
+        type: string
+
+jobs:
+  reusable_agents_unit_tests:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+          extra: ['basic', 'stable-baselines', 'stable-baselines3', 'ray-rllib']
+          python-version: ['3.7', '3.8', '3.9', '3.10']
+
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Pre-install pinned packages for deprecations
+        run: |
+          python3 -m pip install wheel==0.38.4 setuptools==66.0.0
+          pip list
+
+      - name: Checkout selected branch
+        uses: actions/checkout@v3
+        with:
+          repository: diambra/agents
+          ref: ${{ inputs.agents_ref }}
+          lfs: true
+
+      - name: Set test script to execute
+        id: set_test_script
+        run: |
+          if [ "${{ matrix.extra }}" == "basic" ]; then
+            echo "test_script=test_basic.py" >> "$GITHUB_ENV"
+          elif [ "${{ matrix.extra }}" == "stable-baselines" ]; then
+            echo "test_script=test_sb.py" >> "$GITHUB_ENV"
+          elif [ "${{ matrix.extra }}" == "stable-baselines3" ]; then
+            echo "test_script=test_sb3.py" >> "$GITHUB_ENV"
+          elif [ "${{ matrix.extra }}" == "ray-rllib" ]; then
+            echo "test_script=test_ray_rllib.py" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install proper packages
+        if: ( ( ( matrix.extra == 'stable-baselines' || matrix.extra == 'basic' ) && matrix.python-version == '3.7' ) ||
+              ( matrix.extra != 'stable-baselines' && matrix.python-version != '3.7' ) )
+
+        run: |
+          python3 -m pip install "${{ inputs.arena_requirement_specifier }}diambra-arena[tests]"
+          if [ "${{ matrix.extra }}" != "basic" ]; then
+            python3 -m pip install "${{ inputs.arena_requirement_specifier }}diambra-arena[${{ matrix.extra }}]"
+          fi
+          if [ "${{ matrix.extra }}" == "stable-baselines" ]; then
+            python3 -m pip install tensorflow==1.14.0
+          fi
+
+      - name: Run test
+        if: ( ( ( matrix.extra == 'stable-baselines' || matrix.extra == 'basic' ) && matrix.python-version == '3.7' ) ||
+              ( matrix.extra != 'stable-baselines' && matrix.python-version != '3.7' ) )
+
+        run: pytest tests/${{ env.test_script }}

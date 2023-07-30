@@ -1,0 +1,23 @@
+name: Main branch tests
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '30 2 * * *'
+  workflow_dispatch: {}
+
+
+jobs:
+  test-package:
+    name: Test using arena package
+    uses: ./.github/workflows/reusable_unit_tests.yaml
+    with:
+      agents_ref: main
+  test-main:
+    name: Test using arena main branch
+    uses: ./.github/workflows/reusable_unit_tests.yaml
+    with:
+      arena_requirement_specifier: 'git+https://github.com/diambra/arena.git@main#egg='
+      agents_ref: main
