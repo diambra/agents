@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/diambra/agents/actions/workflows/test.yaml"><img src="https://img.shields.io/github/actions/workflow/status/diambra/agents/test.yaml?label=agents%20tests&logo=github" alt="Agents Test"/></a>
+<img src="https://img.shields.io/github/actions/workflow/status/diambra/agents/test_main_branch.yaml?label=main%20branch%20tests&logo=github" alt="Agents main branc tests"/>
 </p>
 <p align="center">
 <a href="https://docs.diambra.ai/handsonreinforcementlearning/"><img src="https://img.shields.io/github/last-commit/diambra/docs/main?label=docs%20last%20update&logo=readthedocs" alt="Last Docs Update"/></a>
