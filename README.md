@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-<a href="https://docs.diambra.ai/handsonreinforcementlearning/#end-to-end-deep-reinforcement-learning"><img src="https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue?logo=python" alt="Supported OS"/></a>
+<a href="https://docs.diambra.ai/handsonreinforcementlearning/#end-to-end-deep-reinforcement-learning"><img src="https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue?logo=python" alt="Python"/></a>
 </p>
 
 <p align="center">
