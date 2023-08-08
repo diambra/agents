@@ -69,8 +69,8 @@ jobs:
             quay.io/diambra/agent-${{ matrix.name }}
           tags: |
             type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern=v{{version}}
+            type=semver,pattern=v{{major}}.{{minor}}
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Find base tag
@@ -85,7 +85,7 @@ jobs:
           fi
           minor_and_patch=${semver#*.}
           minor=${minor_and_patch%%.*}
-          echo "tag=${major}.${minor}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${major}.${minor}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push agent ${{ matrix.dir }}
         uses: docker/build-push-action@v3
