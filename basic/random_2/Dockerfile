@@ -1,5 +1,5 @@
-ARG FROM=ghcr.io/diambra/arena-base-on3.10-bullseye:main
-FROM $FROM
+ARG TAG=main
+FROM ghcr.io/diambra/arena-base-on3.10-bullseye:$TAG
 
 WORKDIR /app
 COPY . .
