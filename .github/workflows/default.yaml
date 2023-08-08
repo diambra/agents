@@ -2,6 +2,8 @@ name: Build and push agents images
 
 on:
   push:
+    tags:
+      - "v*.*.*"
     branches:
       - main
   pull_request: {}
@@ -57,20 +59,40 @@ jobs:
           username: diambra+github
           password: ${{ secrets.QUAY_TOKEN }}
 
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ghcr.io/diambra/agent-${{ matrix.name }}
+            docker.io/diambra/agent-${{ matrix.name }}
+            quay.io/diambra/agent-${{ matrix.name }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Find base tag
+        id: base-tag
+        run: |
+          semver=${{ steps.meta.outputs.version }}
+          major=${semver%%.*}
+          # If not a semver (e.g branch name), use as is
+          if [[ $major == "$semver" ]]; then
+            echo "tag=${semver}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          minor_and_patch=${semver#*.}
+          minor=${minor_and_patch%%.*}
+          echo "tag=${major}.${minor}" >> "$GITHUB_OUTPUT"
+
       - name: Build and push agent ${{ matrix.dir }}
         uses: docker/build-push-action@v3
         with:
           context: ${{ matrix.dir }}
           push: true
-          tags: |
-            ghcr.io/diambra/agent-${{ matrix.name }}:${{ github.sha }}
-            ghcr.io/diambra/agent-${{ matrix.name }}:${{ github.head_ref || github.ref_name }}
-            ${{ github.ref_name == 'main' && format('ghcr.io/diambra/agent-{0}:latest', matrix.name) || '' }}
-
-            docker.io/diambra/agent-${{ matrix.name }}:${{ github.sha }}
-            docker.io/diambra/agent-${{ matrix.name }}:${{ github.head_ref || github.ref_name }}
-            ${{ github.ref_name == 'main' && format('docker.io/diambra/agent-{0}:latest', matrix.name) || '' }}
-
-            quay.io/diambra/agent-${{ matrix.name }}:${{ github.sha }}
-            quay.io/diambra/agent-${{ matrix.name }}:${{ github.head_ref || github.ref_name }}
-            ${{ github.ref_name == 'main' && format('quay.io/diambra/agent-{0}:latest', matrix.name) || '' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            TAG=${{ steps.base-tag.outputs.tag }}
