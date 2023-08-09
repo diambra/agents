@@ -73,9 +73,9 @@ jobs:
         run: |
           semver=${{ steps.meta.outputs.version }}
           major=${semver%%.*}
-          # If not a semver (e.g branch name), use as is
+          # If not a semver (e.g branch name), use main as base tag
           if [[ $major == "$semver" ]]; then
-            echo "tag=${semver}" >> "$GITHUB_OUTPUT"
+            echo "tag=main" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           minor_and_patch=${semver#*.}
