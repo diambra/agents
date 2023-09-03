@@ -1,10 +1,9 @@
 import os
-import time
 import yaml
 import json
 import argparse
+from custom_wrappers import RamStatesToChannel
 from diambra.arena.stable_baselines.make_sb_env import make_sb_env
-from diambra.arena.stable_baselines.wrappers.tektag_rew_wrap import TektagRoundEndChar2Penalty, TektagHealthBarUnbalancePenalty
 from diambra.arena.stable_baselines.sb_utils import linear_schedule, AutoSave
 from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
 from stable_baselines import PPO2
@@ -15,8 +14,6 @@ def main(cfg_file):
     params = yaml.load(yaml_file, Loader=yaml.FullLoader)
     print("Config parameters = ", json.dumps(params, sort_keys=True, indent=4))
     yaml_file.close()
-
-    time_dep_seed = int((time.time() - int(time.time() - 0.5)) * 1000)
 
     base_path = os.path.dirname(os.path.abspath(__file__))
     model_folder = os.path.join(base_path, params["folders"]["parent_dir"], params["settings"]["game_id"],
@@ -32,17 +29,10 @@ def main(cfg_file):
     # Wrappers Settings
     wrappers_settings = params["wrappers_settings"]
 
-    # Additional custom wrappers
-    custom_wrappers = None
-    if params["custom_wrappers"] is True:
-        custom_wrappers = [TektagRoundEndChar2Penalty, TektagHealthBarUnbalancePenalty]
-
     # Additional obs key list
-    key_to_add = params["key_to_add"]
+    wrappers_settings["additional_wrappers_list"] = [[RamStatesToChannel, {"ram_states": params["ram_states"]}]]
 
-    env, num_envs = make_sb_env(time_dep_seed, settings, wrappers_settings,
-                                custom_wrappers=custom_wrappers,
-                                key_to_add=key_to_add, use_subprocess=True)
+    env, num_envs = make_sb_env(settings, wrappers_settings, use_subprocess=True)
 
     print("Obs_space = ", env.observation_space)
     print("Obs_space type = ", env.observation_space.dtype)
@@ -114,7 +104,6 @@ def main(cfg_file):
     return 0
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--cfgFile', type=str, required=True, help='Configuration file')
     opt = parser.parse_args()

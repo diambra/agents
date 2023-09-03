@@ -4,39 +4,25 @@ folders:
 
 settings:
   game_id: "tektagt"
-  characters: !!python/tuple ["Jin", "Yoshimitsu"]
-  difficulty: 6
   step_ratio: 6
   frame_shape: !!python/tuple [128, 128, 1]
   continue_game: 0.0
   action_space: "discrete"
-  attack_but_combination: false
-  char_outfits: 2
-  player: "Random"
-  show_final: false
+  role: "Random"
+  characters: !!python/tuple ["Jin", "Yoshimitsu"]
+  difficulty: 6
+  outfits: 2
 
 wrappers_settings:
+  no_attack_buttons_combinations: true
   frame_stack: 4
   dilation: 1
   actions_stack: 12
   reward_normalization: true
   scale: true
 
-custom_wrappers: false
-
-key_to_add:
-  [
-    "actions",
-    "ownHealth1",
-    "ownHealth2",
-    "oppHealth1",
-    "oppHealth2",
-    "ownSide",
-    "oppSide",
-    "ownActiveChar",
-    "oppActiveChar",
-    "stage",
-  ]
+ram_states: ["action_move", "action_attack", "own_health_1", "own_health_2", "opp_health_1",
+             "opp_health_2", "own_side", "opp_side", "own_active_char", "opp_active_char", "stage"]
 
 policy_kwargs:
   n_add_info: 189 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-1
