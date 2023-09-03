@@ -1,9 +1,10 @@
 import os
-import time
 import yaml
 import json
 import argparse
+from custom_wrappers import RamStatesToChannel
 from diambra.arena.stable_baselines.make_sb_env import make_sb_env
+from diambra.arena.stable_baselines.sb_utils import show_obs
 from stable_baselines import PPO2
 
 """This is an example agent based on stable baselines.
@@ -12,14 +13,12 @@ Usage:
 diambra run python stable_baselines/agent.py --cfgFile $PWD/stable_baselines/cfg_files/doapp/sr6_128x4_das_nc.yaml --trainedModel "model_name"
 """
 
-def main(cfg_file, trained_model):
+def main(cfg_file, trained_model, test=False):
     # Read the cfg file
     yaml_file = open(cfg_file)
     params = yaml.load(yaml_file, Loader=yaml.FullLoader)
     print("Config parameters = ", json.dumps(params, sort_keys=True, indent=4))
     yaml_file.close()
-
-    time_dep_seed = int((time.time() - int(time.time() - 0.5)) * 1000)
 
     base_path = os.path.dirname(os.path.abspath(__file__))
     model_folder = os.path.join(base_path, params["folders"]["parent_dir"], params["settings"]["game_id"],
@@ -27,16 +26,16 @@ def main(cfg_file, trained_model):
 
     # Settings
     settings = params["settings"]
-    settings["player"] = "P1"
+    settings["role"] = "P1"
 
     # Wrappers Settings
     wrappers_settings = params["wrappers_settings"]
     wrappers_settings["reward_normalization"] = False
 
     # Additional obs key list
-    key_to_add = params["key_to_add"]
+    wrappers_settings["additional_wrappers_list"] = [[RamStatesToChannel, {"ram_states": params["ram_states"]}]]
 
-    env, num_env = make_sb_env(time_dep_seed, settings, wrappers_settings, key_to_add=key_to_add, no_vec=True)
+    env, num_env = make_sb_env(settings, wrappers_settings, no_vec=True)
 
     print("Obs_space = ", env.observation_space)
     print("Obs_space type = ", env.observation_space.dtype)
@@ -55,16 +54,17 @@ def main(cfg_file, trained_model):
     agent = PPO2.load(model_path)
 
     obs = env.reset()
+    #show_obs(obs, params["ram_states"], env.n_actions, wrappers_settings["actions_stack"], env.env_info.characters_info.char_list, True, 0)
 
     while True:
-
         action, _ = agent.predict(obs, deterministic=False)
 
         obs, reward, done, info = env.step(action)
+        #show_obs(obs, params["ram_states"], env.n_actions, wrappers_settings["actions_stack"], env.env_info.characters_info.char_list, True, 0)
 
         if done:
             obs = env.reset()
-            if info["env_done"]:
+            if info["env_done"] or test is True:
                 break
 
     # Close the environment
@@ -74,11 +74,11 @@ def main(cfg_file, trained_model):
     return 0
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--cfgFile", type=str, required=True, help="Configuration file")
     parser.add_argument("--trainedModel", type=str, default="model", help="Model checkpoint")
+    parser.add_argument("--test", type=int, default=0, help="Test mode")
     opt = parser.parse_args()
     print(opt)
 
-    main(opt.cfgFile, opt.trainedModel)
+    main(opt.cfgFile, opt.trainedModel, bool(opt.test))

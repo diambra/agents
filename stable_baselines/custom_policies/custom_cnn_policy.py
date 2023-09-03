@@ -38,8 +38,7 @@ class CustCnnPolicy(ActorCriticPolicy):
 
     def __init__(self, sess, ob_space, ac_space, n_env, n_steps, n_batch, reuse=False, layers=[64, 64],
                  act_fun=tf.tanh, cnn_extractor=nature_cnn, feature_extraction="cnn", n_add_info=209, **kwargs):
-        super(CustCnnPolicy, self).__init__(sess, ob_space, ac_space, n_env, n_steps, n_batch, reuse=reuse,
-                                            scale=False)
+        super(CustCnnPolicy, self).__init__(sess, ob_space, ac_space, n_env, n_steps, n_batch, reuse=reuse, scale=False)
 
         self._kwargs_check(feature_extraction, kwargs)
 
