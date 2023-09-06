@@ -32,19 +32,10 @@ def main(cfg_file):
     # Additional obs key list
     wrappers_settings["additional_wrappers_list"] = [[RamStatesToChannel, {"ram_states": params["ram_states"]}]]
 
-    env, num_envs = make_sb_env(settings, wrappers_settings, use_subprocess=True)
+    env, num_envs = make_sb_env(settings["game_id"], settings, wrappers_settings, use_subprocess=True)
 
-    print("Obs_space = ", env.observation_space)
-    print("Obs_space type = ", env.observation_space.dtype)
-    print("Obs_space high = ", env.observation_space.high)
-    print("Obs_space low = ", env.observation_space.low)
-
-    print("Act_space = ", env.action_space)
-    print("Act_space type = ", env.action_space.dtype)
-    if settings["action_space"] == "multi_discrete":
-        print("Act_space n = ", env.action_space.nvec)
-    else:
-        print("Act_space n = ", env.action_space.n)
+    print("Observation space =", env.observation_space)
+    print("Act_space =", env.action_space)
 
     # Policy param
     policy_kwargs = params["policy_kwargs"]

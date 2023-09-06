@@ -4,10 +4,10 @@ from stable_baselines3.common.evaluation import evaluate_policy
 
 def main():
     # Create environment
-    env = diambra.arena.make("doapp", {"hardcore": True, "frame_shape": (128, 128, 1)})
+    env = diambra.arena.make("doapp", render_mode="human")
 
     # Instantiate the agent
-    agent = A2C("CnnPolicy", env, verbose=1)
+    agent = A2C("MultiInputPolicy", env, verbose=1)
     # Train the agent
     agent.learn(total_timesteps=200)
     # Save the agent
@@ -28,20 +28,20 @@ def main():
     print("Reward: {} (avg) ± {} (std)".format(mean_reward, std_reward))
 
     # Run trained agent
-    observation = env.reset()
+    observation, info = env.reset()
     cumulative_reward = 0
     while True:
         env.render()
 
         action, _state = agent.predict(observation, deterministic=True)
 
-        observation, reward, done, info = env.step(action)
+        observation, reward, terminated, truncated, info = env.step(action)
         cumulative_reward += reward
         if (reward != 0):
             print("Cumulative reward =", cumulative_reward)
 
-        if done:
-            observation = env.reset()
+        if terminated or truncated:
+            observation, info = env.reset()
             break
 
     # Close the environment

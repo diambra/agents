@@ -4,7 +4,6 @@ from stable_baselines3 import PPO
 def main():
     # Settings
     settings = {}
-    settings["hardcore"] = True
     settings["frame_shape"] = (128, 128, 1)
     settings["characters"] = ("Kasumi")
 
@@ -23,7 +22,7 @@ def main():
     print("Act_space =", env.action_space)
 
     # Instantiate the agent
-    agent = PPO("CnnPolicy", env, verbose=1)
+    agent = PPO("MultiInputPolicy", env, verbose=1)
 
     # Print policy network architecture
     print("Policy architecture:")
@@ -36,8 +35,6 @@ def main():
     observation = env.reset()
     cumulative_reward = [0.0 for _ in range(num_envs)]
     while True:
-        env.render()
-
         action, _state = agent.predict(observation, deterministic=True)
 
         observation, reward, done, info = env.step(action)

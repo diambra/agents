@@ -1,5 +1,4 @@
 import os
-import time
 import yaml
 import json
 import argparse
@@ -10,14 +9,12 @@ from stable_baselines3 import PPO
 # diambra run -s 8 python stable_baselines3/training.py --cfgFile $PWD/stable_baselines3/cfg_files/sfiii3n/sr6_128x4_das_nc.yaml
 
 def main(cfg_file):
-
     # Read the cfg file
     yaml_file = open(cfg_file)
     params = yaml.load(yaml_file, Loader=yaml.FullLoader)
     print("Config parameters = ", json.dumps(params, sort_keys=True, indent=4))
     yaml_file.close()
 
-    time_dep_seed = int((time.time() - int(time.time() - 0.5)) * 1000)
     base_path = os.path.dirname(os.path.abspath(__file__))
     model_folder = os.path.join(base_path, params["folders"]["parent_dir"], params["settings"]["game_id"],
                                 params["folders"]["model_name"], "model")
@@ -33,7 +30,7 @@ def main(cfg_file):
     wrappers_settings = params["wrappers_settings"]
 
     # Create environment
-    env, num_envs = make_sb3_env(params["settings"]["game_id"], settings, wrappers_settings, seed=time_dep_seed)
+    env, num_envs = make_sb3_env(settings["game_id"], settings, wrappers_settings)
     print("Activated {} environment(s)".format(num_envs))
 
     print("Observation space =", env.observation_space)

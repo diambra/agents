@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 import sys
 import pytest
-from os.path import expanduser
 import os
-from diambra.arena.utils.engine_mock import DiambraEngineMock
+from diambra.arena.utils.engine_mock import load_mocker
 
 # Add the scripts directory to sys.path
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "ray_rllib"))
@@ -20,14 +19,7 @@ import basic, saving_loading_evaluating, parallel_envs, dict_obs_space, agent
 
 def func(script, mocker, *args):
 
-    diambra_engine_mock = DiambraEngineMock()
-
-    mocker.patch("diambra.arena.engine.interface.DiambraEngine.__init__", diambra_engine_mock._mock__init__)
-    mocker.patch("diambra.arena.engine.interface.DiambraEngine._env_init", diambra_engine_mock._mock_env_init)
-    mocker.patch("diambra.arena.engine.interface.DiambraEngine._reset", diambra_engine_mock._mock_reset)
-    mocker.patch("diambra.arena.engine.interface.DiambraEngine._step_1p", diambra_engine_mock._mock_step_1p)
-    mocker.patch("diambra.arena.engine.interface.DiambraEngine._step_2p", diambra_engine_mock._mock_step_2p)
-    mocker.patch("diambra.arena.engine.interface.DiambraEngine.close", diambra_engine_mock._mock_close)
+    load_mocker(mocker)
 
     try:
         os.environ["DIAMBRA_ENVS"] = "0.0.0.0:50051"
