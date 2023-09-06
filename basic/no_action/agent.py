@@ -27,22 +27,14 @@ def main(game_id="random", test=False):
     env_spaces_summary(env)
 
     observation, info = env.reset()
-    print("Info: {}".format(info))
-    env.show_obs(observation)
 
     while True:
         action = 0 if settings["action_space"] == "discrete" else [0, 0]
 
         observation, reward, terminated, truncated, info = env.step(action)
-        env.show_obs(observation)
-        print("Reward: {}".format(reward))
-        print("Terminated: {}".format(terminated))
-        print("Truncated: {}".format(truncated))
 
         if terminated or truncated:
             observation, info = env.reset()
-            print("Info: {}".format(info))
-            env.show_obs(observation)
             if info["env_done"] or test is True:
                 break
 

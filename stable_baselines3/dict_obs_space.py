@@ -15,8 +15,7 @@ def main():
     wrappers_settings["scale"] = True
     wrappers_settings["exclude_image_scaling"] = True
     wrappers_settings["flatten"] = True
-    wrappers_settings["filter_keys"] = ["stage", "P1_ownHealth", "P1_oppHealth", "P1_ownSide",
-                                        "P1_oppSide", "P1_oppChar", "P1_actions_move", "P1_actions_attack"]
+    wrappers_settings["filter_keys"] = ["action_move", "action_attack", "own_health", "opp_health", "own_side", "opp_side", "opp_char", "stage", "timer"]
 
     # Create environment
     env, num_envs = make_sb3_env("doapp", settings, wrappers_settings)
@@ -39,8 +38,6 @@ def main():
     observation = env.reset()
     cumulative_reward = [0.0 for _ in range(num_envs)]
     while True:
-        env.render()
-
         action, _state = agent.predict(observation, deterministic=True)
 
         observation, reward, done, info = env.step(action)

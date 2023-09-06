@@ -13,7 +13,7 @@ Usage:
 diambra run python stable_baselines/agent.py --cfgFile $PWD/stable_baselines/cfg_files/doapp/sr6_128x4_das_nc.yaml --trainedModel "model_name"
 """
 
-def main(cfg_file, trained_model, test=False):
+def main(cfg_file, trained_model):
     # Read the cfg file
     yaml_file = open(cfg_file)
     params = yaml.load(yaml_file, Loader=yaml.FullLoader)
@@ -35,7 +35,7 @@ def main(cfg_file, trained_model, test=False):
     # Additional obs key list
     wrappers_settings["additional_wrappers_list"] = [[RamStatesToChannel, {"ram_states": params["ram_states"]}]]
 
-    env, num_env = make_sb_env(settings, wrappers_settings, no_vec=True)
+    env, num_env = make_sb_env(settings["game_id"], settings, wrappers_settings, no_vec=True)
 
     print("Obs_space = ", env.observation_space)
     print("Obs_space type = ", env.observation_space.dtype)
@@ -64,7 +64,7 @@ def main(cfg_file, trained_model, test=False):
 
         if done:
             obs = env.reset()
-            if info["env_done"] or test is True:
+            if info["env_done"]:
                 break
 
     # Close the environment
@@ -77,8 +77,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--cfgFile", type=str, required=True, help="Configuration file")
     parser.add_argument("--trainedModel", type=str, default="model", help="Model checkpoint")
-    parser.add_argument("--test", type=int, default=0, help="Test mode")
     opt = parser.parse_args()
     print(opt)
 
-    main(opt.cfgFile, opt.trainedModel, bool(opt.test))
+    main(opt.cfgFile, opt.trainedModel)
