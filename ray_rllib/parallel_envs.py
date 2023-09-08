@@ -4,16 +4,16 @@ from ray.tune.logger import pretty_print
 
 def main():
     # Settings
-    settings = {}
-    settings["hardcore"] = True
-    settings["frame_shape"] = (84, 84, 1)
+    env_settings = {}
+    env_settings["frame_shape"] = (84, 84, 1)
+    env_settings["action_space"] = "discrete"
 
     config = {
         # Define and configure the environment
         "env": DiambraArena,
         "env_config": {
             "game_id": "doapp",
-            "settings": settings,
+            "settings": env_settings,
         },
 
         "train_batch_size": 200,
