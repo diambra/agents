@@ -1,20 +1,25 @@
 import diambra.arena
+import gymnasium as gym
 from diambra.arena.ray_rllib.make_ray_env import DiambraArena, preprocess_ray_config
-from ray.rllib.algorithms.ppo import PPO
+from ray.rllib.algorithms.ppo import PPO, PPOConfig
+from ray.tune.logger import pretty_print
 
 def main():
-    # Settings
-    settings = {}
-    settings["hardcore"] = True
-    settings["frame_shape"] = (84, 84, 1)
+    # Environment Settings
+    env_settings = {}
+    env_settings["frame_shape"] = (84, 84, 1)
+    env_settings["action_space"] = "discrete"
+
+    # env_config
+    env_config = {
+            "game_id": "doapp",
+            "settings": env_settings,
+        }
 
     config = {
         # Define and configure the environment
         "env": DiambraArena,
-        "env_config": {
-            "game_id": "doapp",
-            "settings": settings,
-        },
+        "env_config": env_config,
         "num_workers": 0,
         "train_batch_size": 200,
     }
@@ -22,31 +27,32 @@ def main():
     # Update config file
     config = preprocess_ray_config(config)
 
-    # Create the RLlib Agent.
+    # Instantiating the agent
     agent = PPO(config=config)
 
     # Run it for n training iterations
     print("\nStarting training ...\n")
     for idx in range(1):
         print("Training iteration:", idx + 1)
-        agent.train()
+        result = agent.train()
+        print(pretty_print(result))
     print("\n .. training completed.")
 
     # Run the trained agent (and render each timestep output).
     print("\nStarting trained agent execution ...\n")
 
-    env = diambra.arena.make("doapp", settings)
+    env = diambra.arena.make("doapp", env_settings, render_mode="human")
 
-    observation = env.reset()
+    observation, info = env.reset()
     while True:
         env.render()
 
         action = agent.compute_single_action(observation)
 
-        observation, reward, done, info = env.step(action)
+        observation, reward, terminated, truncated, info = env.step(action)
 
-        if done:
-            observation = env.reset()
+        if terminated or truncated:
+            observation, info = env.reset()
             break
 
     print("\n... trained agent execution completed.\n")

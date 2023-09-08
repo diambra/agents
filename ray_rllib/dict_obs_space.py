@@ -4,9 +4,10 @@ from ray.tune.logger import pretty_print
 
 def main():
     # Settings
-    settings = {}
-    settings["frame_shape"] = (84, 84, 1)
-    settings["characters"] = ("Kasumi")
+    env_settings = {}
+    env_settings["frame_shape"] = (84, 84, 1)
+    env_settings["characters"] = ("Kasumi")
+    env_settings["action_space"] = "discrete"
 
     # Wrappers Settings
     wrappers_settings = {}
@@ -14,14 +15,13 @@ def main():
     wrappers_settings["actions_stack"] = 12
     wrappers_settings["frame_stack"] = 5
     wrappers_settings["scale"] = True
-    wrappers_settings["process_discrete_binary"] = True
 
     config = {
         # Define and configure the environment
         "env": DiambraArena,
         "env_config": {
             "game_id": "doapp",
-            "settings": settings,
+            "settings": env_settings,
             "wrappers_settings": wrappers_settings,
         },
         "num_workers": 0,
