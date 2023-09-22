@@ -8,21 +8,22 @@ settings:
   frame_shape: !!python/tuple [128, 128, 1]
   continue_game: 0.0
   action_space: "discrete"
-  role: "Random"
   characters: "Ryu"
   difficulty: 6
   outfits: 2
 
 wrappers_settings:
+  reward_normalization: true
   no_attack_buttons_combinations: true
   frame_stack: 4
   dilation: 1
+  add_last_action_to_observation: true
   actions_stack: 12
-  reward_normalization: true
   scale: true
   exclude_image_scaling: true
+  role_relative_observation: true
   flatten: true
-  filter_keys: ["action_move", "action_attack", "own_health", "opp_health", "own_side", "opp_side", "opp_char", "stage", "timer"]
+  filter_keys: ["action", "own_health", "opp_health", "own_side", "opp_side", "opp_character", "stage", "timer"]
 
 policy_kwargs:
   #net_arch: [{ pi: [64, 64], vf: [32, 32] }]

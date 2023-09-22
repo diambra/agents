@@ -20,9 +20,7 @@ from basic.random_2 import agent as RandomAgent2
 #    -k "expression" (filter tests using case-insensitive with parts of the test name and/or parameters values combined with boolean operators, e.g. "wrappers and doapp")
 
 def func(agent, mocker):
-
     load_mocker(mocker, override_perfect_probability=0.0)
-
     try:
         return agent.main(test=True)
     except Exception as e:
