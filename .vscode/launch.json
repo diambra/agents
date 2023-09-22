@@ -1,5 +1,85 @@
 {
     "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "[Agents] Basic Agents (venv:diambra-arena)",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/basic/${input:basic_agent}",
+        "args": [
+          "--gameId", "${input:gameId}",
+        ],
+        "console": "integratedTerminal",
+        "env": {
+          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
+        },
+      },
+      {
+        "name": "[Agents] SB Agents (venv:diambra-arena-sb)",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/stable_baselines/agent.py",
+        "args": [
+          "--cfgFile", "${workspaceFolder}/stable_baselines/cfg_files/${input:SB_cfg_file}",
+          "--trainedModel", "model",
+        ],
+        "console": "integratedTerminal",
+        "env": {
+          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
+        },
+      },
+      {
+        "name": "[Agents] SB3 Examples (venv:diambra-arena-sb3)",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/stable_baselines3/${input:SB3_example_script}",
+        "console": "integratedTerminal",
+        "env": {
+          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
+        },
+      },
+      {
+        "name": "[Agents] SB3 Training (venv:diambra-arena-sb3)",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/stable_baselines3/training.py",
+        "args": [
+          "--cfgFile", "${workspaceFolder}/stable_baselines3/cfg_files/${input:SB3_cfg_file}",
+        ],
+        "console": "integratedTerminal",
+        "env": {
+          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
+        },
+      },
+      {
+        "name": "[Agents] SB3 Agents (venv:diambra-arena-sb3)",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/stable_baselines3/agent.py",
+        "args": [
+          "--cfgFile", "${workspaceFolder}/stable_baselines3/cfg_files/${input:SB3_cfg_file}",
+          "--trainedModel", "model",
+        ],
+        "console": "integratedTerminal",
+        "env": {
+          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
+        },
+      },
+      {
+        "name": "[Agents] Ray RL Lib Agents (venv:diambra-arena-ray)",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/ray_rllib/agent.py",
+        "args": [
+          "--trainedModel", "${workspaceFolder}/ray_rllib/results/doapp_sr6_84x5_mdas_c/",
+          "--envSpaces", "${workspaceFolder}/ray_rllib/results/doapp_sr6_84x5_mdas_c/diambra_ray_env_spaces",
+        ],
+        "console": "integratedTerminal",
+        "env": {
+          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
+        },
+      }
+    ],
     "inputs": [
       {
           "id": "DIAMBRA_ENVS",
@@ -24,6 +104,17 @@
             "umk3",
             "samsh5sp",
             "kof98umh",
+        ],
+      },
+      {
+        "id": "basic_agent",
+        "type": "pickString",
+        "description": "Basic Agent:",
+        "default": "no_action/agent.py",
+        "options": [
+            "no_action/agent.py",
+            "random_1/agent.py",
+            "random_2/agent.py",
         ],
       },
       {
@@ -61,97 +152,4 @@
         ],
       }
     ],
-    "configurations": [
-      {
-        "name": "[Agents] No-Action Agent (venv:diambra-arena)",
-        "type": "python",
-        "request": "launch",
-        "program": "${workspaceFolder}/basic/no_action/agent.py",
-        "args": [
-          "--gameId", "${input:gameId}",
-        ],
-        "console": "integratedTerminal",
-        "env": {
-          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
-        },
-      },
-      {
-        "name": "[Agents] Random Agent (venv:diambra-arena)",
-        "type": "python",
-        "request": "launch",
-        "program": "${workspaceFolder}/basic/random_1/agent.py",
-        "args": [
-          "--gameId", "${input:gameId}",
-        ],
-        "console": "integratedTerminal",
-        "env": {
-          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
-        },
-      },
-      {
-        "name": "[Agents] SB Trained (venv:diambra-arena-sb)",
-        "type": "python",
-        "request": "launch",
-        "program": "${workspaceFolder}/stable_baselines/agent.py",
-        "args": [
-          "--cfgFile", "${workspaceFolder}/stable_baselines/cfg_files/${input:SB_cfg_file}",
-          "--trainedModel", "model",
-        ],
-        "console": "integratedTerminal",
-        "env": {
-          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
-        },
-      },
-      {
-        "name": "[Agents] SB3 Examples (venv:diambra-arena-sb3)",
-        "type": "python",
-        "request": "launch",
-        "program": "${workspaceFolder}/stable_baselines3/${input:SB3_example_script}",
-        "console": "integratedTerminal",
-        "env": {
-          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
-        },
-      },
-      {
-        "name": "[Agents] SB3 Training (venv:diambra-arena-sb3)",
-        "type": "python",
-        "request": "launch",
-        "program": "${workspaceFolder}/stable_baselines3/training.py",
-        "args": [
-          "--cfgFile", "${workspaceFolder}/stable_baselines3/cfg_files/${input:SB3_cfg_file}",
-        ],
-        "console": "integratedTerminal",
-        "env": {
-          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
-        },
-      },
-      {
-        "name": "[Agents] SB3 Trained (venv:diambra-arena-sb3)",
-        "type": "python",
-        "request": "launch",
-        "program": "${workspaceFolder}/stable_baselines3/agent.py",
-        "args": [
-          "--cfgFile", "${workspaceFolder}/stable_baselines3/cfg_files/${input:SB3_cfg_file}",
-          "--trainedModel", "model",
-        ],
-        "console": "integratedTerminal",
-        "env": {
-          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
-        },
-      },
-      {
-        "name": "[Agents] Ray RL Lib Trained (venv:diambra-arena-ray)",
-        "type": "python",
-        "request": "launch",
-        "program": "${workspaceFolder}/ray_rllib/agent.py",
-        "args": [
-          "--trainedModel", "${workspaceFolder}/ray_rllib/results/doapp_sr6_84x5_mdas_c/",
-          "--envSpaces", "${workspaceFolder}/ray_rllib/results/doapp_sr6_84x5_mdas_c/diambra_ray_env_spaces",
-        ],
-        "console": "integratedTerminal",
-        "env": {
-          "DIAMBRA_ENVS": "${input:DIAMBRA_ENVS}"
-        },
-      }
-    ]
 }
