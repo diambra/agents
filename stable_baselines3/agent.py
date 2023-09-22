@@ -2,7 +2,8 @@ import os
 import yaml
 import json
 import argparse
-from diambra.arena.stable_baselines3.make_sb3_env import make_sb3_env
+from diambra.arena import Roles, SpaceTypes, load_settings_flat_dict
+from diambra.arena.stable_baselines3.make_sb3_env import make_sb3_env, EnvironmentSettings, WrappersSettings
 from stable_baselines3 import PPO
 
 """This is an example agent based on stable baselines 3.
@@ -23,19 +24,17 @@ def main(cfg_file, trained_model, test=False):
                                 params["folders"]["model_name"], "model")
 
     # Settings
-    settings = params["settings"]
-    settings["role"] = "P1"
+    params["settings"]["action_space"] = SpaceTypes.DISCRETE if params["settings"]["action_space"] == "discrete" else SpaceTypes.MULTI_DISCRETE
+    settings = load_settings_flat_dict(EnvironmentSettings, params["settings"])
+    settings.role = Roles.P1
 
     # Wrappers Settings
-    wrappers_settings = params["wrappers_settings"]
-    wrappers_settings["reward_normalization"] = False
+    wrappers_settings = load_settings_flat_dict(WrappersSettings, params["wrappers_settings"])
+    wrappers_settings.reward_normalization = False
 
     # Create environment
-    env, num_envs = make_sb3_env(settings["game_id"], settings, wrappers_settings, no_vec=True)
+    env, num_envs = make_sb3_env(settings.game_id, settings, wrappers_settings, no_vec=True)
     print("Activated {} environment(s)".format(num_envs))
-
-    print("Observation space =", env.observation_space)
-    print("Act_space =", env.action_space)
 
     # Load the trained agent
     model_path = os.path.join(model_folder, trained_model)

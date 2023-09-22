@@ -1,28 +1,27 @@
-from diambra.arena.stable_baselines3.make_sb3_env import make_sb3_env
+from diambra.arena.stable_baselines3.make_sb3_env import make_sb3_env, EnvironmentSettings, WrappersSettings
 from stable_baselines3 import PPO
 
 def main():
     # Settings
-    settings = {}
-    settings["frame_shape"] = (128, 128, 1)
-    settings["characters"] = ("Kasumi")
+    settings = EnvironmentSettings()
+    settings.frame_shape = (128, 128, 1)
+    settings.characters = ("Kasumi")
 
     # Wrappers Settings
-    wrappers_settings = {}
-    wrappers_settings["reward_normalization"] = True
-    wrappers_settings["actions_stack"] = 12
-    wrappers_settings["frame_stack"] = 5
-    wrappers_settings["scale"] = True
-    wrappers_settings["exclude_image_scaling"] = True
-    wrappers_settings["flatten"] = True
-    wrappers_settings["filter_keys"] = ["action_move", "action_attack", "own_health", "opp_health", "own_side", "opp_side", "opp_char", "stage", "timer"]
+    wrappers_settings = WrappersSettings()
+    wrappers_settings.reward_normalization = True
+    wrappers_settings.frame_stack = 5
+    wrappers_settings.add_last_action_to_observation = True
+    wrappers_settings.actions_stack = 12
+    wrappers_settings.scale = True
+    wrappers_settings.exclude_image_scaling = True
+    wrappers_settings.role_relative_observation = True
+    wrappers_settings.flatten = True
+    wrappers_settings.filter_keys = ["action", "own_health", "opp_health", "own_side", "opp_side", "opp_character", "stage", "timer"]
 
     # Create environment
     env, num_envs = make_sb3_env("doapp", settings, wrappers_settings)
     print("Activated {} environment(s)".format(num_envs))
-
-    print("Observation space =", env.observation_space)
-    print("Act_space =", env.action_space)
 
     # Instantiate the agent
     agent = PPO("MultiInputPolicy", env, verbose=1)
