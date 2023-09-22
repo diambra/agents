@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import diambra.arena
-from diambra.arena.utils.gym_utils import env_spaces_summary, available_games
+from diambra.arena import SpaceTypes, Roles, EnvironmentSettings
+from diambra.arena.utils.gym_utils import available_games
 import random
 import argparse
 
@@ -12,25 +13,18 @@ def main(game_id="random", test=False):
         game_id = opt.gameId if opt.gameId in game_dict.keys() else random.sample(game_dict.keys(),1)[0]
 
     # Settings
-    settings = {
-        "n_players": 1,
-        "step_ratio": 6,
-        "frame_shape": (128, 128, 1),
-        "role": "P2",
-        "difficulty": 4,
-        "characters": ("Random"),
-        "outfits": 1,
-        "action_space": "multi_discrete",
-    }
+    settings = EnvironmentSettings()
+    settings.step_ratio = 6
+    settings.frame_shape = (128, 128, 1)
+    settings.role = Roles.P2
+    settings.difficulty = 4
+    settings.action_space = SpaceTypes.MULTI_DISCRETE
 
     env = diambra.arena.make(game_id, settings)
-    env_spaces_summary(env)
-
     observation, info = env.reset()
 
     while True:
         action = env.action_space.sample()
-
         observation, reward, terminated, truncated, info = env.step(action)
 
         if terminated or truncated:
@@ -45,7 +39,6 @@ def main(game_id="random", test=False):
     return 0
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--gameId', type=str, default="random", help='Game ID')
     parser.add_argument('--test', type=int, default=0, help='Test mode')
