@@ -1,6 +1,61 @@
 import gym
-from gym import spaces
 import numpy as np
+import gymnasium
+
+# Split actions in move and attack
+class SplitActionsInMoveAndAttack(gym.ObservationWrapper):
+    def __init__(self, env):
+        """
+        Add to observations additional info
+        :param env: (Gym Environment) the environment to wrap
+        """
+        gym.ObservationWrapper.__init__(self, env)
+
+        assert self.unwrapped.env_settings.n_players == 1, "ERROR: \"SplitActionsInMoveAndAttack\" only works on single agent environment"
+        assert isinstance(self.action_space, gym.spaces.Discrete), "ERROR: \"SplitActionsInMoveAndAttack\" only works on environments with a Discrete action space"
+
+        new_observation_space = {}
+        for k, v in self.observation_space.spaces.items():
+            if k == "action":
+                assert isinstance(v, gymnasium.spaces.MultiBinary), "ERROR: \"SplitActionsInMoveAndAttack\" only works on normalized environment via the dedicated wrapper"
+                self.move_size = 9
+                self.attack_size = self.action_space.n + 1 - self.move_size
+                self.action_stack_size = int(v.n / self.action_space.n)
+                self.move_vec_size = self.move_size * self.action_stack_size
+                self.attack_vec_size = self.attack_size * self.action_stack_size
+                new_observation_space["action_move"] = gymnasium.spaces.MultiBinary(self.move_vec_size)
+                new_observation_space["action_attack"] = gymnasium.spaces.MultiBinary(self.attack_vec_size)
+            else:
+                new_observation_space[k] = v
+
+        self.observation_space = gymnasium.spaces.Dict(new_observation_space)
+
+    # Process observation
+    def observation(self, obs):
+        new_observation = {}
+        for k, v in obs.items():
+            if k == "action":
+                move_actions_vector = np.zeros((self.move_vec_size), dtype=np.uint8)
+                attack_actions_vector = np.zeros((self.attack_vec_size), dtype=np.uint8)
+                actions_idx = np.where(obs["action"] == 1)[0]
+                for action_idx in actions_idx:
+                    stack_idx = int(action_idx / self.action_space.n)
+                    relative_idx = action_idx - stack_idx * self.action_space.n
+                    if relative_idx == 0:
+                        move_actions_vector[stack_idx * self.move_size] = 1
+                        attack_actions_vector[stack_idx * self.attack_size] = 1
+                    elif relative_idx > self.move_size - 1:
+                        attack_actions_vector[stack_idx * self.attack_size + relative_idx - self.move_size + 1] = 1
+                        move_actions_vector[stack_idx * self.move_size] = 1
+                    else:
+                        move_actions_vector[stack_idx * self.move_size + relative_idx] = 1
+                        attack_actions_vector[stack_idx * self.attack_size] = 1
+                new_observation["action_move"] = move_actions_vector
+                new_observation["action_attack"] = attack_actions_vector
+            else:
+                new_observation[k] = v
+
+        return new_observation
 
 # Convert additional obs to fifth observation channel for stable baselines
 class RamStatesToChannel(gym.ObservationWrapper):
@@ -25,8 +80,8 @@ class RamStatesToChannel(gym.ObservationWrapper):
                "Observation space min bound must be either 0.0 or -1.0 to use Additional Obs"
 
         self.old_obs_space = self.observation_space
-        self.observation_space = spaces.Box(low=self.box_low_bound, high=self.box_high_bound,
-                                            shape=(shp[0], shp[1], shp[2] + 1), dtype=np.float32)
+        self.observation_space = gym.spaces.Box(low=self.box_low_bound, high=self.box_high_bound,
+                                                shape=(shp[0], shp[1], shp[2] + 1), dtype=np.float32)
         self.shp = self.observation_space.shape
 
     # Process observation

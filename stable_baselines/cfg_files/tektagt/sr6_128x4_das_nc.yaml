@@ -8,21 +8,22 @@ settings:
   frame_shape: !!python/tuple [128, 128, 1]
   continue_game: 0.0
   action_space: "discrete"
-  role: "Random"
   characters: !!python/tuple ["Jin", "Yoshimitsu"]
   difficulty: 6
   outfits: 2
 
 wrappers_settings:
+  reward_normalization: true
   no_attack_buttons_combinations: true
   frame_stack: 4
-  dilation: 1
+  add_last_action_to_observation: true
   actions_stack: 12
-  reward_normalization: true
   scale: true
+  role_relative_observation: true
+  flatten: true
 
 ram_states: ["action_move", "action_attack", "own_health_1", "own_health_2", "opp_health_1",
-             "opp_health_2", "own_side", "opp_side", "own_active_char", "opp_active_char", "stage"]
+             "opp_health_2", "own_side", "opp_side", "own_active_character", "opp_active_character", "stage"]
 
 policy_kwargs:
   n_add_info: 189 # n_actions_stack*(n_actions[0]+n_actions[1]) + len(key_to_add)-1
