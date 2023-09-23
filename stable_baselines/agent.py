@@ -2,13 +2,13 @@ import os
 import yaml
 import json
 import argparse
-from custom_wrappers import RamStatesToChannel
-from diambra.arena.stable_baselines.make_sb_env import make_sb_env
+from diambra.arena import Roles, SpaceTypes, load_settings_flat_dict
+from custom_wrappers import RamStatesToChannel, SplitActionsInMoveAndAttack
+from diambra.arena.stable_baselines.make_sb_env import make_sb_env, EnvironmentSettings, WrappersSettings
 from diambra.arena.stable_baselines.sb_utils import show_obs
 from stable_baselines import PPO2
 
 """This is an example agent based on stable baselines.
-
 Usage:
 diambra run python stable_baselines/agent.py --cfgFile $PWD/stable_baselines/cfg_files/doapp/sr6_128x4_das_nc.yaml --trainedModel "model_name"
 """
@@ -25,29 +25,19 @@ def main(cfg_file, trained_model):
                                 params["folders"]["model_name"], "model")
 
     # Settings
-    settings = params["settings"]
-    settings["role"] = "P1"
+    params["settings"]["action_space"] = SpaceTypes.DISCRETE if params["settings"]["action_space"] == "discrete" else SpaceTypes.MULTI_DISCRETE
+    settings = load_settings_flat_dict(EnvironmentSettings, params["settings"])
+    settings.role = Roles.P1
 
     # Wrappers Settings
-    wrappers_settings = params["wrappers_settings"]
-    wrappers_settings["reward_normalization"] = False
+    wrappers_settings = load_settings_flat_dict(WrappersSettings, params["wrappers_settings"])
+    wrappers_settings.reward_normalization = False
 
     # Additional obs key list
-    wrappers_settings["additional_wrappers_list"] = [[RamStatesToChannel, {"ram_states": params["ram_states"]}]]
+    wrappers_settings.wrappers = [[SplitActionsInMoveAndAttack, {}],
+                                  [RamStatesToChannel, {"ram_states": params["ram_states"]}]]
 
-    env, num_env = make_sb_env(settings["game_id"], settings, wrappers_settings, no_vec=True)
-
-    print("Obs_space = ", env.observation_space)
-    print("Obs_space type = ", env.observation_space.dtype)
-    print("Obs_space high = ", env.observation_space.high)
-    print("Obs_space low = ", env.observation_space.low)
-
-    print("Act_space = ", env.action_space)
-    print("Act_space type = ", env.action_space.dtype)
-    if settings["action_space"] == "multi_discrete":
-        print("Act_space n = ", env.action_space.nvec)
-    else:
-        print("Act_space n = ", env.action_space.n)
+    env, num_env = make_sb_env(settings.game_id, settings, wrappers_settings, no_vec=True)
 
     # Load the trained agent
     model_path = os.path.join(model_folder, trained_model)

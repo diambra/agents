@@ -2,8 +2,9 @@ import os
 import yaml
 import json
 import argparse
-from custom_wrappers import RamStatesToChannel
-from diambra.arena.stable_baselines.make_sb_env import make_sb_env
+from custom_wrappers import RamStatesToChannel, SplitActionsInMoveAndAttack
+from diambra.arena import SpaceTypes, load_settings_flat_dict
+from diambra.arena.stable_baselines.make_sb_env import make_sb_env, EnvironmentSettings, WrappersSettings
 from diambra.arena.stable_baselines.sb_utils import linear_schedule, AutoSave
 from custom_policies.custom_cnn_policy import CustCnnPolicy, local_nature_cnn_small
 from stable_baselines import PPO2
@@ -24,18 +25,17 @@ def main(cfg_file):
     os.makedirs(model_folder, exist_ok=True)
 
     # Settings
-    settings = params["settings"]
+    params["settings"]["action_space"] = SpaceTypes.DISCRETE if params["settings"]["action_space"] == "discrete" else SpaceTypes.MULTI_DISCRETE
+    settings = load_settings_flat_dict(EnvironmentSettings, params["settings"])
 
     # Wrappers Settings
-    wrappers_settings = params["wrappers_settings"]
+    wrappers_settings = load_settings_flat_dict(WrappersSettings, params["wrappers_settings"])
 
     # Additional obs key list
-    wrappers_settings["additional_wrappers_list"] = [[RamStatesToChannel, {"ram_states": params["ram_states"]}]]
+    wrappers_settings.wrappers = [[SplitActionsInMoveAndAttack, {}],
+                                  [RamStatesToChannel, {"ram_states": params["ram_states"]}]]
 
-    env, num_envs = make_sb_env(settings["game_id"], settings, wrappers_settings, use_subprocess=True)
-
-    print("Observation space =", env.observation_space)
-    print("Act_space =", env.action_space)
+    env, num_envs = make_sb_env(settings.game_id, settings, wrappers_settings, use_subprocess=True)
 
     # Policy param
     policy_kwargs = params["policy_kwargs"]
