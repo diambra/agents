@@ -27,10 +27,11 @@ def func(script, mocker, *args):
         print(e)
         return 1
 
-trained_model_folder = os.path.join(root_dir, "results/doapp_sr6_84x5_das_c/")
+trained_model_folder = os.path.join(root_dir, "results/test/")
 env_spaces_descriptor_path = os.path.join(trained_model_folder, "diambra_ray_env_spaces")
 #[parallel_envs, ()] # Not possible to test parallel_envs script as it requires multiple envs and the mocker does not work with child processes / threads
-scripts = [[basic, ()], [saving_loading_evaluating, ()], [dict_obs_space, ()], [agent, (trained_model_folder, env_spaces_descriptor_path, True)]]
+#[agent, (trained_model_folder, env_spaces_descriptor_path, True)] # Removed because of too big save file
+scripts = [[basic, ()], [saving_loading_evaluating, ()], [dict_obs_space, ()]]
 
 @pytest.mark.parametrize("script", scripts)
 def test_ray_rllib_scripts(script, mocker):
