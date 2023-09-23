@@ -1,4 +1,5 @@
 import diambra.arena
+from diambra.arena import SpaceTypes, EnvironmentSettings
 import gymnasium as gym
 from diambra.arena.ray_rllib.make_ray_env import DiambraArena, preprocess_ray_config
 from ray.rllib.algorithms.ppo import PPO, PPOConfig
@@ -6,9 +7,9 @@ from ray.tune.logger import pretty_print
 
 def main():
     # Environment Settings
-    env_settings = {}
-    env_settings["frame_shape"] = (84, 84, 1)
-    env_settings["action_space"] = "discrete"
+    env_settings = EnvironmentSettings()
+    env_settings.frame_shape = (84, 84, 1)
+    env_settings.action_space = SpaceTypes.DISCRETE
 
     # env_config
     env_config = {
@@ -48,7 +49,6 @@ def main():
         env.render()
 
         action = agent.compute_single_action(observation)
-
         observation, reward, terminated, truncated, info = env.step(action)
 
         if terminated or truncated:

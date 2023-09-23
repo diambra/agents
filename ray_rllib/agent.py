@@ -1,5 +1,6 @@
 import argparse
 import diambra.arena
+from diambra.arena import SpaceTypes, EnvironmentSettings, WrappersSettings
 from diambra.arena.ray_rllib.make_ray_env import DiambraArena, preprocess_ray_config
 from ray.rllib.algorithms.ppo import PPO
 
@@ -13,17 +14,19 @@ diambra run python agent.py --trainedModel /absolute/path/to/checkpoint/ --envSp
 
 def main(trained_model, env_spaces, test=False):
     # Settings
-    env_settings = {}
-    env_settings["frame_shape"] = (84, 84, 1)
-    env_settings["characters"] = ("Kasumi")
-    env_settings["action_space"] = "discrete"
+    env_settings = EnvironmentSettings()
+    env_settings.frame_shape = (84, 84, 1)
+    env_settings.characters = ("Kasumi")
+    env_settings.action_space = SpaceTypes.DISCRETE
 
     # Wrappers Settings
-    wrappers_settings = {}
-    wrappers_settings["reward_normalization"] = True
-    wrappers_settings["actions_stack"] = 12
-    wrappers_settings["frame_stack"] = 5
-    wrappers_settings["scale"] = True
+    wrappers_settings = WrappersSettings()
+    wrappers_settings.reward_normalization = True
+    wrappers_settings.add_last_action_to_observation = True
+    wrappers_settings.actions_stack = 12
+    wrappers_settings.frame_stack = 5
+    wrappers_settings.scale = True
+    wrappers_settings.role_relative_observation = True
 
     config = {
         # Define and configure the environment
@@ -50,14 +53,12 @@ def main(trained_model, env_spaces, test=False):
     print("Policy architecture =\n{}".format(agent.get_policy().model))
 
     env = diambra.arena.make("doapp", env_settings, wrappers_settings, render_mode="human")
-
     obs, info = env.reset()
 
     while True:
         env.render()
 
         action = agent.compute_single_action(observation=obs, explore=True, policy_id="default_policy")
-
         obs, reward, terminated, truncated, info = env.step(action)
 
         if terminated or truncated:
