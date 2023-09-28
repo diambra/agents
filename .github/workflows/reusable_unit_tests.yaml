@@ -11,7 +11,24 @@ on:
         type: string
 
 jobs:
-  reusable_agents_unit_tests:
+  checkout_and_download_lfs:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout selected branch
+        uses: actions/checkout@v3
+        with:
+          repository: diambra/agents
+          ref: ${{ inputs.agents_ref }}
+          lfs: true
+
+      - name: Store repo with LFS files as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: repo-lfs-artifacts
+          path: .  # You can specify the path to the LFS files if they are in a specific directory
+
+  run_unit_tests:
+    needs: checkout_and_download_lfs
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -29,12 +46,10 @@ jobs:
           python3 -m pip install wheel==0.38.4 setuptools==66.0.0
           pip list
 
-      - name: Checkout selected branch
-        uses: actions/checkout@v3
+      - name: Restore repo with LFS files from artifacts
+        uses: actions/download-artifact@v3
         with:
-          repository: diambra/agents
-          ref: ${{ inputs.agents_ref }}
-          lfs: true
+          name: repo-lfs-artifacts
 
       - name: Set test script to execute
         id: set_test_script
