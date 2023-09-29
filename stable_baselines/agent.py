@@ -31,7 +31,7 @@ def main(cfg_file, trained_model):
 
     # Wrappers Settings
     wrappers_settings = load_settings_flat_dict(WrappersSettings, params["wrappers_settings"])
-    wrappers_settings.reward_normalization = False
+    wrappers_settings.normalize_reward = False
 
     # Additional obs key list
     wrappers_settings.wrappers = [[SplitActionsInMoveAndAttack, {}],

@@ -21,12 +21,12 @@ def main(trained_model, env_spaces, test=False):
 
     # Wrappers Settings
     wrappers_settings = WrappersSettings()
-    wrappers_settings.reward_normalization = True
-    wrappers_settings.add_last_action_to_observation = True
-    wrappers_settings.actions_stack = 12
-    wrappers_settings.frame_stack = 5
+    wrappers_settings.normalize_reward = True
+    wrappers_settings.add_last_action = True
+    wrappers_settings.stack_actions = 12
+    wrappers_settings.stack_frames = 5
     wrappers_settings.scale = True
-    wrappers_settings.role_relative_observation = True
+    wrappers_settings.role_relative = True
 
     config = {
         # Define and configure the environment

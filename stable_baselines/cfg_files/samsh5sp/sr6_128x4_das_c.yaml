@@ -13,12 +13,12 @@ settings:
   outfits: 2
 
 wrappers_settings:
-  reward_normalization: true
-  frame_stack: 4
-  add_last_action_to_observation: true
-  actions_stack: 12
+  normalize_reward: true
+  stack_frames: 4
+  add_last_action: true
+  stack_actions: 12
   scale: true
-  role_relative_observation: true
+  role_relative: true
   flatten: true
 
 ram_states: ["action_move", "action_attack", "own_health", "opp_health", "own_side", "opp_side", "stage"]

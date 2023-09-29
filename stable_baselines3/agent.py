@@ -30,7 +30,7 @@ def main(cfg_file, trained_model, test=False):
 
     # Wrappers Settings
     wrappers_settings = load_settings_flat_dict(WrappersSettings, params["wrappers_settings"])
-    wrappers_settings.reward_normalization = False
+    wrappers_settings.normalize_reward = False
 
     # Create environment
     env, num_envs = make_sb3_env(settings.game_id, settings, wrappers_settings, no_vec=True)
