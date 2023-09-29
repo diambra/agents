@@ -12,6 +12,7 @@ on:
 
 jobs:
   checkout_and_download_lfs:
+    name: Checkout and Download LFS
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout selected branch
