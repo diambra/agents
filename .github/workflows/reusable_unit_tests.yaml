@@ -44,7 +44,7 @@ jobs:
 
       - name: Pre-install pinned packages for deprecations
         run: |
-          python3 -m pip install wheel
+          python3 -m pip install wheel==0.38.4 setuptools==66.0.0
           pip list
 
       - name: Restore repo with LFS files from artifacts
