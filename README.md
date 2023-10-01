@@ -28,7 +28,7 @@
 
 This repository contains many examples of Agents that interact with <a href="https://github.com/diambra/arena">DIAMBRA Arena</a>, our exclusive suite of Reinforcement Learning environments.
 
-They show how to use the standard OpenAI Gym API, and how to train state-of-the-art Deep Reinforcement Learning agents using the most advanced libraries in the field.
+They show how to use the standard OpenAI Gym/Gymnasium API, and how to train state-of-the-art Deep Reinforcement Learning agents using the most advanced libraries in the field.
 
 The dedicated section of our <a href="https://docs.diambra.ai/handsonreinforcementlearning/#end-to-end-deep-reinforcement-learning">Documentation</a> provides all the details needed to get started!
 
