@@ -87,13 +87,18 @@ jobs:
       - name: Find base tag
         id: base-tag
         run: |
-          semver=${{ steps.meta.outputs.version }}
-          major=${semver%%.*}
-          # If not a semver (e.g branch name), use main as base tag
-          if [[ $major == "$semver" ]]; then
+          ref=${{ steps.meta.outputs.version }}
+          # on release-* branches, use branch as base tag
+          if [[ $ref == release-* ]]; then
+            echo "tag=$ref" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # on any other branch, use main as base tag
+          if [[ ! $ref =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
             echo "tag=main" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          major=${semver%%.*}
           minor_and_patch=${semver#*.}
           minor=${minor_and_patch%%.*}
           echo "tag=v${major}.${minor}" >> "$GITHUB_OUTPUT"
