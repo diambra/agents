@@ -1,0 +1,12 @@
+# @package _global_
+
+defaults:
+  # Inherit configs from custom_exp
+  - custom_exp
+  - _self_
+
+# Set Fabric parameters
+fabric:
+  devices: 2
+  accelerator: cuda
+  precision: bf16

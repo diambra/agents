@@ -1,35 +1,8 @@
 # @package _global_
 
 defaults:
-  # Selects the algorithm and the environment
-  - override /algo: custom_ppo_agent
+  # Inherit configs from custom_exp
+  - custom_exp
+  # Override the environment configurations
   - override /env: custom_parallel_env
   - _self_
-
-# Experiment
-total_steps: 1024
-per_rank_batch_size: 16
-
-# Buffer
-buffer:
-  share_data: False
-  size: ${algo.rollout_steps}
-
-checkpoint:
-  save_last: True
-
-cnn_keys:
-  encoder: [frame]
-mlp_keys:
-  encoder:
-    - own_character
-    - own_health
-    - own_side
-    - own_wins
-    - opp_character
-    - opp_health
-    - opp_side
-    - opp_wins
-    - stage
-    - timer
-    - action
