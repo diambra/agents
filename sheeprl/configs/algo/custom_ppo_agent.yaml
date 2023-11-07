@@ -7,7 +7,8 @@ defaults:
   - _self_
 
 # Override default ppo arguments
-# `name` is a mandatory attribute, it must be equal to the algorithm name
+# `name` is a mandatory attribute, it must be equal to the filename 
+# of the file in which the algorithm is defined.
 # If you inherit the default configurations of a specific algoritm,
 # then you do not need to define it, since it is already defined in the default configs
 name: ppo
