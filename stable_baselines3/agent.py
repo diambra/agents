@@ -5,6 +5,7 @@ import argparse
 from diambra.arena import Roles, SpaceTypes, load_settings_flat_dict
 from diambra.arena.stable_baselines3.make_sb3_env import make_sb3_env, EnvironmentSettings, WrappersSettings
 from stable_baselines3 import PPO
+from huggingface_hub import hf_hub_download, login as huggingface_hub_login
 
 """This is an example agent based on stable baselines 3.
 
@@ -12,16 +13,23 @@ Usage:
 diambra run python stable_baselines3/agent.py --cfgFile $PWD/stable_baselines3/cfg_files/doapp/sr6_128x4_das_nc.yaml --trainedModel "model_name"
 """
 
-def main(cfg_file, trained_model, test=False):
+def main(repo, cfg_file, trained_model, test=False):
+
+    if os.getenv("HF_TOKEN"):
+        huggingface_hub_login(os.getenv("HF_TOKEN").strip())
+
+    config_path = hf_hub_download(repo_id=repo, filename=cfg_file)
     # Read the cfg file
-    yaml_file = open(cfg_file)
+    yaml_file = open(config_path)
     params = yaml.load(yaml_file, Loader=yaml.FullLoader)
     print("Config parameters = ", json.dumps(params, sort_keys=True, indent=4))
     yaml_file.close()
 
-    base_path = os.path.dirname(os.path.abspath(__file__))
-    model_folder = os.path.join(base_path, params["folders"]["parent_dir"], params["settings"]["game_id"],
-                                params["folders"]["model_name"], "model")
+    model_repo_path = os.path.join(params["folders"]["parent_dir"], params["settings"]["game_id"],
+                                params["folders"]["model_name"], "model", trained_model)
+    
+    model_path = hf_hub_download(repo_id=repo, filename=model_repo_path)
+
 
     # Settings
     params["settings"]["action_space"] = SpaceTypes.DISCRETE if params["settings"]["action_space"] == "discrete" else SpaceTypes.MULTI_DISCRETE
@@ -37,7 +45,6 @@ def main(cfg_file, trained_model, test=False):
     print("Activated {} environment(s)".format(num_envs))
 
     # Load the trained agent
-    model_path = os.path.join(model_folder, trained_model)
     agent = PPO.load(model_path)
 
     # Print policy network architecture
@@ -64,10 +71,11 @@ def main(cfg_file, trained_model, test=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--repo", type=str, required=True, help="Repository name")
     parser.add_argument("--cfgFile", type=str, required=True, help="Configuration file")
-    parser.add_argument("--trainedModel", type=str, default="model", help="Model checkpoint")
+    parser.add_argument("--trainedModel", type=str, default="model.zip", help="Model checkpoint")
     parser.add_argument("--test", type=int, default=0, help="Test mode")
     opt = parser.parse_args()
     print(opt)
 
-    main(opt.cfgFile, opt.trainedModel, bool(opt.test))
+    main(opt.repo, opt.cfgFile, opt.trainedModel, bool(opt.test))
