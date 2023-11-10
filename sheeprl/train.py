@@ -8,7 +8,6 @@ from sheeprl.cli import run
 
 
 def check_configs(cfg: DictConfig):
-    print(cfg.env)
     if "diambra" not in cfg.env.wrapper._target_:
         raise ValueError(
             f"You must choose a DIAMBRA environment. "
