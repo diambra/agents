@@ -7,7 +7,7 @@ from omegaconf import DictConfig
 from sheeprl.cli import evaluation
 
 
-@hydra.main(version_base="1.13", config_path=CONFIGS_PATH, config_name="eval_config")
+@hydra.main(version_base="1.3", config_path=CONFIGS_PATH, config_name="eval_config")
 def run(cfg: DictConfig):
     evaluation(cfg)
 

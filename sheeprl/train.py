@@ -16,7 +16,7 @@ def check_configs(cfg: DictConfig):
         )
 
 
-@hydra.main(version_base="1.13", config_path=CONFIGS_PATH, config_name="config")
+@hydra.main(version_base="1.3", config_path=CONFIGS_PATH, config_name="config")
 def train(cfg: DictConfig):
     check_configs(cfg)
     run(cfg)
