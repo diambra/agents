@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-          extra: ['basic', 'stable-baselines', 'stable-baselines3', 'ray-rllib']
+          extra: ['basic', 'stable-baselines', 'stable-baselines3', 'ray-rllib', 'sheeprl']
           python-version: ['3.7', '3.8', '3.9', '3.10']
 
     steps:
@@ -63,6 +63,8 @@ jobs:
             echo "test_script=test_sb3.py" >> "$GITHUB_ENV"
           elif [ "${{ matrix.extra }}" == "ray-rllib" ]; then
             echo "test_script=test_ray_rllib.py" >> "$GITHUB_ENV"
+          elif [ "${{ matrix.extra }}" == "sheeprl" ]; then
+            echo "test_script=test_sheeprl.py" >> "$GITHUB_ENV"
           fi
 
       - name: Install proper packages
