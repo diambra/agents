@@ -98,8 +98,8 @@ jobs:
             echo "tag=main" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          major=${semver%%.*}
-          minor_and_patch=${semver#*.}
+          major=${ref%%.*}
+          minor_and_patch=${ref#*.}
           minor=${minor_and_patch%%.*}
           echo "tag=v${major}.${minor}" >> "$GITHUB_OUTPUT"
 
