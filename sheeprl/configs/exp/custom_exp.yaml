@@ -6,10 +6,6 @@ defaults:
   - override /env: custom_env
   - _self_
 
-# Experiment
-total_steps: 1024
-per_rank_batch_size: 16
-
 # Buffer
 buffer:
   share_data: False
@@ -18,18 +14,22 @@ buffer:
 checkpoint:
   save_last: True
 
-cnn_keys:
-  encoder: [frame]
-mlp_keys:
-  encoder:
-    - own_character
-    - own_health
-    - own_side
-    - own_wins
-    - opp_character
-    - opp_health
-    - opp_side
-    - opp_wins
-    - stage
-    - timer
-    - action
+# Experiment
+algo:
+  total_steps: 1024
+  per_rank_batch_size: 16
+  cnn_keys:
+    encoder: [frame]
+  mlp_keys:
+    encoder:
+      - own_character
+      - own_health
+      - own_side
+      - own_wins
+      - opp_character
+      - opp_health
+      - opp_side
+      - opp_wins
+      - stage
+      - timer
+      - action
