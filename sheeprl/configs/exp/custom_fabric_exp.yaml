@@ -9,4 +9,4 @@ defaults:
 fabric:
   devices: 2
   accelerator: cuda
-  precision: bf16
+  precision: bf16-mixed
