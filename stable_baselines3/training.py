@@ -91,7 +91,6 @@ def main(cfg_file):
     return 0
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--cfgFile", type=str, required=True, help="Configuration file")
     opt = parser.parse_args()
