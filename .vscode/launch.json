@@ -8,6 +8,7 @@
         "program": "${workspaceFolder}/basic/${input:basic_agent}",
         "args": [
           "--gameId", "${input:gameId}",
+          "--test", "${input:test}",
         ],
         "console": "integratedTerminal",
         "env": {
@@ -104,6 +105,17 @@
             "umk3",
             "samsh5sp",
             "kof98umh",
+        ],
+      },
+      {
+        "id": "test",
+        "type": "pickString",
+        "description": "Test:",
+        "default": "0",
+        "options": [
+          { "label": "True", "value": "1" },
+          { "label": "False", "value": "0" },
+
         ],
       },
       {
