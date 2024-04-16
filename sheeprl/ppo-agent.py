@@ -55,6 +55,8 @@ def main(cfg_path: str, checkpoint_path: str, test=False):
     # You need to retrieve only the player
     # Check for each algorithm what models the `build_agent()` function returns
     # (placed in the `agent.py` file of the algorithm), and which arguments it needs.
+    # Check also which are the keys of the checkpoint: if the `build_agent()` parameter
+    # is called `model_state`, then you retrieve the model state with `state["model"]`.
     agent = build_agent(
         fabric=fabric,
         actions_dim=actions_dim,
