@@ -6,6 +6,7 @@ import torch
 from lightning import Fabric
 from omegaconf import OmegaConf
 from sheeprl.algos.ppo.agent import build_agent
+from sheeprl.algos.ppo.utils import prepare_obs
 from sheeprl.utils.env import make_env
 from sheeprl.utils.utils import dotdict
 
@@ -25,6 +26,8 @@ def main(cfg_path: str, checkpoint_path: str, test=False):
     # Override configs for evaluation
     # You do not need to capture the video since you are submitting the agent and the video is recorded by DIAMBRA
     cfg.env.capture_video = False
+    # Only one environment is used for evaluation
+    cfg.env.num_envs = 1
 
     # Instantiate Fabric
     # You must use the same precision and plugins used for training.
@@ -75,24 +78,12 @@ def main(cfg_path: str, checkpoint_path: str, test=False):
 
     while True:
         # Convert numpy observations into torch observations and normalize image observations
-        # Every algorithm has its own way to do it, check in the test function of the algorithm
-        # which is the correct way to it.
-        # Check the `test()` function called in the `evaluate.py` file of the algorithm.
-        obs = {}
-        for k in o.keys():
-            if k in obs_keys:
-                torch_obs = torch.from_numpy(o[k].copy()).to(fabric.device).unsqueeze(0)
-                if k in cnn_keys:
-                    torch_obs = (
-                        torch_obs.reshape(1, -1, *torch_obs.shape[-2:]) / 255 - 0.5
-                    )
-                if k in mlp_keys:
-                    torch_obs = torch_obs.float()
-                obs[k] = torch_obs
+        # Every algorithm has its own way to do it, you must import the correct method
+        torch_obs = prepare_obs(fabric, o, cnn_keys)
 
         # Select actions, the agent returns a one-hot categorical or
         # more one-hot categorical distributions for muli-discrete actions space
-        actions = agent.get_actions(obs, greedy=True)
+        actions = agent.get_actions(torch_obs, greedy=True)
         # Convert actions from one-hot categorical to categorial
         actions = torch.cat([act.argmax(dim=-1) for act in actions], dim=-1)
 
