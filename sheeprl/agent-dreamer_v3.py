@@ -5,7 +5,7 @@ import gymnasium as gym
 import torch
 from lightning import Fabric
 from omegaconf import OmegaConf
-from sheeprl.algos.ppo.agent import build_agent
+from sheeprl.algos.dreamer_v3.agent import build_agent
 from sheeprl.utils.env import make_env
 from sheeprl.utils.utils import dotdict
 
@@ -13,7 +13,7 @@ from sheeprl.utils.utils import dotdict
 
 Usage:
 cd sheeprl
-diambra run python ppo-agent.py --cfg_path "./fake-logs/runs/ppo/doapp/fake-experiment/version_0/config.yaml" --checkpoint_path "./fake-logs/runs/ppo/doapp/fake-experiment/version_0/checkpoint/ckpt_1024_0.ckpt"
+diambra run python agent-dreamer_v3.py --cfg_path "./example-logs/runs/dreamer_v3/doapp/experiment/version_0/config.yaml" --checkpoint_path "./example-logs/runs/dreamer_v3/doapp/experiment/version_0/checkpoint/ckpt_1024_0.ckpt"
 """
 
 
@@ -63,7 +63,10 @@ def main(cfg_path: str, checkpoint_path: str, test=False):
         is_continuous=False,
         cfg=cfg,
         obs_space=observation_space,
-        agent_state=state["agent"],
+        world_model_state=state["world_model"],
+        actor_state=state["actor"],
+        critic_state=state["critic"],
+        target_critic_state=state["target_critic"],
     )[-1]
     agent.eval()
 
@@ -72,6 +75,8 @@ def main(cfg_path: str, checkpoint_path: str, test=False):
     print(agent)
 
     o, info = env.reset()
+    # Every time you reset the environment, you must reset the initial states of the model
+    agent.init_states()
 
     while True:
         # Convert numpy observations into torch observations and normalize image observations
@@ -79,20 +84,19 @@ def main(cfg_path: str, checkpoint_path: str, test=False):
         # which is the correct way to it.
         # Check the `test()` function called in the `evaluate.py` file of the algorithm.
         obs = {}
-        for k in o.keys():
-            if k in obs_keys:
-                torch_obs = torch.from_numpy(o[k].copy()).to(fabric.device).unsqueeze(0)
-                if k in cnn_keys:
-                    torch_obs = (
-                        torch_obs.reshape(1, -1, *torch_obs.shape[-2:]) / 255 - 0.5
-                    )
-                if k in mlp_keys:
-                    torch_obs = torch_obs.float()
-                obs[k] = torch_obs
+        for k in obs_keys:
+            obs[k] = (
+                torch.from_numpy(o[k].copy())
+                .to(fabric.device)
+                .view(1, 1, *o[k].shape)
+                .float()
+            )
+            if k in cnn_keys:
+                obs[k] = obs[k] / 255 - 0.5
 
         # Select actions, the agent returns a one-hot categorical or
         # more one-hot categorical distributions for muli-discrete actions space
-        actions = agent.get_actions(obs, greedy=True)
+        actions = agent.get_actions(obs, greedy=False)
         # Convert actions from one-hot categorical to categorial
         actions = torch.cat([act.argmax(dim=-1) for act in actions], dim=-1)
 
@@ -102,6 +106,8 @@ def main(cfg_path: str, checkpoint_path: str, test=False):
 
         if terminated or truncated:
             o, info = env.reset()
+            # Every time you reset the environment, you must reset the initial states of the model
+            agent.init_states()
             if info["env_done"] or test is True:
                 break
 
