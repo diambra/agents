@@ -53,8 +53,8 @@ def main(cfg_path: str, checkpoint_path: str, test=False):
     # Load the trained agent
     state = fabric.load(checkpoint_path)
     # You need to retrieve only the player
-    # Check for each algorithm what models the `build_agent()` function returns, and
-    # which arguments it needs.
+    # Check for each algorithm what models the `build_agent()` function returns
+    # (placed in the `agent.py` file of the algorithm), and which arguments it needs.
     agent = build_agent(
         fabric=fabric,
         actions_dim=actions_dim,
@@ -73,8 +73,9 @@ def main(cfg_path: str, checkpoint_path: str, test=False):
 
     while True:
         # Convert numpy observations into torch observations and normalize image observations
-        # Every algorithm has its own way to do it, check in the `evaluate.py` file of the algorithm
+        # Every algorithm has its own way to do it, check in the test function of the algorithm
         # which is the correct way to it.
+        # Check the `test()` function called in the `evaluate.py` file of the algorithm.
         obs = {}
         for k in o.keys():
             if k in obs_keys:
@@ -87,10 +88,9 @@ def main(cfg_path: str, checkpoint_path: str, test=False):
                     torch_obs = torch_obs.float()
                 obs[k] = torch_obs
 
-        # Check which is the method to select actions for the algorithm you are using.
-        # You can find it in the `evaluate.py` file of the algorithm.
+        # Select actions, the agent returns a one-hot categorical or
+        # more one-hot categorical distributions for muli-discrete actions space
         actions = agent.get_actions(obs, greedy=True)
-
         # Convert actions from one-hot categorical to categorial
         actions = torch.cat([act.argmax(dim=-1) for act in actions], dim=-1)
 
