@@ -12,6 +12,7 @@ from diambra.arena.utils.engine_mock import load_mocker
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "sheeprl"))
 sys.path.append(ROOT_DIR)
 
+import agent
 import evaluate
 import train
 
@@ -24,7 +25,15 @@ STANDARD_ARGS = [
 ]
 
 
-def func(mocker, n_envs, args, evaluation=False, root_dir=None, run_name=None):
+def test_agent(mocker, args):
+    os.environ["DIAMBRA_ENVS"] = "127.0.0.1:32781"
+    with mock.patch.object(sys, "argv", args):
+        agent.main()
+
+
+def test_train_eval(
+    mocker, n_envs, args, evaluation=False, root_dir=None, run_name=None
+):
     load_mocker(mocker)
 
     try:
@@ -36,9 +45,9 @@ def func(mocker, n_envs, args, evaluation=False, root_dir=None, run_name=None):
         os.environ["DIAMBRA_ENVS"] = envs
 
         # SheepRL config folder setup
-        os.environ[
-            "SHEEPRL_SEARCH_PATH"
-        ] = "file://sheeprl/configs;pkg://sheeprl.configs"
+        os.environ["SHEEPRL_SEARCH_PATH"] = (
+            "file://sheeprl/configs;pkg://sheeprl.configs"
+        )
 
         # Execution of the train script
         with mock.patch.object(sys, "argv", STANDARD_ARGS + args):
@@ -70,7 +79,7 @@ def func(mocker, n_envs, args, evaluation=False, root_dir=None, run_name=None):
 
 def test_sheeprl_train_base(mocker):
     assert (
-        func(
+        test_train_eval(
             mocker,
             2,
             ["exp=custom_exp", "checkpoint.save_last=False"],
@@ -81,7 +90,7 @@ def test_sheeprl_train_base(mocker):
 
 def test_sheeprl_train_parallel_envs(mocker):
     assert (
-        func(
+        test_train_eval(
             mocker,
             6,
             ["exp=custom_parallel_env_exp", "checkpoint.save_last=False"],
@@ -92,7 +101,7 @@ def test_sheeprl_train_parallel_envs(mocker):
 
 def test_sheeprl_train_fabric(mocker):
     assert (
-        func(
+        test_train_eval(
             mocker,
             2,
             [
@@ -108,7 +117,7 @@ def test_sheeprl_train_fabric(mocker):
 
 def test_sheeprl_train_metrics(mocker):
     assert (
-        func(
+        test_train_eval(
             mocker,
             2,
             [
@@ -124,7 +133,7 @@ def test_sheeprl_train_metrics(mocker):
 
 def test_sheeprl_evaluation(mocker):
     assert (
-        func(
+        test_train_eval(
             mocker,
             3,
             [
@@ -138,4 +147,19 @@ def test_sheeprl_evaluation(mocker):
             run_name="eval",
         )
         == 0
+    )
+
+
+def test_sheeprl_agent(mocker):
+    cfg_path = os.path.join(
+        ROOT_DIR, "/fake-logs/runs/ppo/doapp/fake-experiment/version_0/config.yaml"
+    )
+    checkpoint_path = os.path.join(
+        ROOT_DIR,
+        "/fake-logs/runs/ppo/doapp/fake-experiment/version_0/checkpoint/ckpt_1024_0.ckpt",
+    )
+    assert test_agent(
+        mocker,
+        1,
+        ["--cfg_path", cfg_path, "--checkpoint_path", checkpoint_path, "--test"],
     )

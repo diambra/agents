@@ -1,0 +1,164 @@
+num_threads: 1
+float32_matmul_precision: high
+dry_run: false
+seed: 42
+torch_use_deterministic_algorithms: false
+torch_backends_cudnn_benchmark: true
+torch_backends_cudnn_deterministic: false
+cublas_workspace_config: null
+exp_name: ppo_doapp
+run_name: 2024-04-15_15-25-55_ppo_doapp_42
+root_dir: ppo/doapp
+algo:
+  name: ppo
+  total_steps: 1024
+  per_rank_batch_size: 16
+  run_test: true
+  cnn_keys:
+    encoder:
+    - frame
+  mlp_keys:
+    encoder:
+    - own_character
+    - own_health
+    - own_side
+    - own_wins
+    - opp_character
+    - opp_health
+    - opp_side
+    - opp_wins
+    - stage
+    - timer
+    - action
+  optimizer:
+    _target_: torch.optim.Adam
+    lr: 0.005
+    eps: 1.0e-06
+    weight_decay: 0
+    betas:
+    - 0.9
+    - 0.999
+  anneal_lr: false
+  gamma: 0.99
+  gae_lambda: 0.95
+  update_epochs: 1
+  loss_reduction: mean
+  normalize_advantages: true
+  clip_coef: 0.2
+  anneal_clip_coef: false
+  clip_vloss: false
+  ent_coef: 0.0
+  anneal_ent_coef: false
+  vf_coef: 1.0
+  rollout_steps: 32
+  dense_units: 16
+  mlp_layers: 1
+  dense_act: torch.nn.Tanh
+  layer_norm: false
+  max_grad_norm: 1.0
+  encoder:
+    cnn_features_dim: 128
+    mlp_features_dim: 32
+    dense_units: 16
+    mlp_layers: 1
+    dense_act: torch.nn.Tanh
+    layer_norm: false
+  actor:
+    dense_units: 16
+    mlp_layers: 1
+    dense_act: torch.nn.Tanh
+    layer_norm: false
+  critic:
+    dense_units: 16
+    mlp_layers: 1
+    dense_act: torch.nn.Tanh
+    layer_norm: false
+buffer:
+  size: 32
+  memmap: true
+  validate_args: false
+  from_numpy: false
+  share_data: false
+checkpoint:
+  every: 100
+  resume_from: null
+  save_last: true
+  keep_last: 5
+distribution:
+  validate_args: false
+env:
+  id: doapp
+  num_envs: 1
+  frame_stack: 1
+  sync_env: true
+  screen_size: 64
+  action_repeat: 1
+  grayscale: false
+  clip_rewards: false
+  capture_video: true
+  frame_stack_dilation: 1
+  max_episode_steps: null
+  reward_as_observation: false
+  wrapper:
+    _target_: sheeprl.envs.diambra.DiambraWrapper
+    id: doapp
+    action_space: DISCRETE
+    screen_size: 64
+    grayscale: false
+    repeat_action: 1
+    rank: null
+    log_level: 0
+    increase_performance: true
+    diambra_settings:
+      role: P1
+      step_ratio: 6
+      difficulty: 4
+      continue_game: 0.0
+      show_final: false
+      outfits: 2
+      splash_screen: false
+    diambra_wrappers:
+      stack_actions: 1
+      no_op_max: 0
+      no_attack_buttons_combinations: false
+      add_last_action: true
+      scale: false
+      exclude_image_scaling: false
+      process_discrete_binary: false
+      role_relative: true
+fabric:
+  _target_: lightning.fabric.Fabric
+  devices: 1
+  num_nodes: 1
+  strategy: auto
+  accelerator: cpu
+  precision: 32-true
+  callbacks:
+  - _target_: sheeprl.utils.callback.CheckpointCallback
+    keep_last: 5
+metric:
+  log_every: 5000
+  disable_timer: false
+  log_level: 1
+  sync_on_compute: false
+  aggregator:
+    _target_: sheeprl.utils.metric.MetricAggregator
+    raise_on_missing: false
+    metrics:
+      Rewards/rew_avg:
+        _target_: torchmetrics.MeanMetric
+        sync_on_compute: false
+      Game/ep_len_avg:
+        _target_: torchmetrics.MeanMetric
+        sync_on_compute: false
+  logger:
+    _target_: lightning.fabric.loggers.TensorBoardLogger
+    name: 2024-04-15_15-25-55_ppo_doapp_42
+    root_dir: logs/runs/ppo/doapp
+    version: null
+    default_hp_metric: true
+    prefix: ''
+    sub_dir: null
+model_manager:
+  disabled: true
+  models: {}
