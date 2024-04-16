@@ -50,8 +50,6 @@ def main(cfg_path: str, checkpoint_path: str, test=False):
         env.action_space.nvec.tolist() if is_multidiscrete else [env.action_space.n]
     )
     cnn_keys = cfg.algo.cnn_keys.encoder
-    mlp_keys = cfg.algo.mlp_keys.encoder
-    obs_keys = mlp_keys + cnn_keys
 
     # Load the trained agent
     state = fabric.load(checkpoint_path)
