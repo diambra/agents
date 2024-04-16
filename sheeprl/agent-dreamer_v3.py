@@ -13,7 +13,7 @@ from sheeprl.utils.utils import dotdict
 
 Usage:
 cd sheeprl
-diambra run python agent-dreamer_v3.py --cfg_path "./example-logs/runs/dreamer_v3/doapp/experiment/version_0/config.yaml" --checkpoint_path "./example-logs/runs/dreamer_v3/doapp/experiment/version_0/checkpoint/ckpt_1024_0.ckpt"
+diambra run python agent-dreamer_v3.py --cfg_path "/absolute/path/to/example-logs/runs/dreamer_v3/doapp/experiment/version_0/config.yaml" --checkpoint_path "/absolute/path/to/example-logs/runs/dreamer_v3/doapp/experiment/version_0/checkpoint/ckpt_1024_0.ckpt"
 """
 
 
