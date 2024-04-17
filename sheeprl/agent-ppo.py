@@ -77,7 +77,7 @@ def main(cfg_path: str, checkpoint_path: str, test=False):
     while True:
         # Convert numpy observations into torch observations and normalize image observations
         # Every algorithm has its own way to do it, you must import the correct method
-        torch_obs = prepare_obs(fabric, o, cnn_keys)
+        torch_obs = prepare_obs(fabric, o, cnn_keys=cnn_keys)
 
         # Select actions, the agent returns a one-hot categorical or
         # more one-hot categorical distributions for muli-discrete actions space
