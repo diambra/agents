@@ -20,7 +20,7 @@ STANDARD_ARGS = [
     os.path.join(ROOT_DIR, "__main__.py"),
     "env.capture_video=False",
     "metric.log_level=0",
-    "checkpoint.every=100000000",
+    "checkpoint.every=10000000",
     "buffer.memmap=False",
 ]
 
