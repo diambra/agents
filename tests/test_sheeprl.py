@@ -25,13 +25,12 @@ STANDARD_ARGS = [
 ]
 
 
-def test_agent(mocker, agent, args):
+def test_agent(mocker, agent, kwargs):
     load_mocker(mocker)
 
     agent = importlib.import_module(f"agent-{agent}")
     os.environ["DIAMBRA_ENVS"] = "127.0.0.1:32781"
-    with mock.patch.object(sys, "argv", args):
-        agent.main()
+    agent.main(**kwargs)
 
 
 def test_train_eval(
@@ -164,7 +163,7 @@ def test_sheeprl_ppo_agent(mocker):
     assert test_agent(
         mocker,
         "ppo",
-        ["--cfg_path", cfg_path, "--checkpoint_path", checkpoint_path, "--test"],
+        {"cfg_path": cfg_path, "checkpoint_path": checkpoint_path, "test": True},
     )
 
 
@@ -180,5 +179,5 @@ def test_sheeprl_dreamer_v3_agent(mocker):
     assert test_agent(
         mocker,
         "dreamer_v3",
-        ["--cfg_path", cfg_path, "--checkpoint_path", checkpoint_path, "--test"],
+        {"cfg_path": cfg_path, "checkpoint_path": checkpoint_path, "test": True},
     )
