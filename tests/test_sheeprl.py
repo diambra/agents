@@ -26,6 +26,8 @@ STANDARD_ARGS = [
 
 
 def test_agent(mocker, agent, args):
+    load_mocker(mocker)
+
     agent = importlib.import_module(f"agent-{agent}")
     os.environ["DIAMBRA_ENVS"] = "127.0.0.1:32781"
     with mock.patch.object(sys, "argv", args):
