@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import importlib
 import os
 import shutil
 import sys
@@ -12,7 +13,7 @@ from diambra.arena.utils.engine_mock import load_mocker
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "sheeprl"))
 sys.path.append(ROOT_DIR)
 
-import agent
+agent = importlib.import_module("agent-ppo")
 import evaluate
 import train
 
