@@ -25,7 +25,7 @@ STANDARD_ARGS = [
 ]
 
 
-def test_agent(mocker, agent, kwargs):
+def _test_agent(mocker, agent, kwargs):
     load_mocker(mocker)
 
     agent = importlib.import_module(f"agent-{agent}")
@@ -33,7 +33,7 @@ def test_agent(mocker, agent, kwargs):
     agent.main(**kwargs)
 
 
-def test_train_eval(
+def _test_train_eval(
     mocker, n_envs, args, evaluation=False, root_dir=None, run_name=None
 ):
     load_mocker(mocker)
@@ -81,7 +81,7 @@ def test_train_eval(
 
 def test_sheeprl_train_base(mocker):
     assert (
-        test_train_eval(
+        _test_train_eval(
             mocker,
             2,
             ["exp=custom_exp", "checkpoint.save_last=False"],
@@ -92,7 +92,7 @@ def test_sheeprl_train_base(mocker):
 
 def test_sheeprl_train_parallel_envs(mocker):
     assert (
-        test_train_eval(
+        _test_train_eval(
             mocker,
             6,
             ["exp=custom_parallel_env_exp", "checkpoint.save_last=False"],
@@ -103,7 +103,7 @@ def test_sheeprl_train_parallel_envs(mocker):
 
 def test_sheeprl_train_fabric(mocker):
     assert (
-        test_train_eval(
+        _test_train_eval(
             mocker,
             2,
             [
@@ -119,7 +119,7 @@ def test_sheeprl_train_fabric(mocker):
 
 def test_sheeprl_train_metrics(mocker):
     assert (
-        test_train_eval(
+        _test_train_eval(
             mocker,
             2,
             [
@@ -135,7 +135,7 @@ def test_sheeprl_train_metrics(mocker):
 
 def test_sheeprl_evaluation(mocker):
     assert (
-        test_train_eval(
+        _test_train_eval(
             mocker,
             3,
             [
@@ -160,7 +160,7 @@ def test_sheeprl_ppo_agent(mocker):
         ROOT_DIR,
         "/fake-logs/runs/ppo/doapp/fake-experiment/version_0/checkpoint/ckpt_1024_0.ckpt",
     )
-    assert test_agent(
+    assert _test_agent(
         mocker,
         "ppo",
         {"cfg_path": cfg_path, "checkpoint_path": checkpoint_path, "test": True},
@@ -176,7 +176,7 @@ def test_sheeprl_dreamer_v3_agent(mocker):
         ROOT_DIR,
         "/fake-logs/runs/dreamer_v3/doapp/fake-experiment/version_0/checkpoint/ckpt_1024_0.ckpt",
     )
-    assert test_agent(
+    assert _test_agent(
         mocker,
         "dreamer_v3",
         {"cfg_path": cfg_path, "checkpoint_path": checkpoint_path, "test": True},
