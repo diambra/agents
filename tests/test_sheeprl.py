@@ -13,7 +13,6 @@ from diambra.arena.utils.engine_mock import load_mocker
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "sheeprl"))
 sys.path.append(ROOT_DIR)
 
-agent = importlib.import_module("agent-ppo")
 import evaluate
 import train
 
@@ -26,7 +25,8 @@ STANDARD_ARGS = [
 ]
 
 
-def test_agent(mocker, args):
+def test_agent(mocker, agent, args):
+    agent = importlib.import_module(f"agent-{agent}")
     os.environ["DIAMBRA_ENVS"] = "127.0.0.1:32781"
     with mock.patch.object(sys, "argv", args):
         agent.main()
@@ -151,7 +151,7 @@ def test_sheeprl_evaluation(mocker):
     )
 
 
-def test_sheeprl_agent(mocker):
+def test_sheeprl_ppo_agent(mocker):
     cfg_path = os.path.join(
         ROOT_DIR, "/fake-logs/runs/ppo/doapp/fake-experiment/version_0/config.yaml"
     )
@@ -161,6 +161,22 @@ def test_sheeprl_agent(mocker):
     )
     assert test_agent(
         mocker,
-        1,
+        "ppo",
+        ["--cfg_path", cfg_path, "--checkpoint_path", checkpoint_path, "--test"],
+    )
+
+
+def test_sheeprl_dreamer_v3_agent(mocker):
+    cfg_path = os.path.join(
+        ROOT_DIR,
+        "/fake-logs/runs/dreamer_v3/doapp/fake-experiment/version_0/config.yaml",
+    )
+    checkpoint_path = os.path.join(
+        ROOT_DIR,
+        "/fake-logs/runs/dreamer_v3/doapp/fake-experiment/version_0/checkpoint/ckpt_1024_0.ckpt",
+    )
+    assert test_agent(
+        mocker,
+        "dreamer_v3",
         ["--cfg_path", cfg_path, "--checkpoint_path", checkpoint_path, "--test"],
     )
